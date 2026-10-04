@@ -1,0 +1,470 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>藝數探索｜打洞模擬器・進階版 3｜自適應版</title>
+<style>
+:root{--blue:#2f75b5;--ink:#203040;--paper:#fffdf5;--grid:#cfdae2;--red:#e45454;--purple:#7654a8}
+*{box-sizing:border-box} body{margin:0;font-family:"Microsoft JhengHei","Noto Sans TC",sans-serif;background:#f4f8fb;color:var(--ink)}
+header{background:linear-gradient(135deg,#214f7b,#3887c7);color:#fff;padding:13px 18px;box-shadow:0 2px 8px #0002}
+.head{max-width:1240px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+h1{font-size:clamp(21px,2.6vw,30px);margin:0}.topright{display:flex;align-items:center;gap:9px}.avatar{width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid #fff}
+.pill,.navlink{border:1px solid #ffffff66;background:#ffffff18;color:#fff;border-radius:999px;padding:7px 11px;font-size:13px;text-decoration:none}
+.wrap{max-width:1240px;margin:16px auto;padding:0 14px;display:grid;grid-template-columns:390px 1fr;gap:15px}
+.card{background:#fff;border:1px solid #d9e6ef;border-radius:15px;padding:14px;box-shadow:0 4px 15px #244b6a10}
+h2{font-size:19px;margin:0 0 8px}.small{font-size:13.5px;color:#60717d;line-height:1.6}.sub{font-weight:800;color:#315d80;margin:13px 0 7px}
+.controls{display:grid;grid-template-columns:1fr 1fr;gap:7px}button,select,input{font:inherit}
+button{border:1px solid #9ec3df;background:#eff8ff;color:#174e78;border-radius:10px;padding:9px 8px;cursor:pointer;min-height:42px}
+button:hover:not(:disabled){background:#dfeffc}button:disabled{opacity:.38;cursor:not-allowed}
+.diag{background:#fff7e8;border-color:#e6bd78;color:#765013}.special{background:#f5efff;border-color:#bda8e0;color:#5b408a}.danger{background:#fff0f0;border-color:#e6a3a3;color:#8c3838}.ok{background:#eaf8ef;border-color:#92cda9;color:#256c43}
+.section{border-top:1px dashed #cedae2;margin-top:12px;padding-top:10px}.locked{font-size:12.5px;background:#f2f4f6;border-radius:9px;padding:8px;color:#71808a}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin:10px 0}.stat{background:#f5f8fa;border:1px solid #e2ebf1;border-radius:10px;padding:7px;text-align:center}.stat b{display:block;font-size:19px;color:#245f97}
+.history{background:#f7f7f7;border-radius:9px;padding:8px;min-height:42px;font-size:12.5px;line-height:1.55;max-height:120px;overflow-y:auto;overflow-x:hidden}
+.stage{display:flex;flex-direction:column;align-items:center}.stageHead{width:100%;display:flex;justify-content:space-between;align-items:center;gap:10px}.badge{font-size:12.5px;background:#edf6fd;color:#32698f;border-radius:999px;padding:6px 9px}
+#svg{width:min(100%,650px);height:auto;touch-action:none;user-select:none}.grid{stroke:#bfd0dc;stroke-width:1.15;opacity:.95}.layer{stroke:#6f8797;stroke-width:1.2}.outline{fill:none;stroke:#597488;stroke-width:2.5}.crease{stroke:var(--red);stroke-width:2.5;stroke-dasharray:8 6}.oldcrease{stroke:#ef8d8d;stroke-width:1.5;stroke-dasharray:6 6;opacity:.7}.custom{stroke:var(--purple);stroke-width:3;stroke-dasharray:7 5}.hole{fill:#222;stroke:#fff;stroke-width:2}.punch{fill:#f19c38;stroke:#fff;stroke-width:2}
+.actions{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;margin-top:7px}.tip{background:#fff8df;border-left:4px solid #f3b16e;border-radius:8px;padding:9px;margin-top:10px}
+.expertBox{background:#faf7ff;border:1px solid #dfd2f4;border-radius:10px;padding:9px}.row{display:flex;gap:7px;align-items:center;flex-wrap:wrap}
+input[type=range]{width:150px}.target{display:flex;gap:7px;align-items:center;flex-wrap:wrap}.target select{padding:7px;border-radius:8px;border:1px solid #cbd9e2}
+.target option.level-basic{background:#e9f7e8;color:#244d2b}
+.target option.level-mid{background:#fff7d6;color:#6b5312}
+.target option.level-adv{background:#fde8e8;color:#7a2f2f}
+.answerWrap{width:100%;margin:7px 0 4px}.answerBtn{background:#eef7ff;border-color:#9fc5e2;color:#245f97;min-height:36px;padding:7px 13px;font-weight:700}.answerPanel{display:none;margin-top:7px;width:100%;background:#f8fbfd;border:1px solid #d4e4ee;border-radius:10px;padding:10px 12px;text-align:left;max-height:190px;overflow-y:auto}.answerPanel.show{display:block}.answerTitle{font-weight:800;color:#245f97;margin-bottom:5px}.answerMeta{font-size:12.5px;color:#687983;margin-bottom:6px}.answerStep{font-size:13.5px;line-height:1.6;padding:3px 0;border-bottom:1px dashed #e1e9ee}.answerStep:last-child{border-bottom:0}.viewCounter{max-width:1240px;margin:0 auto 10px;padding:0 14px;text-align:center}.viewCounterBox{display:inline-flex;align-items:center;gap:8px;background:#fff;border:1px solid #d9e6ef;border-radius:999px;padding:7px 12px;box-shadow:0 3px 10px #244b6a10}.viewCounter img{display:block;height:22px}
+.challengePicker{position:relative;min-width:180px}.challengeBtn{width:100%;min-height:38px;padding:7px 11px;border:1px solid #cbd9e2;background:#fff;color:#334b5c;border-radius:9px;display:flex;align-items:center;justify-content:space-between;gap:12px}.challengeBtn .chev{font-size:11px;opacity:.65}.challengeMenu{display:none;position:absolute;z-index:30;top:calc(100% + 5px);left:0;min-width:220px;max-height:330px;overflow-y:auto;background:#fff;border:1px solid #cbd9e2;border-radius:10px;box-shadow:0 10px 24px #16364f24;padding:5px}.challengeMenu.show{display:block}.challengeItem{width:100%;min-height:36px;border:0;border-radius:7px;padding:8px 10px;text-align:left;background:#fff;color:#334b5c}.challengeItem:hover{filter:brightness(.97)}.challengeItem.basic{background:#e9f7e8;color:#244d2b}.challengeItem.mid{background:#fff7d6;color:#6b5312}.challengeItem.adv{background:#fde8e8;color:#7a2f2f}.challengeItem.none{background:#f5f7f9;color:#60717d}
+footer{text-align:center;color:#74828c;font-size:13px;padding:0 10px 17px}
+.svgToolbar{width:100%;display:flex;align-items:center;justify-content:center;gap:7px;flex-wrap:wrap;margin:5px 0 8px}.svgToolbar button{min-height:34px;padding:6px 11px}.zoomReadout{min-width:56px;text-align:center;font-size:12.5px;color:#60717d;font-weight:700}.svgViewport{width:100%;max-width:100%;overflow:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;border-radius:10px;touch-action:none}.svgViewport.dragging{cursor:grabbing}.svgCanvas{margin:auto;transform-origin:top left}#svg{display:block;width:100%;height:auto;max-width:none;user-select:none}
+.mobileHint{display:none;width:100%;font-size:12.5px;color:#60717d;background:#f5f9fc;border:1px solid #ddeaf2;border-radius:9px;padding:7px 9px;margin-bottom:6px}
+@media(max-width:1000px){.wrap{grid-template-columns:1fr;max-width:760px}.stage{order:-1}.mobileHint{display:block}.card{padding:12px}.head{align-items:flex-start}.topright{gap:6px}.pill,.navlink{padding:6px 9px}.svgViewport{max-height:72vh}}
+@media(max-width:600px){header{padding:10px 10px}.wrap{margin:9px auto;padding:0 8px;gap:9px}.card{border-radius:12px;padding:10px}.controls{grid-template-columns:1fr 1fr;gap:6px}button{min-height:44px;padding:8px 6px;font-size:14px}.stats{gap:5px}.stat{padding:6px 3px}.stat b{font-size:18px}.stageHead{align-items:flex-start;flex-direction:column;gap:4px}.target{align-items:flex-start}.challengePicker{min-width:min(220px,100%)}.challengeMenu{min-width:min(260px,calc(100vw - 36px));max-height:45vh}.answerPanel{max-height:34vh}.svgToolbar{position:sticky;top:0;z-index:12;background:#fff;padding:5px 0}.svgViewport{max-height:68vh}.viewCounter{padding:0 8px}.head h1{font-size:21px}.topright{width:100%}}
+
+</style>
+</head>
+<body>
+<header><div class="head">
+  <div><h1>線對稱打洞模擬器・進階版 3</h1></div>
+  <div class="topright"><a class="navlink" href="advanced2.html">← 回進階版 2</a><a class="navlink" href="advanced.html">進階版 1</a><a class="navlink" href="index.html">初級版</a><div class="pill" style="display:flex;align-items:center;gap:7px"><img class="avatar" src="author-avatar.svg"><span>徐丙忠老師</span></div></div>
+</div></header>
+
+<main class="wrap">
+<section class="card">
+  <h2>① 選擇摺法</h2>
+
+  <div class="sub">基本對半摺</div>
+  <div class="controls">
+    <button onclick="basicFold('L2R')">→ 左半摺到右半</button>
+    <button onclick="basicFold('R2L')">← 右半摺到左半</button>
+    <button onclick="basicFold('T2B')">↓ 上半摺到下半</button>
+    <button onclick="basicFold('B2T')">↑ 下半摺到上半</button>
+  </div>
+
+  <div id="diagSection" class="section">
+    <div class="sub" style="margin-top:0">斜線對摺 <span class="small">（目前紙張接近正方形時出現）</span></div>
+    <div id="diagButtons" class="controls">
+      <button class="diag" onclick="diagFold('UR2LL')">↙ 右上摺到左下</button>
+      <button class="diag" onclick="diagFold('LL2UR')">↗ 左下摺到右上</button>
+      <button class="diag" onclick="diagFold('UL2LR')">↘ 左上摺到右下</button>
+      <button class="diag" onclick="diagFold('LR2UL')">↖ 右下摺到左上</button>
+    </div>
+    <div id="diagLocked" class="locked" style="display:none">目前紙張不是接近正方形，斜線對摺暫時隱藏。</div>
+  </div>
+
+  <div class="section">
+    <div class="sub" style="margin-top:0">偏移斜摺</div>
+    <div id="offsetDiagBox" class="expertBox">
+      <div class="small">用途：以原始 8×8 格紙的中央斜線為 <b>0 格</b>；<br>正、負號表示沿同一族平行斜線往相反方向移動；<br>可選 −7 到 +7 格。</div>
+      <div class="row" style="margin:8px 0">
+        <label class="small" for="offsetSteps"><b>偏移量：</b></label>
+        <select id="offsetSteps">
+          <option value="-7">−7 格</option>
+          <option value="-6">−6 格</option>
+          <option value="-5">−5 格</option>
+          <option value="-4">−4 格</option>
+          <option value="-3">−3 格</option>
+          <option value="-2">−2 格</option>
+          <option value="-1">−1 格</option>
+          <option value="0" selected>0 格</option>
+          <option value="1">+1 格</option>
+          <option value="2">+2 格</option>
+          <option value="3">+3 格</option>
+          <option value="4">+4 格</option>
+          <option value="5">+5 格</option>
+          <option value="6">+6 格</option>
+          <option value="7">+7 格</option>
+        </select>
+      </div>
+      <div class="small" style="margin-bottom:8px">
+        ↙／↗：正值往左下平移、負值往右上平移；<br>
+        ↘／↖：正值往右下平移、負值往左上平移。
+      </div>
+      <div class="controls">
+        <button class="special" onclick="offsetDiagFold('UR2LL')">↙ 右上摺到左下</button>
+        <button class="special" onclick="offsetDiagFold('LL2UR')">↗ 左下摺到右上</button>
+        <button class="special" onclick="offsetDiagFold('UL2LR')">↘ 左上摺到右下</button>
+        <button class="special" onclick="offsetDiagFold('LR2UL')">↖ 右下摺到左上</button>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="section">
+    <div class="sub" style="margin-top:0">局部摺 <span class="small">（完成 1 次摺紙後解鎖）</span></div>
+    <div id="quarterButtons" class="controls">
+      <button class="special" onclick="stripFold('L',.25)">→ 左側 1/4 向內摺</button>
+      <button class="special" onclick="stripFold('R',.25)">← 右側 1/4 向內摺</button>
+      <button class="special" onclick="stripFold('T',.25)">↓ 上側 1/4 向內摺</button>
+      <button class="special" onclick="stripFold('B',.25)">↑ 下側 1/4 向內摺</button>
+    </div>
+    <div id="quarterLocked" class="locked">先完成一次基本摺紙，局部摺選項才會出現。</div>
+  </div>
+
+
+  <div class="actions">
+    <button onclick="undo()">↶ 回到上一步</button>
+    <button class="danger" onclick="resetAll()">重新開始</button>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><span>已摺</span><b id="foldCount">0</b><span>次</span></div>
+    <div class="stat"><span>紙層片段</span><b id="layerCount">1</b><span>片</span></div>
+    <div class="stat"><span>展開洞數</span><b id="holeCount">0</b><span>個</span></div>
+  </div>
+  <div class="sub">摺紙紀錄</div>
+  <div id="history" class="history">尚未摺紙</div>
+</section>
+
+<section class="card stage">
+  <div class="stageHead"><h2>② 摺紙與打洞區</h2><span class="badge" id="status">請選摺法，或直接打洞</span></div>
+  <div class="target" style="width:100%;margin-bottom:5px"><span class="small">關卡：</span>
+    <div class="challengePicker">
+      <button type="button" class="challengeBtn" id="challengeBtn" onclick="toggleChallengeMenu()">
+        <span id="challengeLabel">不顯示目標</span><span class="chev">▼</span>
+      </button>
+      <div class="challengeMenu" id="challengeMenu">
+        <button type="button" class="challengeItem none" onclick="setChallenge(0,'不顯示目標')">不顯示目標</button>
+        <button type="button" class="challengeItem basic" onclick="setChallenge(1,'第1關・2洞')">第1關・2洞</button>
+        <button type="button" class="challengeItem basic" onclick="setChallenge(2,'第2關・4洞')">第2關・4洞</button>
+        <button type="button" class="challengeItem basic" onclick="setChallenge(3,'第3關・4洞')">第3關・4洞</button>
+        <button type="button" class="challengeItem basic" onclick="setChallenge(4,'第4關・4洞')">第4關・4洞</button>
+        <button type="button" class="challengeItem mid" onclick="setChallenge(5,'第5關・8洞')">第5關・8洞</button>
+        <button type="button" class="challengeItem mid" onclick="setChallenge(6,'第6關・8洞')">第6關・8洞</button>
+        <button type="button" class="challengeItem mid" onclick="setChallenge(7,'第7關・16洞')">第7關・16洞</button>
+        <button type="button" class="challengeItem mid" onclick="setChallenge(8,'第8關・16洞')">第8關・16洞</button>
+        <button type="button" class="challengeItem adv" onclick="setChallenge(9,'第9關・3洞')">第9關・3洞</button>
+        <button type="button" class="challengeItem adv" onclick="setChallenge(10,'第10關・6洞')">第10關・6洞</button>
+        <button type="button" class="challengeItem adv" onclick="setChallenge(11,'第11關・5洞')">第11關・5洞</button>
+        <button type="button" class="challengeItem adv" onclick="setChallenge(12,'第12關・12洞')">第12關・12洞</button>
+      </div>
+      <select id="challenge" style="display:none" aria-hidden="true">
+        <option value="0" selected>不顯示目標</option>
+        <option value="1">第1關・2洞</option><option value="2">第2關・4洞</option><option value="3">第3關・4洞</option><option value="4">第4關・4洞</option>
+        <option value="5">第5關・8洞</option><option value="6">第6關・8洞</option><option value="7">第7關・16洞</option><option value="8">第8關・16洞</option>
+        <option value="9">第9關・3洞</option><option value="10">第10關・6洞</option><option value="11">第11關・5洞</option><option value="12">第12關・12洞</option>
+      </select>
+    </div>
+  </div>
+  <div class="answerWrap" id="answerWrap" style="display:none">
+    <button class="answerBtn" id="answerBtn" onclick="toggleAnswer()">👀 看解答</button>
+    <div class="answerPanel" id="answerPanel"></div>
+  </div>
+  <div class="mobileHint">手機／平板會自動符合螢幕寬度。可用下方 ＋／－ 調整圖面，也可在圖面上雙指縮放；放大後可拖動畫面。</div>
+  <div class="svgToolbar">
+    <button type="button" onclick="zoomStage(-0.15)">－ 縮小</button>
+    <button type="button" onclick="fitStage()">適合螢幕</button>
+    <span class="zoomReadout" id="zoomReadout">100%</span>
+    <button type="button" onclick="zoomStage(0.15)">＋ 放大</button>
+  </div>
+  <div class="svgViewport" id="svgViewport">
+    <div class="svgCanvas" id="svgCanvas">
+      <svg id="svg" viewBox="0 0 520 520">
+        <rect x="60" y="60" width="400" height="400" fill="#f9fbfc" stroke="#d7e2e9" stroke-width="1"/>
+        <g id="grid"></g><g id="targetG"></g><g id="layersG"></g><g id="creasesG"></g><g id="animG"></g><g id="holesG"></g>
+        <rect x="60" y="60" width="400" height="400" class="outline" pointer-events="none"/>
+      </svg>
+    </div>
+  </div>
+  <div class="actions">
+    <button class="ok" onclick="unfold()">展開檢查</button>
+    <button onclick="clearPunch()">清除打洞點</button>
+  </div>
+  <div style="width:100%;border-top:1px dashed #cedae2;margin-top:10px;padding-top:9px">
+    <b>③ 展開結果</b><div class="small" id="resultMsg">在目前可見的紙張上點一下，再按「展開檢查」。</div>
+  </div>
+</section>
+</main>
+<div class="viewCounter">
+  <div class="viewCounterBox" title="此數字為本頁累計瀏覽次數，由第三方計數服務提供">
+    <a href="https://hits.sh/ericson1617.github.io/115-1-_---/advanced3.html/" target="_blank" rel="noopener noreferrer" style="text-decoration:none">
+      <img src="https://hits.sh/ericson1617.github.io/115-1-_---/advanced3.html.svg?view=total&label=%E7%B6%B2%E9%A0%81%E7%B4%AF%E8%A8%88%E7%80%8F%E8%A6%BD%E4%BA%BA%E6%95%B8&color=2f75b5&labelColor=60717d" alt="網頁累計瀏覽人數">
+    </a>
+  </div>
+</div>
+<footer><b>藝數探索-打洞模擬器｜進階版3</b></footer>
+
+<script>
+const ORG={x0:60,y0:60,x1:460,y1:460};
+const ID=[1,0,0,0,1,0];
+let layers=[{poly:[[60,60],[460,60],[460,460],[60,460]],M:ID.slice()}], creases=[], history=[], undoStack=[], punch=null, holes=[];
+let animating=false;
+
+const targets={
+1:[[6,4],[4,6]],
+2:[[2,1],[5,1],[2,6],[5,6]],
+3:[[7,0],[5,2],[2,5],[0,7]],
+4:[[0,0],[7,0],[2,2],[5,2]],
+5:[[2,0],[5,0],[0,2],[7,2],[0,5],[7,5],[2,7],[5,7]],
+6:[[5,4],[6,4],[4,5],[7,5],[4,6],[7,6],[5,7],[6,7]],
+7:[[1,0],[2,0],[5,0],[6,0],[0,1],[7,1],[0,2],[7,2],[0,5],[7,5],[0,6],[7,6],[1,7],[2,7],[5,7],[6,7]],
+8:[[3,0],[4,0],[3,1],[4,1],[0,3],[1,3],[0,4],[1,4],[6,3],[7,3],[6,4],[7,4],[3,6],[4,6],[3,7],[4,7]],
+9:[[0,0],[2,2],[4,4]],
+10:[[0,0],[2,2],[5,2],[2,5],[5,5],[0,7]],
+11:[[0,0],[2,2],[5,2],[2,5],[5,5]],
+12:[[1,0],[2,0],[0,1],[3,1],[0,2],[1,3],[6,7],[5,7],[7,6],[4,6],[7,5],[6,4]]
+};
+
+const freeTargets={
+  11:[
+    [113.75,110.00],
+    [210.00,206.25],[310.00,206.25],
+    [210.00,313.75],[310.00,313.75]
+  ],
+  12:[
+    [72.5,347.5],[147.5,347.5],[172.5,372.5],
+    [197.5,222.5],[197.5,297.5],[222.5,197.5],
+    [222.5,322.5],[247.5,447.5],[297.5,122.5],
+    [297.5,397.5],[322.5,97.5],[322.5,422.5]
+  ]
+};
+
+const bestSolutions={
+  1:{folds:1,steps:['斜線對摺：↙ 右上摺到左下','打洞：第 7 列、第 5 欄格子中心','按「展開檢查」']},
+  2:{folds:2,steps:['基本對半摺：→ 左半摺到右半','基本對半摺：↓ 上半摺到下半','打洞：第 7 列、第 6 欄格子中心','按「展開檢查」']},
+  3:{folds:2,steps:['斜線對摺：↙ 右上摺到左下','偏移斜摺：偏移 +5 格 → ↙ 右上摺到左下','打洞：第 8 列、第 1 欄格子中心','按「展開檢查」']},
+  4:{folds:2,steps:['基本對半摺：→ 左半摺到右半','偏移斜摺：偏移 −5 格 → ↙ 右上摺到左下','打洞：第 3 列、第 6 欄格子中心','按「展開檢查」']},
+  5:{folds:3,steps:['基本對半摺：→ 左半摺到右半','基本對半摺：↓ 上半摺到下半','斜線對摺：↙ 右上摺到左下','打洞：第 8 列、第 6 欄格子中心','按「展開檢查」']},
+  6:{folds:4,steps:['斜線對摺：↙ 右上摺到左下','局部摺：← 右側 1/4 向內摺','局部摺：↑ 下側 1/4 向內摺','斜線對摺：↙ 右上摺到左下','打洞：第 6 列、第 5 欄格子中心','按「展開檢查」']},
+  7:{folds:4,steps:['基本對半摺：→ 左半摺到右半','基本對半摺：↓ 上半摺到下半','斜線對摺：↙ 右上摺到左下','基本對半摺：→ 左半摺到右半','打洞：第 8 列、第 7 欄格子中心','按「展開檢查」']},
+  8:{folds:4,steps:['基本對半摺：→ 左半摺到右半','基本對半摺：↓ 上半摺到下半','斜線對摺：↙ 右上摺到左下','局部摺：↑ 下側 1/4 向內摺','打洞：第 7 列、第 5 欄格子中心','按「展開檢查」']},
+  9:{folds:3,steps:['斜線對摺：↙ 右上摺到左下','偏移斜摺：偏移 −5 格 → ↘ 左上摺到右下','偏移斜摺：偏移 −1 格 → ↘ 左上摺到右下','打洞：第 5 列、第 5 欄格子中心','按「展開檢查」']},
+  10:{folds:3,steps:['基本對半摺：↓ 上半摺到下半','偏移斜摺：偏移 +5 格 → ↙ 右上摺到左下','基本對半摺：↑ 下半摺到上半','打洞：第 8 列、第 1 欄格子中心','按「展開檢查」']},
+  11:{folds:3,steps:['偏移斜摺：偏移 −4 格 → ↘ 左上摺到右下','基本對半摺：→ 左半摺到右半','基本對半摺：↓ 上半摺到下半','打洞：自由座標 x = 310，y = 313.75','按「展開檢查」']},
+  12:{folds:5,steps:['偏移斜摺：偏移 +3 格 → ↗ 左下摺到右上','基本對半摺：↑ 下半摺到上半','偏移斜摺：偏移 −2 格 → ↙ 右上摺到左下','偏移斜摺：偏移 0 格 → ↙ 右上摺到左下','局部摺：← 右側 1/4 向內摺','打洞：自由座標 x = 197.5，y = 222.5','按「展開檢查」']}
+};
+
+function updateAnswerUI(){
+  const n=+document.getElementById('challenge').value;
+  const wrap=document.getElementById('answerWrap'), panel=document.getElementById('answerPanel'), btn=document.getElementById('answerBtn');
+  panel.classList.remove('show'); btn.textContent='👀 看解答';
+  if(!n||!bestSolutions[n]){wrap.style.display='none';panel.innerHTML='';return}
+  wrap.style.display='block';
+  const s=bestSolutions[n];
+  panel.innerHTML='<div class="answerTitle">第 '+n+' 關｜最佳可執行解</div><div class="answerMeta">最少摺紙 '+s.folds+' 次・打洞 1 次</div>'+s.steps.map((x,i)=>'<div class="answerStep"><b>'+(i+1)+'.</b> '+x+'</div>').join('');
+}
+function toggleAnswer(){
+  const panel=document.getElementById('answerPanel'), btn=document.getElementById('answerBtn');
+  const open=panel.classList.toggle('show');btn.textContent=open?'🙈 收起解答':'👀 看解答';
+}
+
+function deepState(){return {layers:layers.map(L=>({poly:L.poly.map(p=>p.slice()),M:L.M.slice()})),creases:creases.map(c=>({...c,A:c.A.slice(),B:c.B.slice()})),history:history.slice(),punch:punch&&punch.slice(),holes:holes.map(p=>p.slice())}}
+function restore(s){layers=s.layers.map(L=>({poly:L.poly.map(p=>p.slice()),M:L.M.slice()}));creases=s.creases.map(c=>({...c,A:c.A.slice(),B:c.B.slice()}));history=s.history.slice();punch=s.punch&&s.punch.slice();holes=s.holes.map(p=>p.slice());render()}
+function bbox(){let xs=[],ys=[];layers.forEach(L=>L.poly.forEach(p=>{xs.push(p[0]);ys.push(p[1])}));return {xmin:Math.min(...xs),xmax:Math.max(...xs),ymin:Math.min(...ys),ymax:Math.max(...ys)}}
+function side(A,B,P){return (B[0]-A[0])*(P[1]-A[1])-(B[1]-A[1])*(P[0]-A[0])}
+function intersect(A,B,P,Q){let s1=side(A,B,P),s2=side(A,B,Q),t=s1/(s1-s2);return [P[0]+t*(Q[0]-P[0]),P[1]+t*(Q[1]-P[1])]}
+function clip(poly,A,B,keepSign){let out=[];for(let i=0;i<poly.length;i++){let P=poly[i],Q=poly[(i+1)%poly.length],p=side(A,B,P)*keepSign>=-1e-7,q=side(A,B,Q)*keepSign>=-1e-7;if(p&&q)out.push(Q);else if(p&&!q)out.push(intersect(A,B,P,Q));else if(!p&&q){out.push(intersect(A,B,P,Q));out.push(Q)}}return dedupe(out)}
+function dedupe(poly){let o=[];poly.forEach(p=>{if(!o.length||Math.hypot(o.at(-1)[0]-p[0],o.at(-1)[1]-p[1])>.05)o.push(p)});if(o.length>2&&Math.hypot(o[0][0]-o.at(-1)[0],o[0][1]-o.at(-1)[1])<.05)o.pop();return o}
+function area(poly){let a=0;for(let i=0;i<poly.length;i++){let p=poly[i],q=poly[(i+1)%poly.length];a+=p[0]*q[1]-q[0]*p[1]}return Math.abs(a)/2}
+function reflect(P,A,B){let dx=B[0]-A[0],dy=B[1]-A[1],l2=dx*dx+dy*dy,t=((P[0]-A[0])*dx+(P[1]-A[1])*dy)/l2;let H=[A[0]+t*dx,A[1]+t*dy];return [2*H[0]-P[0],2*H[1]-P[1]]}
+function reflMatrix(A,B){let o=reflect([0,0],A,B),ex=reflect([1,0],A,B),ey=reflect([0,1],A,B);return [ex[0]-o[0],ey[0]-o[0],o[0],ex[1]-o[1],ey[1]-o[1],o[1]]}
+function compose(M,N){return [M[0]*N[0]+M[1]*N[3],M[0]*N[1]+M[1]*N[4],M[0]*N[2]+M[1]*N[5]+M[2],M[3]*N[0]+M[4]*N[3],M[3]*N[1]+M[4]*N[4],M[3]*N[2]+M[4]*N[5]+M[5]]}
+function applyM(M,p){return [M[0]*p[0]+M[1]*p[1]+M[2],M[3]*p[0]+M[4]*p[1]+M[5]]}
+function pointOnSegment(p,a,b,eps=1e-5){
+  const [x,y]=p,[x1,y1]=a,[x2,y2]=b;
+  const cross=(x-x1)*(y2-y1)-(y-y1)*(x2-x1);
+  if(Math.abs(cross)>eps)return false;
+  const dot=(x-x1)*(x-x2)+(y-y1)*(y-y2);
+  return dot<=eps;
+}
+function pointInOrOn(p,poly){
+  for(let i=0;i<poly.length;i++){
+    if(pointOnSegment(p,poly[i],poly[(i+1)%poly.length]))return true;
+  }
+  let x=p[0],y=p[1],ins=false;
+  for(let i=0,j=poly.length-1;i<poly.length;j=i++){
+    let xi=poly[i][0],yi=poly[i][1],xj=poly[j][0],yj=poly[j][1];
+    if(((yi>y)!=(yj>y))&&(x<(xj-xi)*(y-yi)/(yj-yi+1e-12)+xi))ins=!ins;
+  }
+  return ins;
+}
+function unique(pts){let o=[];pts.forEach(p=>{if(p[0]<59||p[0]>461||p[1]<59||p[1]>461)return;if(!o.some(q=>Math.hypot(q[0]-p[0],q[1]-p[1])<1))o.push(p)});return o}
+
+function animateFold(pieces,A,B,onDone){
+ const g=document.getElementById('animG'); g.innerHTML=''; animating=true;
+ document.getElementById('status').textContent='正在對摺…';
+ const start=performance.now(),dur=700;
+ function frame(now){
+   const r=Math.min(1,(now-start)/dur), t=r<.5?2*r*r:1-Math.pow(-2*r+2,2)/2;
+   g.innerHTML='';
+   pieces.forEach(poly=>{
+     const target=poly.map(p=>reflect(p,A,B));
+     const pts=poly.map((p,i)=>[p[0]+(target[i][0]-p[0])*t,p[1]+(target[i][1]-p[1])*t]);
+     g.insertAdjacentHTML('beforeend',`<polygon points="${pts.map(p=>p.join(',')).join(' ')}" fill="#bfe0f8" stroke="#2f75b5" stroke-width="2" opacity=".72"/>`);
+   });
+   if(r<1) requestAnimationFrame(frame); else {g.innerHTML='';animating=false;onDone();}
+ }
+ requestAnimationFrame(frame);
+}
+function fold(A,B,moveSign,label){
+ if(animating)return;
+ const snapshot=deepState(), R=reflMatrix(A,B), next=[], movingPieces=[];
+ layers.forEach(L=>{
+   const keep=clip(L.poly,A,B,-moveSign), mov=clip(L.poly,A,B,moveSign);
+   if(keep.length>=3&&area(keep)>.2)next.push({poly:keep,M:L.M.slice()});
+   if(mov.length>=3&&area(mov)>.2){movingPieces.push(mov);next.push({poly:mov.map(p=>reflect(p,A,B)),M:compose(L.M,R)});}
+ });
+ if(!movingPieces.length){alert("這條摺線沒有可摺動的紙張。");return}
+ animateFold(movingPieces,A,B,()=>{
+   undoStack.push(snapshot); punch=null;holes=[]; layers=next;
+   creases.push({A:A.slice(),B:B.slice(),label});history.push(label);render();
+ });
+}
+function basicFold(t){let b=bbox(),xm=(b.xmin+b.xmax)/2,ym=(b.ymin+b.ymax)/2;if(t==='L2R')fold([xm,b.ymin-50],[xm,b.ymax+50],1,'→ 左半摺到右半');if(t==='R2L')fold([xm,b.ymin-50],[xm,b.ymax+50],-1,'← 右半摺到左半');if(t==='T2B')fold([b.xmin-50,ym],[b.xmax+50,ym],-1,'↓ 上半摺到下半');if(t==='B2T')fold([b.xmin-50,ym],[b.xmax+50,ym],1,'↑ 下半摺到上半')}
+function diagFold(t){let b=bbox();if(t==='UR2LL')fold([b.xmin,b.ymin],[b.xmax,b.ymax],-1,'↙ 右上摺到左下');if(t==='LL2UR')fold([b.xmin,b.ymin],[b.xmax,b.ymax],1,'↗ 左下摺到右上');if(t==='UL2LR')fold([b.xmax,b.ymin],[b.xmin,b.ymax],1,'↘ 左上摺到右下');if(t==='LR2UL')fold([b.xmax,b.ymin],[b.xmin,b.ymax],-1,'↖ 右下摺到左上')}
+function offsetDiagFold(t){
+  const offset=Number(document.getElementById('offsetSteps').value)||0;
+  const step=offset*50;
+  const pad=140;
+  let A,B,moveSign,label;
+
+  // Fixed reference: ORIGINAL 8×8 square.
+  // Center = (260,260).
+  //
+  // ↙ / ↗ family: y - x = k.
+  //   offset 0  => k = 0 (original main diagonal).
+  //   + offset  => shift toward lower-left.
+  //   - offset  => shift toward upper-right.
+  //
+  // ↘ / ↖ family: x + y = k.
+  //   offset 0  => k = 520 (the other original main diagonal).
+  //   + offset  => shift toward lower-right.
+  //   - offset  => shift toward upper-left.
+  if(t==='UR2LL' || t==='LL2UR'){
+    const k=step;
+    A=[ORG.x0-pad, ORG.x0-pad+k];
+    B=[ORG.x1+pad, ORG.x1+pad+k];
+    moveSign=(t==='UR2LL') ? -1 : 1;
+    label=(t==='UR2LL'?'↙ 右上摺到左下':'↗ 左下摺到右上')+'（偏移 '+(offset>0?'+':'')+offset+' 格）';
+  }else{
+    const k=(ORG.x0+ORG.x1)+step; // 520 + signed offset
+    A=[ORG.x0-pad, k-(ORG.x0-pad)];
+    B=[ORG.x1+pad, k-(ORG.x1+pad)];
+    moveSign=(t==='UL2LR') ? -1 : 1;
+    label=(t==='UL2LR'?'↘ 左上摺到右下':'↖ 右下摺到左上')+'（偏移 '+(offset>0?'+':'')+offset+' 格）';
+  }
+  fold(A,B,moveSign,label);
+}
+
+function stripFold(s,f){let b=bbox();if(s==='L'){let x=b.xmin+(b.xmax-b.xmin)*f;fold([x,b.ymin-60],[x,b.ymax+60],1,'→ 左側 1/4 向內摺')}if(s==='R'){let x=b.xmax-(b.xmax-b.xmin)*f;fold([x,b.ymin-60],[x,b.ymax+60],-1,'← 右側 1/4 向內摺')}if(s==='T'){let y=b.ymin+(b.ymax-b.ymin)*f;fold([b.xmin-60,y],[b.xmax+60,y],-1,'↓ 上側 1/4 向內摺')}if(s==='B'){let y=b.ymax-(b.ymax-b.ymin)*f;fold([b.xmin-60,y],[b.xmax+60,y],1,'↑ 下側 1/4 向內摺')}}
+
+function undo(){if(!undoStack.length)return;restore(undoStack.pop())}
+function resetAll(){layers=[{poly:[[60,60],[460,60],[460,460],[60,460]],M:ID.slice()}];creases=[];history=[];undoStack=[];punch=null;holes=[];animating=false;document.getElementById('animG').innerHTML='';render()}
+function clearPunch(){punch=null;holes=[];document.getElementById('resultMsg').textContent='已清除打洞點。';render()}
+function unfold(){if(!punch){alert('請先在目前紙張上打洞。');return}let pts=[];layers.forEach(L=>{if(pointInOrOn(punch,L.poly))pts.push(applyM(L.M,punch))});holes=unique(pts);document.getElementById('resultMsg').textContent='展開後共有 '+holes.length+' 個洞。可與左上選擇的學習單目標比較。';render()}
+
+let stageZoom=1;
+let stageFitWidth=650;
+function applyStageZoom(){
+  const viewport=document.getElementById('svgViewport'), canvas=document.getElementById('svgCanvas');
+  if(!viewport||!canvas)return;
+  stageFitWidth=Math.min(650,Math.max(260,viewport.clientWidth));
+  const w=Math.round(stageFitWidth*stageZoom);
+  canvas.style.width=w+'px';
+  document.getElementById('zoomReadout').textContent=Math.round(stageZoom*100)+'%';
+}
+function zoomStage(delta,centerX=null,centerY=null){
+  const viewport=document.getElementById('svgViewport');
+  const oldZoom=stageZoom;
+  stageZoom=Math.max(.75,Math.min(2.4,Math.round((stageZoom+delta)*100)/100));
+  if(stageZoom===oldZoom){applyStageZoom();return}
+  const oldW=stageFitWidth*oldZoom;
+  const relX=centerX==null?.5:(viewport.scrollLeft+centerX)/Math.max(oldW,1);
+  const relY=centerY==null?.5:(viewport.scrollTop+centerY)/Math.max(oldW,1);
+  applyStageZoom();
+  const newW=stageFitWidth*stageZoom;
+  viewport.scrollLeft=Math.max(0,relX*newW-(centerX??viewport.clientWidth/2));
+  viewport.scrollTop=Math.max(0,relY*newW-(centerY??viewport.clientHeight/2));
+}
+function fitStage(){stageZoom=1;applyStageZoom();const v=document.getElementById('svgViewport');v.scrollLeft=0;v.scrollTop=0}
+window.addEventListener('resize',()=>{clearTimeout(window.__fitTimer);window.__fitTimer=setTimeout(applyStageZoom,80)});
+
+// Two-finger pinch zoom inside the paper viewport.
+const stageViewport=document.getElementById('svgViewport');
+let pinchStartDist=0,pinchStartZoom=1;
+stageViewport.addEventListener('touchstart',e=>{
+  if(e.touches.length===2){
+    e.preventDefault();
+    const a=e.touches[0],b=e.touches[1];
+    pinchStartDist=Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY);
+    pinchStartZoom=stageZoom;
+  }
+},{passive:false});
+stageViewport.addEventListener('touchmove',e=>{
+  if(e.touches.length===2&&pinchStartDist){
+    e.preventDefault();
+    const a=e.touches[0],b=e.touches[1];
+    const dist=Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY);
+    const target=Math.max(.75,Math.min(2.4,pinchStartZoom*dist/pinchStartDist));
+    stageZoom=Math.round(target*100)/100;
+    applyStageZoom();
+  }
+},{passive:false});
+stageViewport.addEventListener('touchend',e=>{if(e.touches.length<2)pinchStartDist=0},{passive:true});
+
+function drawGrid(){let g=document.getElementById('grid');g.innerHTML='';for(let i=1;i<8;i++){let v=60+i*50;g.insertAdjacentHTML('beforeend',`<line x1="${v}" y1="60" x2="${v}" y2="460" class="grid"/><line x1="60" y1="${v}" x2="460" y2="${v}" class="grid"/>`)}}
+function toggleChallengeMenu(){document.getElementById('challengeMenu').classList.toggle('show')}
+function setChallenge(n,label){
+  document.getElementById('challenge').value=String(n);
+  document.getElementById('challengeLabel').textContent=label;
+  const btn=document.getElementById('challengeBtn');
+  btn.classList.remove('basic','mid','adv');
+  if(n>=1&&n<=4)btn.style.background='#e9f7e8';
+  else if(n>=5&&n<=8)btn.style.background='#fff7d6';
+  else if(n>=9)btn.style.background='#fde8e8';
+  else btn.style.background='#fff';
+  document.getElementById('challengeMenu').classList.remove('show');
+  drawTarget();updateAnswerUI();
+}
+document.addEventListener('click',e=>{
+  const picker=document.querySelector('.challengePicker');
+  if(picker&&!picker.contains(e.target))document.getElementById('challengeMenu').classList.remove('show');
+});
+
+function drawTarget(){
+ let g=document.getElementById('targetG');g.innerHTML='';
+ let n=+document.getElementById('challenge').value;if(!n)return;
+ if(freeTargets[n]){
+   freeTargets[n].forEach(([x,y])=>g.insertAdjacentHTML('beforeend',`<circle cx="${x}" cy="${y}" r="9" fill="#6fb3e3" opacity=".32"/>`));
+   return;
+ }
+ (targets[n]||[]).forEach(([col,row])=>{
+   let x=60+(col+.5)*50,y=60+(row+.5)*50;
+   g.insertAdjacentHTML('beforeend',`<circle cx="${x}" cy="${y}" r="9" fill="#6fb3e3" opacity=".32"/>`);
+ });
+}
+function render(){
+ let lg=document.getElementById('layersG');lg.innerHTML='';layers.forEach((L,i)=>lg.insertAdjacentHTML('beforeend',`<polygon points="${L.poly.map(p=>p.join(',')).join(' ')}" class="layer" fill="rgba(255,253,245,${Math.min(.28+.06*i,.78)})"/>`));
+ let cg=document.getElementById('creasesG');cg.innerHTML='';creases.forEach((c,i)=>cg.insertAdjacentHTML('beforeend',`<line x1="${c.A[0]}" y1="${c.A[1]}" x2="${c.B[0]}" y2="${c.B[1]}" class="oldcrease"/>`));
+ let hg=document.getElementById('holesG');hg.innerHTML='';if(holes.length)holes.forEach(p=>hg.insertAdjacentHTML('beforeend',`<circle cx="${p[0]}" cy="${p[1]}" r="8" class="hole"/>`));else if(punch)hg.insertAdjacentHTML('beforeend',`<circle cx="${punch[0]}" cy="${punch[1]}" r="9" class="punch"/>`);
+ document.getElementById('foldCount').textContent=history.length;document.getElementById('layerCount').textContent=layers.length;document.getElementById('holeCount').textContent=holes.length;document.getElementById('history').innerHTML=history.length?history.map((x,i)=>'<div>'+(i+1)+'. '+x+'</div>').join(''):'尚未摺紙';
+ document.getElementById('quarterButtons').style.display=history.length>=1?'grid':'none';document.getElementById('quarterLocked').style.display=history.length>=1?'none':'block';
+ document.getElementById('offsetDiagBox').style.display='block';
+ let b=bbox(),ratio=(b.xmax-b.xmin)/(b.ymax-b.ymin);let sq=ratio>.88&&ratio<1.12;document.getElementById('diagButtons').style.display=sq?'grid':'none';document.getElementById('diagLocked').style.display=sq?'none':'block';
+ if(!animating)document.getElementById('status').textContent=punch?'已選擇打洞位置':'請選摺法，或直接打洞';
+}
+document.getElementById('svg').addEventListener('click',e=>{
+ if(animating)return;
+ let svg=e.currentTarget,pt=svg.createSVGPoint();pt.x=e.clientX;pt.y=e.clientY;let p0=pt.matrixTransform(svg.getScreenCTM().inverse()),p=[p0.x,p0.y];
+ if(!layers.some(L=>pointInOrOn(p,L.poly))){document.getElementById('status').textContent='請點目前有紙的區域';return}
+ punch=p;holes=[];document.getElementById('resultMsg').textContent='已打洞，按「展開檢查」查看完整結果。';render();
+});
+drawGrid();drawTarget();render();requestAnimationFrame(applyStageZoom);
+</script>
+</body></html>
