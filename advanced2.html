@@ -26,6 +26,9 @@ button:hover:not(:disabled){background:#dfeffc}button:disabled{opacity:.38;curso
 .actions{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;margin-top:7px}.tip{background:#fff8df;border-left:4px solid #f3b16e;border-radius:8px;padding:9px;margin-top:10px}
 .expertBox{background:#faf7ff;border:1px solid #dfd2f4;border-radius:10px;padding:9px}.row{display:flex;gap:7px;align-items:center;flex-wrap:wrap}
 input[type=range]{width:150px}.target{display:flex;gap:7px;align-items:center;flex-wrap:wrap}.target select{padding:7px;border-radius:8px;border:1px solid #cbd9e2}
+.target option.level-basic{background:#e9f7e8;color:#244d2b}
+.target option.level-mid{background:#fff7d6;color:#6b5312}
+.target option.level-adv{background:#fde8e8;color:#7a2f2f}
 footer{text-align:center;color:#74828c;font-size:13px;padding:0 10px 17px}
 @media(max-width:900px){.wrap{grid-template-columns:1fr}.controls{grid-template-columns:1fr 1fr}}
 </style>
@@ -125,12 +128,21 @@ footer{text-align:center;color:#74828c;font-size:13px;padding:0 10px 17px}
 
 <section class="card stage">
   <div class="stageHead"><h2>② 摺紙與打洞區</h2><span class="badge" id="status">請選摺法，或直接打洞</span></div>
-  <div class="target" style="width:100%;margin-bottom:5px"><span class="small">學習單關卡：</span>
+  <div class="target" style="width:100%;margin-bottom:5px"><span class="small">關卡：</span>
     <select id="challenge" onchange="drawTarget()">
-      <option value="0">不顯示目標</option><option value="1">第1關・2洞</option><option value="2">第2關・4洞</option>
-      <option value="3">第3關・4洞</option><option value="4">第4關・4洞</option><option value="5">第5關・8洞</option>
-      <option value="6">第6關・8洞</option><option value="7">第7關・16洞</option><option value="8">第8關・16洞</option>
-      <option value="9">第9關・3洞</option><option value="10">第10關・6洞</option><option value="11">第11關・5洞</option><option value="12">第12關・12洞</option>
+      <option value="0">不顯示目標</option>
+      <option class="level-basic" value="1">第1關・2洞</option>
+      <option class="level-basic" value="2">第2關・4洞</option>
+      <option class="level-basic" value="3">第3關・4洞</option>
+      <option class="level-basic" value="4">第4關・4洞</option>
+      <option class="level-mid" value="5">第5關・8洞</option>
+      <option class="level-mid" value="6">第6關・8洞</option>
+      <option class="level-mid" value="7">第7關・16洞</option>
+      <option class="level-mid" value="8">第8關・16洞</option>
+      <option class="level-adv" value="9">第9關・3洞</option>
+      <option class="level-adv" value="10">第10關・6洞</option>
+      <option class="level-adv" value="11">第11關・5洞</option>
+      <option class="level-adv" value="12">第12關・12洞</option>
     </select>
   </div>
   <svg id="svg" viewBox="0 0 520 520">
