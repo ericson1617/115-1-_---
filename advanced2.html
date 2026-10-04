@@ -233,7 +233,7 @@ function offsetDiagFold(t){
     const k=base + sideChoice*step;
     A=[b.xmin-80, k-(b.xmin-80)];
     B=[b.xmax+80, k-(b.xmax+80)];
-    moveSign = (t==='UL2LR') ? 1 : -1;
+    moveSign = (t==='UL2LR') ? -1 : 1;
     label=(t==='UL2LR'?'↘ 左上摺到右下':'↖ 右下摺到左上')+'（偏移 '+(step/50)+' 格）';
   }
   fold(A,B,moveSign,label);
