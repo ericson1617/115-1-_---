@@ -212,7 +212,7 @@ function basicFold(t){let b=bbox(),xm=(b.xmin+b.xmax)/2,ym=(b.ymin+b.ymax)/2;if(
 function diagFold(t){let b=bbox();if(t==='UR2LL')fold([b.xmin,b.ymin],[b.xmax,b.ymax],-1,'↙ 右上摺到左下');if(t==='LL2UR')fold([b.xmin,b.ymin],[b.xmax,b.ymax],1,'↗ 左下摺到右上');if(t==='UL2LR')fold([b.xmax,b.ymin],[b.xmin,b.ymax],1,'↘ 左上摺到右下');if(t==='LR2UL')fold([b.xmax,b.ymin],[b.xmin,b.ymax],-1,'↖ 右下摺到左上')}
 function offsetDiagFold(t){
   let b=bbox();
-  const step=(+document.getElementById('offsetSteps').value||1)*50;
+  const step=Number(document.getElementById('offsetSteps').value)*50;
   const sideChoice=+document.getElementById('offsetSide').value||-1;
   const cx=(b.xmin+b.xmax)/2, cy=(b.ymin+b.ymax)/2;
   let A,B,moveSign,label;
