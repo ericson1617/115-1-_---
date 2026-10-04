@@ -127,14 +127,14 @@ let resultHoles=[];
 let animating=false;
 
 const foldDefs={
-  L2R:{name:'左半 → 右半', axis:'V', keep:p=>p[0]>=SQ.cx-EPS, moving:p=>p[0]<=SQ.cx+EPS},
-  R2L:{name:'右半 → 左半', axis:'V', keep:p=>p[0]<=SQ.cx+EPS, moving:p=>p[0]>=SQ.cx-EPS},
-  T2B:{name:'上半 → 下半', axis:'H', keep:p=>p[1]>=SQ.cy-EPS, moving:p=>p[1]<=SQ.cy+EPS},
-  B2T:{name:'下半 → 上半', axis:'H', keep:p=>p[1]<=SQ.cy+EPS, moving:p=>p[1]>=SQ.cy-EPS},
-  UR2LL:{name:'↘ 右上 → 左下', axis:'D1', keep:p=>p[1]>=p[0]-EPS, moving:p=>p[1]<=p[0]+EPS},
-  LL2UR:{name:'↖ 左下 → 右上', axis:'D1', keep:p=>p[1]<=p[0]+EPS, moving:p=>p[1]>=p[0]-EPS},
-  UL2LR:{name:'↙ 左上 → 右下', axis:'D2', keep:p=>p[0]+p[1]>=520-EPS, moving:p=>p[0]+p[1]<=520+EPS},
-  LR2UL:{name:'↗ 右下 → 左上', axis:'D2', keep:p=>p[0]+p[1]<=520+EPS, moving:p=>p[0]+p[1]>=520-EPS},
+  L2R:{name:'→ "左半 → 右半"', axis:'V', keep:p=>p[0]>=SQ.cx-EPS, moving:p=>p[0]<=SQ.cx+EPS},
+  R2L:{name:'← "右半 → 左半"', axis:'V', keep:p=>p[0]<=SQ.cx+EPS, moving:p=>p[0]>=SQ.cx-EPS},
+  T2B:{name:'↓ "上半 → 下半"', axis:'H', keep:p=>p[1]>=SQ.cy-EPS, moving:p=>p[1]<=SQ.cy+EPS},
+  B2T:{name:'↑ "下半 → 上半"', axis:'H', keep:p=>p[1]<=SQ.cy+EPS, moving:p=>p[1]>=SQ.cy-EPS},
+  UR2LL:{name:'↙ "右上 → 左下"', axis:'D1', keep:p=>p[1]>=p[0]-EPS, moving:p=>p[1]<=p[0]+EPS},
+  LL2UR:{name:'↗ "左下 → 右上"', axis:'D1', keep:p=>p[1]<=p[0]+EPS, moving:p=>p[1]>=p[0]-EPS},
+  UL2LR:{name:'↘ "左上 → 右下"', axis:'D2', keep:p=>p[0]+p[1]>=520-EPS, moving:p=>p[0]+p[1]<=520+EPS},
+  LR2UL:{name:'↖ "右下 → 左上"', axis:'D2', keep:p=>p[0]+p[1]<=520+EPS, moving:p=>p[0]+p[1]>=520-EPS},
 };
 
 function axisValue(axis,p){
