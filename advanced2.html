@@ -39,7 +39,7 @@ footer{text-align:center;color:#74828c;font-size:13px;padding:0 10px 17px}
 <main class="wrap">
 <section class="card">
   <h2>① 選擇摺法</h2>
-  <div class="small">這一版每一次都是針對<strong>目前可見的紙張</strong>計算摺線，不再固定於原正方形中央。</div>
+  <div class="small">基本對半摺仍以<strong>目前可見的紙張</strong>為基準；偏移斜摺則固定以<strong>原始 8×8 格紙的中央斜線</strong>為偏移 0 格。</div>
 
   <div class="sub">基本對半摺</div>
   <div class="controls">
@@ -63,28 +63,28 @@ footer{text-align:center;color:#74828c;font-size:13px;padding:0 10px 17px}
   <div class="section">
     <div class="sub" style="margin-top:0">偏移斜摺 <span class="small">（完成 1 次摺紙後解鎖）</span></div>
     <div id="offsetDiagBox" class="expertBox" style="display:none">
-      <div class="small">用途：當目標洞的自然對稱軸不是穿過目前紙張正中央，而是與對角線平行時使用。</div>
+      <div class="small">用途：以原始 8×8 格紙的中央斜線為 <b>0 格</b>；正、負號表示沿同一族平行斜線往相反方向移動。</div>
       <div class="row" style="margin:8px 0">
-        <label class="small" for="offsetSteps"><b>偏移格數：</b></label>
+        <label class="small" for="offsetSteps"><b>偏移量：</b></label>
         <select id="offsetSteps">
-          <option value="0">0 格</option>
-          <option value="1">1 格</option>
-          <option value="2">2 格</option>
-          <option value="3">3 格</option>
+          <option value="-3">−3 格</option>
+          <option value="-2">−2 格</option>
+          <option value="-1">−1 格</option>
+          <option value="0" selected>0 格</option>
+          <option value="1">+1 格</option>
+          <option value="2">+2 格</option>
+          <option value="3">+3 格</option>
         </select>
+      </div>
+      <div class="small" style="margin-bottom:8px">
+        ↙／↗：正值往左下平移、負值往右上平移；　
+        ↘／↖：正值往右下平移、負值往左上平移。
       </div>
       <div class="controls">
         <button class="special" onclick="offsetDiagFold('UR2LL')">↙ 右上摺到左下</button>
         <button class="special" onclick="offsetDiagFold('LL2UR')">↗ 左下摺到右上</button>
         <button class="special" onclick="offsetDiagFold('UL2LR')">↘ 左上摺到右下</button>
         <button class="special" onclick="offsetDiagFold('LR2UL')">↖ 右下摺到左上</button>
-      </div>
-      <div class="row" style="margin-top:8px">
-        <label class="small" for="offsetSide"><b>摺線偏向：</b></label>
-        <select id="offsetSide">
-          <option value="-1">方向箭頭起點側</option>
-          <option value="1">方向箭頭終點側</option>
-        </select>
       </div>
     </div>
     <div id="offsetDiagLocked" class="locked">先完成一次摺紙，偏移斜摺才會出現。</div>
@@ -211,31 +211,35 @@ function fold(A,B,moveSign,label){
 function basicFold(t){let b=bbox(),xm=(b.xmin+b.xmax)/2,ym=(b.ymin+b.ymax)/2;if(t==='L2R')fold([xm,b.ymin-50],[xm,b.ymax+50],1,'→ 左半摺到右半');if(t==='R2L')fold([xm,b.ymin-50],[xm,b.ymax+50],-1,'← 右半摺到左半');if(t==='T2B')fold([b.xmin-50,ym],[b.xmax+50,ym],-1,'↓ 上半摺到下半');if(t==='B2T')fold([b.xmin-50,ym],[b.xmax+50,ym],1,'↑ 下半摺到上半')}
 function diagFold(t){let b=bbox();if(t==='UR2LL')fold([b.xmin,b.ymin],[b.xmax,b.ymax],-1,'↙ 右上摺到左下');if(t==='LL2UR')fold([b.xmin,b.ymin],[b.xmax,b.ymax],1,'↗ 左下摺到右上');if(t==='UL2LR')fold([b.xmax,b.ymin],[b.xmin,b.ymax],1,'↘ 左上摺到右下');if(t==='LR2UL')fold([b.xmax,b.ymin],[b.xmin,b.ymax],-1,'↖ 右下摺到左上')}
 function offsetDiagFold(t){
-  let b=bbox();
-  const step=Number(document.getElementById('offsetSteps').value)*50;
-  const sideChoice=+document.getElementById('offsetSide').value||-1;
-  const cx=(b.xmin+b.xmax)/2, cy=(b.ymin+b.ymax)/2;
+  const offset=Number(document.getElementById('offsetSteps').value)||0;
+  const step=offset*50;
+  const pad=140;
   let A,B,moveSign,label;
 
-  // Two diagonal families:
-  // D1: y-x = constant (↘ / ↖ family)
-  // D2: x+y = constant (↙ / ↗ family)
+  // Fixed reference: ORIGINAL 8×8 square.
+  // Center = (260,260).
+  //
+  // ↙ / ↗ family: y - x = k.
+  //   offset 0  => k = 0 (original main diagonal).
+  //   + offset  => shift toward lower-left.
+  //   - offset  => shift toward upper-right.
+  //
+  // ↘ / ↖ family: x + y = k.
+  //   offset 0  => k = 520 (the other original main diagonal).
+  //   + offset  => shift toward lower-right.
+  //   - offset  => shift toward upper-left.
   if(t==='UR2LL' || t==='LL2UR'){
-    // Main D1 through current paper center; shift it parallel by whole grid cells.
-    const base=cy-cx;
-    const k=base + sideChoice*step;
-    A=[b.xmin-80, b.xmin-80+k];
-    B=[b.xmax+80, b.xmax+80+k];
-    moveSign = (t==='UR2LL') ? -1 : 1;
-    label=(t==='UR2LL'?'↙ 右上摺到左下':'↗ 左下摺到右上')+'（偏移 '+(step/50)+' 格）';
+    const k=step;
+    A=[ORG.x0-pad, ORG.x0-pad+k];
+    B=[ORG.x1+pad, ORG.x1+pad+k];
+    moveSign=(t==='UR2LL') ? -1 : 1;
+    label=(t==='UR2LL'?'↙ 右上摺到左下':'↗ 左下摺到右上')+'（偏移 '+(offset>0?'+':'')+offset+' 格）';
   }else{
-    // Main D2 through current paper center; shift it parallel by whole grid cells.
-    const base=cx+cy;
-    const k=base + sideChoice*step;
-    A=[b.xmin-80, k-(b.xmin-80)];
-    B=[b.xmax+80, k-(b.xmax+80)];
-    moveSign = (t==='UL2LR') ? -1 : 1;
-    label=(t==='UL2LR'?'↘ 左上摺到右下':'↖ 右下摺到左上')+'（偏移 '+(step/50)+' 格）';
+    const k=(ORG.x0+ORG.x1)+step; // 520 + signed offset
+    A=[ORG.x0-pad, k-(ORG.x0-pad)];
+    B=[ORG.x1+pad, k-(ORG.x1+pad)];
+    moveSign=(t==='UL2LR') ? -1 : 1;
+    label=(t==='UL2LR'?'↘ 左上摺到右下':'↖ 右下摺到左上')+'（偏移 '+(offset>0?'+':'')+offset+' 格）';
   }
   fold(A,B,moveSign,label);
 }
