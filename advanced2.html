@@ -29,6 +29,7 @@ input[type=range]{width:150px}.target{display:flex;gap:7px;align-items:center;fl
 .target option.level-basic{background:#e9f7e8;color:#244d2b}
 .target option.level-mid{background:#fff7d6;color:#6b5312}
 .target option.level-adv{background:#fde8e8;color:#7a2f2f}
+.answerWrap{width:100%;margin:7px 0 4px}.answerBtn{background:#eef7ff;border-color:#9fc5e2;color:#245f97;min-height:36px;padding:7px 13px;font-weight:700}.answerPanel{display:none;margin-top:7px;width:100%;background:#f8fbfd;border:1px solid #d4e4ee;border-radius:10px;padding:10px 12px;text-align:left;max-height:190px;overflow-y:auto}.answerPanel.show{display:block}.answerTitle{font-weight:800;color:#245f97;margin-bottom:5px}.answerMeta{font-size:12.5px;color:#687983;margin-bottom:6px}.answerStep{font-size:13.5px;line-height:1.6;padding:3px 0;border-bottom:1px dashed #e1e9ee}.answerStep:last-child{border-bottom:0}.viewCounter{max-width:1240px;margin:0 auto 10px;padding:0 14px;text-align:center}.viewCounterBox{display:inline-flex;align-items:center;gap:8px;background:#fff;border:1px solid #d9e6ef;border-radius:999px;padding:7px 12px;box-shadow:0 3px 10px #244b6a10}.viewCounter img{display:block;height:22px}
 footer{text-align:center;color:#74828c;font-size:13px;padding:0 10px 17px}
 @media(max-width:900px){.wrap{grid-template-columns:1fr}.controls{grid-template-columns:1fr 1fr}}
 </style>
@@ -129,7 +130,7 @@ footer{text-align:center;color:#74828c;font-size:13px;padding:0 10px 17px}
 <section class="card stage">
   <div class="stageHead"><h2>② 摺紙與打洞區</h2><span class="badge" id="status">請選摺法，或直接打洞</span></div>
   <div class="target" style="width:100%;margin-bottom:5px"><span class="small">關卡：</span>
-    <select id="challenge" onchange="drawTarget()">
+    <select id="challenge" onchange="drawTarget();updateAnswerUI()">
       <option value="0">不顯示目標</option>
       <option class="level-basic" value="1">第1關・2洞</option>
       <option class="level-basic" value="2">第2關・4洞</option>
@@ -145,6 +146,10 @@ footer{text-align:center;color:#74828c;font-size:13px;padding:0 10px 17px}
       <option class="level-adv" value="12">第12關・12洞</option>
     </select>
   </div>
+  <div class="answerWrap" id="answerWrap" style="display:none">
+    <button class="answerBtn" id="answerBtn" onclick="toggleAnswer()">👀 看解答</button>
+    <div class="answerPanel" id="answerPanel"></div>
+  </div>
   <svg id="svg" viewBox="0 0 520 520">
     <rect x="60" y="60" width="400" height="400" fill="#f9fbfc" stroke="#d7e2e9" stroke-width="1"/>
     <g id="grid"></g><g id="targetG"></g><g id="layersG"></g><g id="creasesG"></g><g id="animG"></g><g id="holesG"></g>
@@ -159,6 +164,13 @@ footer{text-align:center;color:#74828c;font-size:13px;padding:0 10px 17px}
   </div>
 </section>
 </main>
+<div class="viewCounter">
+  <div class="viewCounterBox" title="此數字為本頁累計瀏覽次數，由第三方計數服務提供">
+    <a href="https://hits.sh/ericson1617.github.io/115-1-_---/advanced2.html/" target="_blank" rel="noopener noreferrer" style="text-decoration:none">
+      <img src="https://hits.sh/ericson1617.github.io/115-1-_---/advanced2.html.svg?view=total&label=%E7%B6%B2%E9%A0%81%E7%B4%AF%E8%A8%88%E7%80%8F%E8%A6%BD%E4%BA%BA%E6%95%B8&color=2f75b5&labelColor=60717d" alt="網頁累計瀏覽人數">
+    </a>
+  </div>
+</div>
 <footer><b>藝數探索-打洞模擬器｜進階版2</b></footer>
 
 <script>
@@ -195,6 +207,35 @@ const freeTargets={
     [297.5,397.5],[322.5,97.5],[322.5,422.5]
   ]
 };
+
+const bestSolutions={
+  1:{folds:1,steps:['斜線對摺：↙ 右上摺到左下','打洞：第 7 列、第 5 欄格子中心','按「展開檢查」']},
+  2:{folds:2,steps:['基本對半摺：→ 左半摺到右半','基本對半摺：↓ 上半摺到下半','打洞：第 7 列、第 6 欄格子中心','按「展開檢查」']},
+  3:{folds:2,steps:['斜線對摺：↙ 右上摺到左下','偏移斜摺：偏移 +5 格 → ↙ 右上摺到左下','打洞：第 8 列、第 1 欄格子中心','按「展開檢查」']},
+  4:{folds:2,steps:['基本對半摺：→ 左半摺到右半','偏移斜摺：偏移 −5 格 → ↙ 右上摺到左下','打洞：第 3 列、第 6 欄格子中心','按「展開檢查」']},
+  5:{folds:3,steps:['基本對半摺：→ 左半摺到右半','基本對半摺：↓ 上半摺到下半','斜線對摺：↙ 右上摺到左下','打洞：第 8 列、第 6 欄格子中心','按「展開檢查」']},
+  6:{folds:4,steps:['斜線對摺：↙ 右上摺到左下','局部摺：← 右側 1/4 向內摺','局部摺：↑ 下側 1/4 向內摺','斜線對摺：↙ 右上摺到左下','打洞：第 6 列、第 5 欄格子中心','按「展開檢查」']},
+  7:{folds:4,steps:['基本對半摺：→ 左半摺到右半','基本對半摺：↓ 上半摺到下半','斜線對摺：↙ 右上摺到左下','基本對半摺：→ 左半摺到右半','打洞：第 8 列、第 7 欄格子中心','按「展開檢查」']},
+  8:{folds:4,steps:['基本對半摺：→ 左半摺到右半','基本對半摺：↓ 上半摺到下半','斜線對摺：↙ 右上摺到左下','局部摺：↑ 下側 1/4 向內摺','打洞：第 7 列、第 5 欄格子中心','按「展開檢查」']},
+  9:{folds:3,steps:['斜線對摺：↙ 右上摺到左下','偏移斜摺：偏移 −5 格 → ↘ 左上摺到右下','偏移斜摺：偏移 −1 格 → ↘ 左上摺到右下','打洞：第 5 列、第 5 欄格子中心','按「展開檢查」']},
+  10:{folds:3,steps:['基本對半摺：↓ 上半摺到下半','偏移斜摺：偏移 +5 格 → ↙ 右上摺到左下','基本對半摺：↑ 下半摺到上半','打洞：第 8 列、第 1 欄格子中心','按「展開檢查」']},
+  11:{folds:3,steps:['偏移斜摺：偏移 −4 格 → ↘ 左上摺到右下','基本對半摺：→ 左半摺到右半','基本對半摺：↓ 上半摺到下半','打洞：自由座標 x = 310，y = 313.75','按「展開檢查」']},
+  12:{folds:5,steps:['偏移斜摺：偏移 +3 格 → ↗ 左下摺到右上','基本對半摺：↑ 下半摺到上半','偏移斜摺：偏移 −2 格 → ↙ 右上摺到左下','偏移斜摺：偏移 0 格 → ↙ 右上摺到左下','局部摺：← 右側 1/4 向內摺','打洞：自由座標 x = 197.5，y = 222.5','按「展開檢查」']}
+};
+
+function updateAnswerUI(){
+  const n=+document.getElementById('challenge').value;
+  const wrap=document.getElementById('answerWrap'), panel=document.getElementById('answerPanel'), btn=document.getElementById('answerBtn');
+  panel.classList.remove('show'); btn.textContent='👀 看解答';
+  if(!n||!bestSolutions[n]){wrap.style.display='none';panel.innerHTML='';return}
+  wrap.style.display='block';
+  const s=bestSolutions[n];
+  panel.innerHTML='<div class="answerTitle">第 '+n+' 關｜最佳可執行解</div><div class="answerMeta">最少摺紙 '+s.folds+' 次・打洞 1 次</div>'+s.steps.map((x,i)=>'<div class="answerStep"><b>'+(i+1)+'.</b> '+x+'</div>').join('');
+}
+function toggleAnswer(){
+  const panel=document.getElementById('answerPanel'), btn=document.getElementById('answerBtn');
+  const open=panel.classList.toggle('show');btn.textContent=open?'🙈 收起解答':'👀 看解答';
+}
 
 function deepState(){return {layers:layers.map(L=>({poly:L.poly.map(p=>p.slice()),M:L.M.slice()})),creases:creases.map(c=>({...c,A:c.A.slice(),B:c.B.slice()})),history:history.slice(),punch:punch&&punch.slice(),holes:holes.map(p=>p.slice())}}
 function restore(s){layers=s.layers.map(L=>({poly:L.poly.map(p=>p.slice()),M:L.M.slice()}));creases=s.creases.map(c=>({...c,A:c.A.slice(),B:c.B.slice()}));history=s.history.slice();punch=s.punch&&s.punch.slice();holes=s.holes.map(p=>p.slice());render()}
