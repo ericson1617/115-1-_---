@@ -1,0 +1,321 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>ericson1617｜線對稱打洞模擬器</title>
+<style>
+:root{
+  --blue:#2f75b5; --blue2:#eaf5ff; --ink:#203040; --gold:#f4b183;
+  --green:#3c9d68; --red:#d85a5a; --paper:#fffdf5; --grid:#c9d6df;
+}
+*{box-sizing:border-box}
+body{font-family:"Microsoft JhengHei","Noto Sans TC",system-ui,sans-serif;margin:0;background:#f5f9fc;color:var(--ink)}
+header{background:linear-gradient(135deg,#245f97,#3887c7);color:#fff;padding:16px 20px;box-shadow:0 2px 8px #0002}
+header .head{max-width:1180px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+h1{margin:0;font-size:clamp(22px,3vw,31px)}
+.brand{font-size:13px;background:#ffffff22;border:1px solid #ffffff55;border-radius:999px;padding:7px 11px}
+.wrap{max-width:1180px;margin:18px auto;padding:0 16px;display:grid;grid-template-columns:380px 1fr;gap:18px}
+.card{background:white;border:1px solid #dce9f3;border-radius:16px;padding:16px;box-shadow:0 5px 18px #244b6a12}
+h2{margin:0 0 10px;font-size:20px}.small{font-size:14px;color:#5b6872;line-height:1.65}.muted{color:#7a8790}
+.controls{display:grid;grid-template-columns:1fr 1fr;gap:8px}.subhead{font-weight:800;margin:16px 0 8px;color:#315d80}
+button{font:inherit;border:1px solid #9ec3df;background:#eff8ff;color:#174e78;padding:10px 11px;border-radius:11px;cursor:pointer;transition:.18s;min-height:44px}
+button:hover:not(:disabled){transform:translateY(-1px);background:#deeffd;box-shadow:0 3px 8px #0001}
+button:disabled{opacity:.42;cursor:not-allowed}.diag{background:#fff8e9;border-color:#e6bd78;color:#765013}.actionbar{display:flex;flex-wrap:wrap;gap:8px;margin-top:13px}.undo{background:#f5f1ff;border-color:#b9a9df;color:#5a438b}.reset{background:#fff0f0;border-color:#e5a2a2;color:#8c3838}.check{background:#e9f8ef;border-color:#91cba7;color:#246b42;font-weight:800}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}.stat{background:#f6f9fb;border-radius:11px;padding:9px;text-align:center;border:1px solid #e5edf2}.stat b{display:block;font-size:20px;color:#245f97}.history{background:#f7f7f7;border-radius:10px;padding:9px;min-height:48px;line-height:1.6}.tip{background:#fff8df;border-left:5px solid var(--gold);border-radius:8px;padding:10px;margin-top:12px}
+.stage{position:relative;display:flex;flex-direction:column;align-items:center}.stageTitle{width:100%;display:flex;justify-content:space-between;gap:8px;align-items:center;margin-bottom:8px}.badge{font-size:13px;border-radius:999px;background:#edf6fd;padding:6px 9px;color:#32698f}
+#paperSvg{width:min(100%,620px);height:auto;display:block;touch-action:none;user-select:none}.paper-shadow{filter:drop-shadow(0 7px 9px #0002)}
+.axis{stroke:#e45454;stroke-width:3;stroke-dasharray:9 7;opacity:.95}.axisLabel{font-size:14px;fill:#b73939;font-weight:700}.hole{fill:#222;stroke:#fff;stroke-width:2}.previewHole{fill:#f1a23a;stroke:white;stroke-width:3}.originalBorder{fill:none;stroke:#607b8d;stroke-width:3}.gridLine{stroke:var(--grid);stroke-width:1;opacity:.62}.moving{fill:#bfe0f8;stroke:#2f75b5;stroke-width:2;opacity:.72}.foldedPaper{fill:var(--paper);stroke:#7d96a7;stroke-width:3}.dimmed{fill:#dce7ee;opacity:.28}
+.resultWrap{margin-top:12px;width:100%;border-top:1px dashed #cbd9e2;padding-top:12px}.resultRow{display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap}.resultText{flex:1;min-width:210px}.legend{display:flex;gap:13px;flex-wrap:wrap;font-size:13px;color:#65727c}.dotLegend{display:inline-block;width:12px;height:12px;border-radius:50%;background:#222;margin-right:5px;vertical-align:-1px}.axisLegend{display:inline-block;width:24px;border-top:3px dashed #e45454;margin-right:5px;vertical-align:3px}
+footer{max-width:1180px;margin:0 auto 20px;padding:0 16px;color:#74828c;font-size:13px;text-align:center}
+@media(max-width:900px){.wrap{grid-template-columns:1fr}.controls{grid-template-columns:1fr 1fr}}
+@media(max-width:480px){.controls{grid-template-columns:1fr}.stats{grid-template-columns:1fr 1fr 1fr}.card{padding:13px}}
+</style>
+</head>
+<body>
+<header><div class="head">
+  <h1>線對稱打洞模擬器</h1>
+  <div class="brand">ericson1617 • symmetry hole‑punch lab</div>
+</div></header>
+
+<main class="wrap">
+  <section class="card">
+    <h2>① 選擇對摺方向</h2>
+    <p class="small">每按一次就會看到「對摺動畫」。紅色虛線是這次的對稱軸；完成後可繼續摺，或按「回到上一步」。</p>
+
+    <div class="subhead">直線對稱</div>
+    <div class="controls">
+      <button onclick="doFold('L2R')">左半 → 右半</button>
+      <button onclick="doFold('R2L')">右半 → 左半</button>
+      <button onclick="doFold('T2B')">上半 → 下半</button>
+      <button onclick="doFold('B2T')">下半 → 上半</button>
+    </div>
+
+    <div class="subhead">斜線對稱</div>
+    <div class="controls">
+      <button class="diag" onclick="doFold('UR2LL')">↘ 右上 → 左下</button>
+      <button class="diag" onclick="doFold('LL2UR')">↖ 左下 → 右上</button>
+      <button class="diag" onclick="doFold('UL2LR')">↙ 左上 → 右下</button>
+      <button class="diag" onclick="doFold('LR2UL')">↗ 右下 → 左上</button>
+    </div>
+
+    <div class="actionbar">
+      <button id="undoBtn" class="undo" onclick="undoFold()">↶ 回到上一步</button>
+      <button class="reset" onclick="resetAll()">重新開始</button>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><span>已摺</span><b id="foldCount">0</b><span>次</span></div>
+      <div class="stat"><span>概念層數</span><b id="layerCount">1</b><span>層</span></div>
+      <div class="stat"><span>展開洞數</span><b id="holeCount">0</b><span>個</span></div>
+    </div>
+
+    <div class="subhead">摺紙紀錄</div>
+    <div id="history" class="history small">尚未摺紙</div>
+    <div class="tip small"><b>觀察重點：</b>每摺一次，就多出一條「鏡射」規則。展開時，洞會依序跨過這些對稱軸出現在對稱位置。</div>
+  </section>
+
+  <section class="card stage">
+    <div class="stageTitle">
+      <div><h2 style="display:inline">② 在摺好的紙上打洞</h2></div>
+      <span id="statusBadge" class="badge">請先選擇對摺方向，或直接打洞</span>
+    </div>
+    <p class="small" style="width:100%;margin-top:0">點一下目前可見的紙張區域，就會放上一個橘色打洞點；再按「展開檢查」。</p>
+
+    <svg id="paperSvg" viewBox="0 0 520 520" aria-label="線對稱摺紙與打洞模擬區">
+      <defs>
+        <clipPath id="paperClip"><polygon id="paperClipPoly" points="60,60 460,60 460,460 60,460"/></clipPath>
+      </defs>
+      <rect x="60" y="60" width="400" height="400" rx="3" fill="#f4f7f9" class="paper-shadow"/>
+      <g id="paperGroup" clip-path="url(#paperClip)">
+        <rect x="60" y="60" width="400" height="400" class="foldedPaper"/>
+        <g id="gridLines"></g>
+      </g>
+      <polygon id="currentOutline" points="60,60 460,60 460,460 60,460" fill="none" stroke="#668295" stroke-width="3"/>
+      <g id="axisGroup"></g>
+      <polygon id="movingPiece" points="" class="moving" style="display:none"/>
+      <g id="punchGroup"></g>
+      <rect x="60" y="60" width="400" height="400" class="originalBorder" pointer-events="none"/>
+    </svg>
+
+    <div class="actionbar" style="justify-content:center">
+      <button id="unfoldBtn" class="check" onclick="unfoldCheck()">展開檢查</button>
+      <button onclick="clearPunch()">清除打洞點</button>
+    </div>
+
+    <div class="resultWrap">
+      <div class="resultRow">
+        <div class="resultText">
+          <b>③ 展開結果</b>
+          <div id="resultMsg" class="small">打洞後按「展開檢查」，黑點會顯示完整展開後的位置。</div>
+        </div>
+        <div class="legend"><span><i class="dotLegend"></i>展開後的洞</span><span><i class="axisLegend"></i>對稱軸</span></div>
+      </div>
+    </div>
+  </section>
+</main>
+<footer>網站識別：<b>ericson1617</b> ｜ 建議發布網址：<code>ericson1617-symmetry-holepunch</code></footer>
+
+<script>
+const SQ={x0:60,y0:60,x1:460,y1:460,cx:260,cy:260};
+const EPS=0.01;
+let currentPoly = [[60,60],[460,60],[460,460],[60,460]];
+let folds=[];
+let undoStack=[];
+let punch=null;
+let resultHoles=[];
+let animating=false;
+
+const foldDefs={
+  L2R:{name:'左半 → 右半', axis:'V', keep:p=>p[0]>=SQ.cx-EPS, moving:p=>p[0]<=SQ.cx+EPS},
+  R2L:{name:'右半 → 左半', axis:'V', keep:p=>p[0]<=SQ.cx+EPS, moving:p=>p[0]>=SQ.cx-EPS},
+  T2B:{name:'上半 → 下半', axis:'H', keep:p=>p[1]>=SQ.cy-EPS, moving:p=>p[1]<=SQ.cy+EPS},
+  B2T:{name:'下半 → 上半', axis:'H', keep:p=>p[1]<=SQ.cy+EPS, moving:p=>p[1]>=SQ.cy-EPS},
+  UR2LL:{name:'↘ 右上 → 左下', axis:'D1', keep:p=>p[1]>=p[0]-EPS, moving:p=>p[1]<=p[0]+EPS},
+  LL2UR:{name:'↖ 左下 → 右上', axis:'D1', keep:p=>p[1]<=p[0]+EPS, moving:p=>p[1]>=p[0]-EPS},
+  UL2LR:{name:'↙ 左上 → 右下', axis:'D2', keep:p=>p[0]+p[1]>=520-EPS, moving:p=>p[0]+p[1]<=520+EPS},
+  LR2UL:{name:'↗ 右下 → 左上', axis:'D2', keep:p=>p[0]+p[1]<=520+EPS, moving:p=>p[0]+p[1]>=520-EPS},
+};
+
+function axisValue(axis,p){
+  if(axis==='V') return p[0]-SQ.cx;
+  if(axis==='H') return p[1]-SQ.cy;
+  if(axis==='D1') return p[1]-p[0];
+  if(axis==='D2') return p[0]+p[1]-520;
+}
+function reflectPoint(axis,p){
+  const [x,y]=p;
+  if(axis==='V') return [2*SQ.cx-x,y];
+  if(axis==='H') return [x,2*SQ.cy-y];
+  if(axis==='D1') return [y,x];
+  if(axis==='D2') return [520-y,520-x];
+  return [x,y];
+}
+function insideOriginal(p){return p[0]>=60-EPS&&p[0]<=460+EPS&&p[1]>=60-EPS&&p[1]<=460+EPS}
+
+function clipPoly(poly, insideFn, axis){
+  if(!poly.length) return [];
+  const out=[];
+  for(let i=0;i<poly.length;i++){
+    const A=poly[i], B=poly[(i+1)%poly.length];
+    const inA=insideFn(A), inB=insideFn(B);
+    if(inA && inB){out.push(B)}
+    else if(inA && !inB){out.push(intersectionWithAxis(A,B,axis))}
+    else if(!inA && inB){out.push(intersectionWithAxis(A,B,axis));out.push(B)}
+  }
+  return dedupePoly(out);
+}
+function intersectionWithAxis(A,B,axis){
+  let fA=axisValue(axis,A), fB=axisValue(axis,B);
+  let t=Math.abs(fA-fB)<1e-9?0:fA/(fA-fB);
+  return [A[0]+t*(B[0]-A[0]), A[1]+t*(B[1]-A[1])];
+}
+function dedupePoly(poly){
+  const out=[];
+  for(const p of poly){
+    if(!out.length || Math.hypot(out[out.length-1][0]-p[0],out[out.length-1][1]-p[1])>.2) out.push(p);
+  }
+  if(out.length>1 && Math.hypot(out[0][0]-out.at(-1)[0],out[0][1]-out.at(-1)[1])<.2) out.pop();
+  return out;
+}
+function polyString(poly){return poly.map(p=>`${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(' ')}
+function pointInPoly(point,vs){
+  const [x,y]=point; let inside=false;
+  for(let i=0,j=vs.length-1;i<vs.length;j=i++){
+    const xi=vs[i][0], yi=vs[i][1], xj=vs[j][0], yj=vs[j][1];
+    const intersect=((yi>y)!=(yj>y)) && (x < (xj-xi)*(y-yi)/(yj-yi+1e-12)+xi);
+    if(intersect) inside=!inside;
+  }
+  return inside;
+}
+
+function drawGrid(){
+  const g=document.getElementById('gridLines'); g.innerHTML='';
+  for(let i=1;i<8;i++){
+    const x=60+i*50, y=60+i*50;
+    g.insertAdjacentHTML('beforeend',`<line x1="${x}" y1="60" x2="${x}" y2="460" class="gridLine"/><line x1="60" y1="${y}" x2="460" y2="${y}" class="gridLine"/>`);
+  }
+}
+function drawAxes(){
+  const g=document.getElementById('axisGroup'); g.innerHTML='';
+  const seen=[];
+  folds.forEach((f,i)=>{
+    let line,label;
+    if(f.axis==='V') line=`<line x1="260" y1="60" x2="260" y2="460" class="axis"/>`;
+    if(f.axis==='H') line=`<line x1="60" y1="260" x2="460" y2="260" class="axis"/>`;
+    if(f.axis==='D1') line=`<line x1="60" y1="60" x2="460" y2="460" class="axis"/>`;
+    if(f.axis==='D2') line=`<line x1="60" y1="460" x2="460" y2="60" class="axis"/>`;
+    if(!seen.includes(f.axis)){g.insertAdjacentHTML('beforeend',line);seen.push(f.axis)}
+  });
+}
+function drawPunches(showResult=false){
+  const g=document.getElementById('punchGroup'); g.innerHTML='';
+  if(showResult){
+    resultHoles.forEach(p=>g.insertAdjacentHTML('beforeend',`<circle cx="${p[0]}" cy="${p[1]}" r="9" class="hole"/>`));
+  } else if(punch){
+    g.insertAdjacentHTML('beforeend',`<circle cx="${punch[0]}" cy="${punch[1]}" r="10" class="previewHole"/>`);
+  }
+}
+function render(showResult=false){
+  document.getElementById('paperClipPoly').setAttribute('points',polyString(currentPoly));
+  document.getElementById('currentOutline').setAttribute('points',polyString(currentPoly));
+  document.getElementById('foldCount').textContent=folds.length;
+  document.getElementById('layerCount').textContent=Math.pow(2,folds.length);
+  document.getElementById('holeCount').textContent=showResult?resultHoles.length:0;
+  document.getElementById('history').textContent=folds.length?folds.map((f,i)=>`${i+1}. ${f.name}`).join(' → '):'尚未摺紙';
+  document.getElementById('undoBtn').disabled=undoStack.length===0 || animating;
+  document.querySelectorAll('button').forEach(b=>{ if(animating && !b.classList.contains('reset')) b.disabled=true; });
+  drawAxes(); drawPunches(showResult);
+}
+
+function setAnimating(v){
+  animating=v;
+  document.querySelectorAll('button').forEach(b=>b.disabled=v);
+  document.getElementById('undoBtn').disabled=v || undoStack.length===0;
+  document.getElementById('statusBadge').textContent=v?'正在對摺…':'點紙張可打洞';
+}
+
+function doFold(type){
+  if(animating) return;
+  const def=foldDefs[type];
+  const before=currentPoly.map(p=>[...p]);
+  const movingPoly=clipPoly(before,def.moving,def.axis);
+  const keptPoly=clipPoly(before,def.keep,def.axis);
+  if(keptPoly.length<3 || movingPoly.length<3){
+    alert('目前摺好的紙張已沒有足夠區域可沿這條線繼續對摺，請回到上一步或選另一條對稱線。'); return;
+  }
+  undoStack.push({poly:before,folds:folds.map(f=>({...f})),punch:punch?[...punch]:null,result:resultHoles.map(p=>[...p])});
+  punch=null; resultHoles=[];
+  animateFold(movingPoly,def.axis,()=>{
+    currentPoly=keptPoly;
+    folds.push({type,name:def.name,axis:def.axis});
+    setAnimating(false); render(false);
+  });
+}
+function animateFold(poly,axis,onDone){
+  setAnimating(true);
+  const elem=document.getElementById('movingPiece');
+  elem.style.display='block';
+  const reflected=poly.map(p=>reflectPoint(axis,p));
+  const start=performance.now(),dur=760;
+  function frame(now){
+    const raw=Math.min(1,(now-start)/dur);
+    const t=raw<.5?2*raw*raw:1-Math.pow(-2*raw+2,2)/2;
+    const pts=poly.map((p,i)=>[p[0]+(reflected[i][0]-p[0])*t,p[1]+(reflected[i][1]-p[1])*t]);
+    elem.setAttribute('points',polyString(pts));
+    elem.style.opacity=String(.82-.25*Math.sin(Math.PI*t));
+    if(raw<1) requestAnimationFrame(frame); else {elem.style.display='none';onDone();}
+  }
+  requestAnimationFrame(frame);
+}
+
+function undoFold(){
+  if(animating || !undoStack.length) return;
+  const s=undoStack.pop();
+  currentPoly=s.poly.map(p=>[...p]); folds=s.folds.map(f=>({...f})); punch=s.punch?[...s.punch]:null; resultHoles=s.result.map(p=>[...p]);
+  document.getElementById('resultMsg').textContent='已回到上一步，你可以重新選擇對摺方式。';
+  render(false);
+}
+function resetAll(){
+  if(animating) location.reload();
+  currentPoly=[[60,60],[460,60],[460,460],[60,460]];folds=[];undoStack=[];punch=null;resultHoles=[];
+  document.getElementById('resultMsg').textContent='打洞後按「展開檢查」，黑點會顯示完整展開後的位置。';
+  document.getElementById('statusBadge').textContent='請先選擇對摺方向，或直接打洞';
+  render(false);
+}
+function clearPunch(){punch=null;resultHoles=[];document.getElementById('resultMsg').textContent='已清除打洞點。';render(false)}
+
+function uniquePts(pts){
+  const out=[];
+  pts.forEach(p=>{
+    if(!insideOriginal(p)) return;
+    if(!out.some(q=>Math.hypot(q[0]-p[0],q[1]-p[1])<1.2)) out.push(p);
+  });
+  return out;
+}
+function unfoldCheck(){
+  if(!punch){alert('請先在目前紙張區域點一下打洞。');return}
+  let pts=[[...punch]];
+  for(let i=folds.length-1;i>=0;i--){
+    const axis=folds[i].axis;
+    pts=uniquePts(pts.concat(pts.map(p=>reflectPoint(axis,p))));
+  }
+  resultHoles=uniquePts(pts);
+  document.getElementById('resultMsg').textContent=`展開後共有 ${resultHoles.length} 個洞。觀察它們是否成對出現在各條紅色對稱軸的兩側。`;
+  render(true);
+}
+
+document.getElementById('paperSvg').addEventListener('pointerdown',e=>{
+  if(animating) return;
+  const svg=e.currentTarget, pt=svg.createSVGPoint(); pt.x=e.clientX;pt.y=e.clientY;
+  const loc=pt.matrixTransform(svg.getScreenCTM().inverse()); const p=[loc.x,loc.y];
+  if(!pointInPoly(p,currentPoly)){
+    document.getElementById('statusBadge').textContent='請點目前可見的紙張區域';return;
+  }
+  punch=p;resultHoles=[];document.getElementById('resultMsg').textContent='已打洞！現在可以按「展開檢查」。';document.getElementById('statusBadge').textContent='已選擇打洞位置';render(false);
+});
+
+drawGrid();resetAll();
+</script>
+</body>
+</html>
