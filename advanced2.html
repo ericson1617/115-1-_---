@@ -30,6 +30,7 @@ input[type=range]{width:150px}.target{display:flex;gap:7px;align-items:center;fl
 .target option.level-mid{background:#fff7d6;color:#6b5312}
 .target option.level-adv{background:#fde8e8;color:#7a2f2f}
 .answerWrap{width:100%;margin:7px 0 4px}.answerBtn{background:#eef7ff;border-color:#9fc5e2;color:#245f97;min-height:36px;padding:7px 13px;font-weight:700}.answerPanel{display:none;margin-top:7px;width:100%;background:#f8fbfd;border:1px solid #d4e4ee;border-radius:10px;padding:10px 12px;text-align:left;max-height:190px;overflow-y:auto}.answerPanel.show{display:block}.answerTitle{font-weight:800;color:#245f97;margin-bottom:5px}.answerMeta{font-size:12.5px;color:#687983;margin-bottom:6px}.answerStep{font-size:13.5px;line-height:1.6;padding:3px 0;border-bottom:1px dashed #e1e9ee}.answerStep:last-child{border-bottom:0}.viewCounter{max-width:1240px;margin:0 auto 10px;padding:0 14px;text-align:center}.viewCounterBox{display:inline-flex;align-items:center;gap:8px;background:#fff;border:1px solid #d9e6ef;border-radius:999px;padding:7px 12px;box-shadow:0 3px 10px #244b6a10}.viewCounter img{display:block;height:22px}
+.challengePicker{position:relative;min-width:180px}.challengeBtn{width:100%;min-height:38px;padding:7px 11px;border:1px solid #cbd9e2;background:#fff;color:#334b5c;border-radius:9px;display:flex;align-items:center;justify-content:space-between;gap:12px}.challengeBtn .chev{font-size:11px;opacity:.65}.challengeMenu{display:none;position:absolute;z-index:30;top:calc(100% + 5px);left:0;min-width:220px;max-height:330px;overflow-y:auto;background:#fff;border:1px solid #cbd9e2;border-radius:10px;box-shadow:0 10px 24px #16364f24;padding:5px}.challengeMenu.show{display:block}.challengeItem{width:100%;min-height:36px;border:0;border-radius:7px;padding:8px 10px;text-align:left;background:#fff;color:#334b5c}.challengeItem:hover{filter:brightness(.97)}.challengeItem.basic{background:#e9f7e8;color:#244d2b}.challengeItem.mid{background:#fff7d6;color:#6b5312}.challengeItem.adv{background:#fde8e8;color:#7a2f2f}.challengeItem.none{background:#f5f7f9;color:#60717d}
 footer{text-align:center;color:#74828c;font-size:13px;padding:0 10px 17px}
 @media(max-width:900px){.wrap{grid-template-columns:1fr}.controls{grid-template-columns:1fr 1fr}}
 </style>
@@ -130,21 +131,32 @@ footer{text-align:center;color:#74828c;font-size:13px;padding:0 10px 17px}
 <section class="card stage">
   <div class="stageHead"><h2>② 摺紙與打洞區</h2><span class="badge" id="status">請選摺法，或直接打洞</span></div>
   <div class="target" style="width:100%;margin-bottom:5px"><span class="small">關卡：</span>
-    <select id="challenge" onchange="drawTarget();updateAnswerUI()">
-      <option value="0">不顯示目標</option>
-      <option class="level-basic" value="1">第1關・2洞</option>
-      <option class="level-basic" value="2">第2關・4洞</option>
-      <option class="level-basic" value="3">第3關・4洞</option>
-      <option class="level-basic" value="4">第4關・4洞</option>
-      <option class="level-mid" value="5">第5關・8洞</option>
-      <option class="level-mid" value="6">第6關・8洞</option>
-      <option class="level-mid" value="7">第7關・16洞</option>
-      <option class="level-mid" value="8">第8關・16洞</option>
-      <option class="level-adv" value="9">第9關・3洞</option>
-      <option class="level-adv" value="10">第10關・6洞</option>
-      <option class="level-adv" value="11">第11關・5洞</option>
-      <option class="level-adv" value="12">第12關・12洞</option>
-    </select>
+    <div class="challengePicker">
+      <button type="button" class="challengeBtn" id="challengeBtn" onclick="toggleChallengeMenu()">
+        <span id="challengeLabel">不顯示目標</span><span class="chev">▼</span>
+      </button>
+      <div class="challengeMenu" id="challengeMenu">
+        <button type="button" class="challengeItem none" onclick="setChallenge(0,'不顯示目標')">不顯示目標</button>
+        <button type="button" class="challengeItem basic" onclick="setChallenge(1,'第1關・2洞')">第1關・2洞</button>
+        <button type="button" class="challengeItem basic" onclick="setChallenge(2,'第2關・4洞')">第2關・4洞</button>
+        <button type="button" class="challengeItem basic" onclick="setChallenge(3,'第3關・4洞')">第3關・4洞</button>
+        <button type="button" class="challengeItem basic" onclick="setChallenge(4,'第4關・4洞')">第4關・4洞</button>
+        <button type="button" class="challengeItem mid" onclick="setChallenge(5,'第5關・8洞')">第5關・8洞</button>
+        <button type="button" class="challengeItem mid" onclick="setChallenge(6,'第6關・8洞')">第6關・8洞</button>
+        <button type="button" class="challengeItem mid" onclick="setChallenge(7,'第7關・16洞')">第7關・16洞</button>
+        <button type="button" class="challengeItem mid" onclick="setChallenge(8,'第8關・16洞')">第8關・16洞</button>
+        <button type="button" class="challengeItem adv" onclick="setChallenge(9,'第9關・3洞')">第9關・3洞</button>
+        <button type="button" class="challengeItem adv" onclick="setChallenge(10,'第10關・6洞')">第10關・6洞</button>
+        <button type="button" class="challengeItem adv" onclick="setChallenge(11,'第11關・5洞')">第11關・5洞</button>
+        <button type="button" class="challengeItem adv" onclick="setChallenge(12,'第12關・12洞')">第12關・12洞</button>
+      </div>
+      <select id="challenge" style="display:none" aria-hidden="true">
+        <option value="0" selected>不顯示目標</option>
+        <option value="1">第1關・2洞</option><option value="2">第2關・4洞</option><option value="3">第3關・4洞</option><option value="4">第4關・4洞</option>
+        <option value="5">第5關・8洞</option><option value="6">第6關・8洞</option><option value="7">第7關・16洞</option><option value="8">第8關・16洞</option>
+        <option value="9">第9關・3洞</option><option value="10">第10關・6洞</option><option value="11">第11關・5洞</option><option value="12">第12關・12洞</option>
+      </select>
+    </div>
   </div>
   <div class="answerWrap" id="answerWrap" style="display:none">
     <button class="answerBtn" id="answerBtn" onclick="toggleAnswer()">👀 看解答</button>
@@ -343,6 +355,24 @@ function clearPunch(){punch=null;holes=[];document.getElementById('resultMsg').t
 function unfold(){if(!punch){alert('請先在目前紙張上打洞。');return}let pts=[];layers.forEach(L=>{if(pointInOrOn(punch,L.poly))pts.push(applyM(L.M,punch))});holes=unique(pts);document.getElementById('resultMsg').textContent='展開後共有 '+holes.length+' 個洞。可與左上選擇的學習單目標比較。';render()}
 
 function drawGrid(){let g=document.getElementById('grid');g.innerHTML='';for(let i=1;i<8;i++){let v=60+i*50;g.insertAdjacentHTML('beforeend',`<line x1="${v}" y1="60" x2="${v}" y2="460" class="grid"/><line x1="60" y1="${v}" x2="460" y2="${v}" class="grid"/>`)}}
+function toggleChallengeMenu(){document.getElementById('challengeMenu').classList.toggle('show')}
+function setChallenge(n,label){
+  document.getElementById('challenge').value=String(n);
+  document.getElementById('challengeLabel').textContent=label;
+  const btn=document.getElementById('challengeBtn');
+  btn.classList.remove('basic','mid','adv');
+  if(n>=1&&n<=4)btn.style.background='#e9f7e8';
+  else if(n>=5&&n<=8)btn.style.background='#fff7d6';
+  else if(n>=9)btn.style.background='#fde8e8';
+  else btn.style.background='#fff';
+  document.getElementById('challengeMenu').classList.remove('show');
+  drawTarget();updateAnswerUI();
+}
+document.addEventListener('click',e=>{
+  const picker=document.querySelector('.challengePicker');
+  if(picker&&!picker.contains(e.target))document.getElementById('challengeMenu').classList.remove('show');
+});
+
 function drawTarget(){
  let g=document.getElementById('targetG');g.innerHTML='';
  let n=+document.getElementById('challenge').value;if(!n)return;
