@@ -24,6 +24,7 @@ main{max-width:1400px;margin:16px auto;padding:0 14px 24px}.intro{background:whi
 <section class="panel"><h2>① 設定與創作</h2>
 <div class="field"><label for="mode">鑲嵌方式</label><select id="mode"><option value="translation">平移鑲嵌｜圖塊沿固定方向移動</option><option value="rotation">旋轉鑲嵌｜圖塊繞邊中點旋轉 180°</option></select></div>
 <div class="field"><label for="shape">起始基本形狀</label><select id="shape"><option value="square">正方形</option><option value="rectangle">長方形</option><option value="parallelogram">平行四邊形</option><option value="rhombus">菱形</option></select></div>
+<div class="field"><label for="dragMode">控制點拖曳模式</label><select id="dragMode"><option value="restricted">限制方向｜沿邊線垂直移動</option><option value="free">自由方向｜可斜向、沿邊移動</option></select><p class="subtle" id="dragHint" style="margin:5px 0 0">初學者建議使用限制方向；自由模式仍會自動保持相鄰圖塊接合。</p></div>
 <div class="field"><label for="preset">輪廓靈感（可以再自行拖曳修改）</label><select id="preset"><option value="blank">平整輪廓｜從零開始</option><option value="fish">小魚的尾巴</option><option value="leaf">葉片波浪</option><option value="wave">水波</option><option value="zigzag">稜角</option></select></div>
 <div class="field"><label>元件顏色與線條</label><div class="btnrow" style="align-items:center"><input id="color" type="color" value="#79bfc8" aria-label="元件顏色"><label style="margin:0;font-weight:500" for="outline"><input type="checkbox" id="outline" checked> 顯示邊界</label></div></div>
 <div class="btnrow"><button id="undo" class="ghost">↶ 上一步</button><button id="reset" class="warn">重設輪廓</button><button id="random" class="ghost">✦ 產生靈感</button></div>
@@ -53,17 +54,22 @@ const templates={
 };
 const dims={A4:[210,297],A3:[297,420],B5:[182,257],drawing:[393,545]};
 const colorPalette=['#78bbc6','#e9a8a0','#f2d287','#95c8a9','#b8b2dd','#94b5e3'];
-const cfg={mode:'translation',shape:'square',preset:'blank',color:'#79bfc8',outline:true,multiColor:true,values:[],undo:[]};
+const cfg={mode:'translation',shape:'square',preset:'blank',dragMode:'restricted',color:'#79bfc8',outline:true,multiColor:true,values:[],positions:[],undo:[]};
 const add=(a,b)=>[a[0]+b[0],a[1]+b[1]],sub=(a,b)=>[a[0]-b[0],a[1]-b[1]],scale=(a,s)=>[a[0]*s,a[1]*s],dot=(a,b)=>a[0]*b[0]+a[1]*b[1],len=a=>Math.hypot(a[0],a[1]);
 function vecs(){return templates[cfg.shape]}
 function vertices(){const [u,v]=vecs();return [[0,0],u,add(u,v),v]}
 function normal(a,b){const d=sub(b,a),l=len(d);return [-d[1]/l,d[0]/l]}
 function baseEdges(){const p=vertices();return [[p[0],p[1]],[p[1],p[2]],[p[2],p[3]],[p[3],p[0]]]}
-function resetValues(){cfg.values=Array.from({length:cfg.mode==='translation'?2:4},()=>cfg.mode==='translation'?[0,0,0]:[0,0]);cfg.undo=[]}
-function storeUndo(){cfg.undo.push(cfg.values.map(a=>a.slice()));if(cfg.undo.length>40)cfg.undo.shift()}
+function defaultPositions(){return cfg.values.map(v=>v.map((_,j)=>cfg.mode==='translation'?[.23,.5,.77][j]:[.22,.39][j]))}
+function resetValues(){cfg.values=Array.from({length:cfg.mode==='translation'?2:4},()=>cfg.mode==='translation'?[0,0,0]:[0,0]);cfg.positions=defaultPositions();cfg.undo=[]}
+function stateCopy(){return {values:cfg.values.map(a=>a.slice()),positions:cfg.positions.map(a=>a.slice())}}
+function restoreState(s){cfg.values=s.values.map(a=>a.slice());cfg.positions=s.positions.map(a=>a.slice())}
+function storeUndo(){cfg.undo.push(stateCopy());if(cfg.undo.length>40)cfg.undo.shift()}
+function positionBounds(i,j){const a=cfg.positions[i];if(cfg.mode==='rotation')return j===0?[.08,Math.min(.34,a[1]-.07)]:[Math.max(.30,a[0]+.07),.46];return [j===0?.08:a[j-1]+.07,j===a.length-1?.92:a[j+1]-.07]}
+function nearestValidPosition(i,j,t){const [lo,hi]=positionBounds(i,j);return clamp(t,lo,hi)}
 // Catmull-Rom interpolation between editable offsets gives organic, smooth edges.
 function interpolated(t,knots){if(t<=0||t>=1)return 0;let i=0;while(i<knots.length-2&&t>knots[i+1][0])i++;const [x1,y1]=knots[i],[x2,y2]=knots[i+1],s=(t-x1)/(x2-x1);const p0=knots[Math.max(0,i-1)],p3=knots[Math.min(knots.length-1,i+2)];const m1=(y2-p0[1])/(x2-p0[0]),m2=(p3[1]-y1)/(p3[0]-x1),h=x2-x1;return (2*s**3-3*s*s+1)*y1+(s**3-2*s*s+s)*h*m1+(-2*s**3+3*s*s)*y2+(s**3-s*s)*h*m2}
-function rawOffset(i,t){const v=cfg.values[i];if(cfg.mode==='translation')return interpolated(t,[[0,0],[.23,v[0]],[.50,v[1]],[.77,v[2]],[1,0]]);return interpolated(t,[[0,0],[.22,v[0]],[.39,v[1]],[.5,0],[.61,-v[1]],[.78,-v[0]],[1,0]])}
+function rawOffset(i,t){const v=cfg.values[i],p=cfg.positions[i];if(cfg.mode==='translation')return interpolated(t,[[0,0],[p[0],v[0]],[p[1],v[1]],[p[2],v[2]],[1,0]]);return interpolated(t,[[0,0],[p[0],v[0]],[p[1],v[1]],[.5,0],[1-p[1],-v[1]],[1-p[0],-v[0]],[1,0]])}
 function rawEdge(i){const [A,B]=baseEdges()[i],n=normal(A,B);const pts=[];for(let k=0;k<=50;k++){const t=k/50;const p=add(add(A,scale(sub(B,A),t)),scale(n,rawOffset(i,t)));pts.push(p)}return pts}
 function edgePts(i){if(cfg.mode==='rotation')return rawEdge(i);if(i===0||i===1)return rawEdge(i);const p=vertices();const base=rawEdge(i===2?0:1),shift=i===2?sub(p[3],p[0]):sub(p[3],p[2]);return base.map(q=>add(q,shift)).reverse()}
 function tilePts(){const r=[];for(let i=0;i<4;i++){const e=edgePts(i);r.push(...(i?e.slice(1):e))}return r}
@@ -72,11 +78,39 @@ function mapped(points,O,unit,halfTurn=false){const verts=vertices(),C=scale(add
 function attr(s){return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;')}
 function clamp(x,a,b){return Math.min(b,Math.max(a,x))}
 function templateLimit(){const [u,v]=vecs();return .22*Math.min(len(u),len(v))}
+// Guard against crossed contours: nonadjacent edges must never intersect.
+// The matched opposite edges and half-turn relation remain exact because both
+// derive from the same control-point data.
+function cross2(a,b,c){return (b[0]-a[0])*(c[1]-a[1])-(b[1]-a[1])*(c[0]-a[0])}
+function segmentsCross(a,b,c,d){
+ const ab1=cross2(a,b,c),ab2=cross2(a,b,d),cd1=cross2(c,d,a),cd2=cross2(c,d,b),eps=1e-8;
+ if((ab1>eps&&ab2< -eps||ab1< -eps&&ab2>eps)&&(cd1>eps&&cd2< -eps||cd1< -eps&&cd2>eps))return true;
+ if(Math.abs(ab1)<eps||Math.abs(ab2)<eps||Math.abs(cd1)<eps||Math.abs(cd2)<eps){
+  function on(a,b,p){return Math.min(a[0],b[0])-eps<=p[0]&&p[0]<=Math.max(a[0],b[0])+eps&&Math.min(a[1],b[1])-eps<=p[1]&&p[1]<=Math.max(a[1],b[1])+eps}
+  return Math.abs(ab1)<eps&&on(a,b,c)||Math.abs(ab2)<eps&&on(a,b,d)||Math.abs(cd1)<eps&&on(c,d,a)||Math.abs(cd2)<eps&&on(c,d,b);
+ }
+ return false;
+}
+function validTile(){
+ const pts=tilePts(),p=pts.slice();
+ if(len(sub(p[0],p[p.length-1]))<1e-7)p.pop();
+ const n=p.length;
+ for(let i=0;i<n;i++){
+  const a=p[i],b=p[(i+1)%n];
+  for(let j=i+2;j<n;j++){
+   if(i===0&&j===n-1)continue;
+   const x=p[j],y=p[(j+1)%n];
+   if(Math.max(a[0],b[0])<Math.min(x[0],y[0])-1e-8||Math.max(x[0],y[0])<Math.min(a[0],b[0])-1e-8||Math.max(a[1],b[1])<Math.min(x[1],y[1])-1e-8||Math.max(x[1],y[1])<Math.min(a[1],b[1])-1e-8)continue;
+   if(segmentsCross(a,b,x,y))return false;
+  }
+ }
+ return true;
+}
 function drawEditor(){const unit=200,p=tilePts(),vv=vertices(),base=[145,118],g=$('editG');let html='<defs><pattern id="dots" width="24" height="24" patternUnits="userSpaceOnUse"><circle cx="3" cy="3" r="1" fill="#e4edf0"/></pattern></defs><rect width="500" height="485" fill="url(#dots)"/>';
  html+='<path d="'+tilePath(mapped(p,base,unit))+'" fill="'+cfg.color+'" fill-opacity=".7" stroke="#296477" stroke-width="2.8"/>';
  const all=baseEdges();const num=cfg.mode==='translation'?2:4;
  for(let i=0;i<num;i++)for(let j=0;j<cfg.values[i].length;j++){
-   const t=cfg.mode==='translation'?[.23,.5,.77][j]:[.22,.39][j];
+   const t=cfg.positions[i][j];
    const [A,B]=all[i],n=normal(A,B),start=add(A,scale(sub(B,A),t)),pos=add(start,scale(n,cfg.values[i][j]));
    const aa=add(base,scale(start,unit)),bb=add(base,scale(pos,unit));
    html+='<line x1="'+aa[0]+'" y1="'+aa[1]+'" x2="'+bb[0]+'" y2="'+bb[1]+'" stroke="#c7934a" stroke-dasharray="3 4" stroke-width="2"/>';
@@ -84,7 +118,7 @@ function drawEditor(){const unit=200,p=tilePts(),vv=vertices(),base=[145,118],g=
  }
  // show base polygon in dotted line to compare original geometry
  html+='<path d="'+tilePath(mapped(vv,base,unit))+'" fill="none" stroke="#7c9fac" stroke-dasharray="7 5" stroke-width="1.7"/>';
- html+='<text x="25" y="454" font-size="15" fill="#587988">虛線＝原始形狀　橘點＝可調控制點</text>';
+ html+='<text x="25" y="454" font-size="15" fill="#587988">虛線＝原始形狀　橘點＝可調控制點（'+(cfg.dragMode==='free'?'自由方向':'限制方向')+'）</text>';
  g.innerHTML=html;
 }
 function fillFor(i,j){return cfg.multiColor?colorPalette[((i-j)%colorPalette.length+colorPalette.length)%colorPalette.length]:cfg.color}
@@ -133,16 +167,41 @@ $('preset').addEventListener('change',e=>{cfg.preset=e.target.value;presetValues
 $('color').addEventListener('input',e=>{cfg.color=e.target.value;render()});
 $('outline').addEventListener('change',e=>{cfg.outline=e.target.checked;render()});
 $('multiColor').addEventListener('change',e=>{cfg.multiColor=e.target.checked;drawPreview()});
-$('undo').addEventListener('click',()=>{if(cfg.undo.length){cfg.values=cfg.undo.pop();render()}});
-$('reset').addEventListener('click',()=>{storeUndo();cfg.values=cfg.values.map(a=>a.map(()=>0));$('preset').value='blank';render()});
+$('dragMode').addEventListener('change',e=>{
+ cfg.dragMode=e.target.value;
+ $('dragHint').textContent=cfg.dragMode==='free'?'可向各方向拖曳橘點；輪廓交叉或太靠近邊角時會自動限制，配對邊始終連動。':'僅沿著各邊的垂直方向拖動；適合初學者。';
+ setStatus(cfg.dragMode==='free'?'已開啟自由方向拖曳，試著沿斜方向移動橘點。':'已切換為限制方向拖曳。');drawEditor();
+});
+$('undo').addEventListener('click',()=>{if(cfg.undo.length){restoreState(cfg.undo.pop());render()}});
+$('reset').addEventListener('click',()=>{storeUndo();cfg.values=cfg.values.map(a=>a.map(()=>0));cfg.positions=defaultPositions();$('preset').value='blank';render()});
 $('random').addEventListener('click',()=>{storeUndo();const l=templateLimit();cfg.values=cfg.values.map(a=>a.map(()=>((Math.random()-.5)*1.3*l)));render()});
 let dragging=null;
 function svgPos(evt){const svg=$('editSvg'),pt=svg.createSVGPoint();pt.x=evt.clientX;pt.y=evt.clientY;const q=pt.matrixTransform(svg.getScreenCTM().inverse());return [(q.x-145)/200,(q.y-118)/200]}
 $('editSvg').addEventListener('pointerdown',e=>{const h=e.target.closest('.handle');if(!h)return;dragging=[+h.dataset.i,+h.dataset.j];storeUndo();$('editSvg').setPointerCapture(e.pointerId);e.preventDefault()});
-$('editSvg').addEventListener('pointermove',e=>{if(!dragging)return;const [i,j]=dragging,pt=svgPos(e),[A,B]=baseEdges()[i],n=normal(A,B),t=cfg.mode==='translation'?[.23,.5,.77][j]:[.22,.39][j],on=add(A,scale(sub(B,A),t));cfg.values[i][j]=Math.round(clamp(dot(sub(pt,on),n),-templateLimit(),templateLimit())*1000)/1000;render()});
+$('editSvg').addEventListener('pointermove',e=>{
+ if(!dragging)return;
+ const [i,j]=dragging,pt=svgPos(e),[A,B]=baseEdges()[i],axis=sub(B,A),n=normal(A,B);
+ const previousT=cfg.positions[i][j],previousD=cfg.values[i][j];
+ const projected=dot(sub(pt,A),axis)/dot(axis,axis);
+ const t=cfg.dragMode==='free'?nearestValidPosition(i,j,projected):previousT;
+ const on=add(A,scale(axis,t)),d=Math.round(clamp(dot(sub(pt,on),n),-templateLimit(),templateLimit())*1000)/1000;
+ cfg.positions[i][j]=Math.round(t*1000)/1000;cfg.values[i][j]=d;
+ if(!validTile()){cfg.positions[i][j]=previousT;cfg.values[i][j]=previousD;setStatus('為避免輪廓交叉，控制點不能再往該方向移動。');return}
+ render();
+});
 $('editSvg').addEventListener('pointerup',()=>dragging=null);
 $('editSvg').addEventListener('pointercancel',()=>dragging=null);
-$('editSvg').addEventListener('keydown',e=>{const h=e.target.closest('.handle');if(!h||!['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key))return;e.preventDefault();let i=+h.dataset.i,j=+h.dataset.j;storeUndo();const direction=['ArrowUp','ArrowLeft'].includes(e.key)?-1:1;cfg.values[i][j]=clamp(cfg.values[i][j]+direction*.02,-templateLimit(),templateLimit());render();let newHandle=$('editSvg').querySelector('.handle[data-i="'+i+'"][data-j="'+j+'"]');if(newHandle)newHandle.focus()});
+$('editSvg').addEventListener('keydown',e=>{
+ const h=e.target.closest('.handle');if(!h||!['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key))return;
+ e.preventDefault();
+ const i=+h.dataset.i,j=+h.dataset.j,old=stateCopy();
+ const horizontal=['ArrowLeft','ArrowRight'].includes(e.key),sign=['ArrowUp','ArrowLeft'].includes(e.key)?-1:1;
+ if(horizontal&&cfg.dragMode==='free')cfg.positions[i][j]=nearestValidPosition(i,j,cfg.positions[i][j]+sign*.015);
+ else cfg.values[i][j]=clamp(cfg.values[i][j]+sign*.02,-templateLimit(),templateLimit());
+ if(!validTile()){restoreState(old);setStatus('為避免輪廓交叉，無法繼續移動。');return}
+ storeUndo();render();
+ const next=$('editSvg').querySelector('.handle[data-i="'+i+'"][data-j="'+j+'"]');if(next)next.focus()
+});
 function downloadBlob(data,filename,type){const blob=data instanceof Blob?data:new Blob([data],{type});const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),15000)}
 async function svgToPng(svg,w,h,filename){const blob=new Blob([svg],{type:'image/svg+xml;charset=utf-8'}),url=URL.createObjectURL(blob);try{const img=new Image();await new Promise((ok,fail)=>{img.onload=ok;img.onerror=fail;img.src=url});const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;const ctx=canvas.getContext('2d');ctx.drawImage(img,0,0,w,h);const png=await new Promise(ok=>canvas.toBlob(ok,'image/png'));if(!png)throw new Error('無法轉換 PNG');downloadBlob(png,filename,'image/png')}finally{URL.revokeObjectURL(url)}}
 $('downloadTile').addEventListener('click',async()=>{try{const pts=tilePts(),xs=pts.map(p=>p[0]),ys=pts.map(p=>p[1]);const x0=Math.min(...xs)-.12,x1=Math.max(...xs)+.12,y0=Math.min(...ys)-.12,y1=Math.max(...ys)+.12;const sc=640/Math.max(x1-x0,y1-y0),W=Math.round((x1-x0)*sc),H=Math.round((y1-y0)*sc);const poly=pts.map(p=>scale(sub(p,[x0,y0]),sc));const svg='<svg xmlns="http://www.w3.org/2000/svg" width="'+W+'" height="'+H+'" viewBox="0 0 '+W+' '+H+'"><path d="'+tilePath(poly)+'" fill="'+cfg.color+'" stroke="#2b5b67" stroke-width="3"/></svg>';await svgToPng(svg,W,H,'我的鑲嵌元件.png');setStatus('已下載透明背景的元件 PNG')}catch(e){setStatus('下載失敗：'+e.message)}});
