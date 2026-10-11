@@ -199,7 +199,7 @@ $('editSvg').addEventListener('keydown',e=>{
  if(horizontal&&cfg.dragMode==='free')cfg.positions[i][j]=nearestValidPosition(i,j,cfg.positions[i][j]+sign*.015);
  else cfg.values[i][j]=clamp(cfg.values[i][j]+sign*.02,-templateLimit(),templateLimit());
  if(!validTile()){restoreState(old);setStatus('為避免輪廓交叉，無法繼續移動。');return}
- storeUndo();render();
+ cfg.undo.push(old);if(cfg.undo.length>40)cfg.undo.shift();render();
  const next=$('editSvg').querySelector('.handle[data-i="'+i+'"][data-j="'+j+'"]');if(next)next.focus()
 });
 function downloadBlob(data,filename,type){const blob=data instanceof Blob?data:new Blob([data],{type});const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),15000)}
