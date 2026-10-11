@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>藝數探索｜艾薛爾鑲嵌工作室</title>
+<style>
+:root{--navy:#294c65;--sea:#3d8f9a;--mint:#e6f5ef;--cream:#fffbf3;--line:#d4e5e9;--text:#233c4b;--pink:#d86b85;--gold:#dda457}
+*{box-sizing:border-box}body{margin:0;background:#f3f8f9;color:var(--text);font-family:'Noto Sans TC','Microsoft JhengHei',system-ui,sans-serif;line-height:1.5}
+header{background:linear-gradient(115deg,#2b6877,#477f9e);color:white;padding:17px max(14px,calc((100vw - 1380px)/2));box-shadow:0 2px 12px #234b5c18}
+.head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px}.eyebrow{font-size:12px;letter-spacing:.2em;opacity:.82}.head h1{margin:3px 0;font-size:clamp(22px,2.7vw,31px);font-weight:800}.head p{margin:0;font-size:13px;opacity:.88}.head a{color:white;text-decoration:none;border:1px solid #ffffff6b;border-radius:99px;padding:7px 12px;font-size:13px}
+main{max-width:1400px;margin:16px auto;padding:0 14px 24px}.intro{background:white;border:1px solid var(--line);border-radius:16px;padding:13px 17px;margin-bottom:12px;font-size:14px}.progress{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}.step{background:#e7f1f3;color:#3b6270;border-radius:99px;padding:6px 13px;font-weight:700;font-size:13px}
+.layout{display:grid;grid-template-columns:minmax(280px,350px) minmax(300px,1fr) minmax(300px,1.08fr);gap:12px;align-items:start}.panel{min-width:0;background:white;border:1px solid var(--line);border-radius:16px;box-shadow:0 5px 18px #2549560c;padding:15px}.panel h2{font-size:18px;color:#2b6677;margin:0 0 12px}.panel h3{font-size:14px;color:#426d7c;margin:14px 0 7px}.muted{color:#71838b;font-size:12px}.hint{background:#eff8f6;border-left:4px solid #61aaa1;padding:10px 12px;border-radius:7px;font-size:13px;margin:10px 0}.notice{background:#fff8e6;border-left:4px solid #e1b460;padding:9px 11px;border-radius:7px;font-size:12px}
+.field{margin-bottom:12px}.field label{display:block;font-weight:700;font-size:13px;margin-bottom:5px}select,input[type="number"],input[type="color"]{font:inherit}select,input[type="number"]{width:100%;background:#fbfdfd;color:#294956;border:1px solid #c5dce2;border-radius:9px;padding:9px}input[type="color"]{width:45px;height:34px;border:0;background:none;padding:0}.btnrow{display:flex;gap:7px;flex-wrap:wrap}button{font:inherit;border:1px solid #b8d5dc;background:#edf7f8;color:#2c6877;border-radius:9px;padding:9px 12px;cursor:pointer;font-weight:700;min-height:39px}button:hover{filter:brightness(.96)}button:focus-visible,.handle:focus-visible{outline:3px solid #f0ac3f;outline-offset:2px}.primary{background:#327d8f;color:white;border-color:#327d8f}.ghost{background:#fff}.warn{background:#fff5e3;border-color:#ead29c;color:#8c642c}.subtle{font-size:12px;color:#74858d}.value{color:#2b7584;font-weight:800}#editSvg,#previewSvg{width:100%;display:block;border:1px solid #e2ecee;border-radius:10px;touch-action:none;background:#fbfdfd}#editSvg{max-height:560px}#previewSvg{max-height:560px}.svgnote{text-align:center;color:#74858d;font-size:12px;margin:8px 0 0}.handle{cursor:grab}.handle:active{cursor:grabbing}.designActions{display:flex;gap:6px;flex-wrap:wrap;align-items:center}.chip{border-radius:99px;padding:5px 9px;font-size:12px;background:#e8f2f4;color:#416c7a}.printCard{margin-top:12px;border-top:1px dashed #d4e5e9;padding-top:8px}.radioRow{display:flex;gap:15px;font-size:13px;flex-wrap:wrap}.radioRow label{font-weight:500}.twocol{display:grid;grid-template-columns:1fr 1fr;gap:8px}.status{margin-top:9px;min-height:22px;color:#387c69;font-size:13px;font-weight:700}.footer{text-align:center;color:#84969e;font-size:12px;padding:16px}.legend{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:12px}.legend span{display:flex;align-items:center;gap:6px}.dot{width:10px;height:10px;border-radius:50%;display:inline-block}
+@media(max-width:1160px){.layout{grid-template-columns:minmax(265px,.9fr) minmax(300px,1.1fr)}.outputPanel{grid-column:1/-1}}@media(max-width:680px){main{padding:0 8px}.layout{grid-template-columns:1fr;gap:9px}.outputPanel{grid-column:auto}.panel{padding:12px}header{padding:14px 11px}.step{padding:5px 10px}.twocol{grid-template-columns:1fr 1fr}}
+@media print{header,main,.footer{display:none}}
+</style>
+</head>
+<body>
+<header><div class="head"><div><div class="eyebrow">藝數探索 · GEOMETRIC ART</div><h1>艾薛爾鑲嵌工作室</h1><p>選形狀 → 拉動邊線 → 觀察密鋪 → 儲存、複製與列印</p></div><a href="advanced2.html">← 返回打洞模擬器</a></div></header>
+<main>
+<div class="intro"><strong>這不是自由亂畫的拼圖：</strong>系統會自動把對應邊界連動，因此設計出的圖塊可以按照所選方式重複鋪滿平面。<br><span class="subtle">七年級可直接操作，不必先學尺規作圖。所謂「旋轉鑲嵌」在此採用 180° 半周旋轉，而不是任意旋轉角度。</span></div>
+<div class="progress"><span class="step">① 選擇基本形狀與變換</span><span class="step">② 拖曳控制點設計元件</span><span class="step">③ 觀看鑲嵌</span><span class="step">④ 匯出或列印</span></div>
+<div class="layout">
+<section class="panel"><h2>① 設定與創作</h2>
+<div class="field"><label for="mode">鑲嵌方式</label><select id="mode"><option value="translation">平移鑲嵌｜圖塊沿固定方向移動</option><option value="rotation">旋轉鑲嵌｜圖塊繞邊中點旋轉 180°</option></select></div>
+<div class="field"><label for="shape">起始基本形狀</label><select id="shape"><option value="square">正方形</option><option value="rectangle">長方形</option><option value="parallelogram">平行四邊形</option><option value="rhombus">菱形</option></select></div>
+<div class="field"><label for="preset">輪廓靈感（可以再自行拖曳修改）</label><select id="preset"><option value="blank">平整輪廓｜從零開始</option><option value="fish">小魚的尾巴</option><option value="leaf">葉片波浪</option><option value="wave">水波</option><option value="zigzag">稜角</option></select></div>
+<div class="field"><label>元件顏色與線條</label><div class="btnrow" style="align-items:center"><input id="color" type="color" value="#79bfc8" aria-label="元件顏色"><label style="margin:0;font-weight:500" for="outline"><input type="checkbox" id="outline" checked> 顯示邊界</label></div></div>
+<div class="btnrow"><button id="undo" class="ghost">↶ 上一步</button><button id="reset" class="warn">重設輪廓</button><button id="random" class="ghost">✦ 產生靈感</button></div>
+<div class="hint" id="modeHint">拖動橘色圓點，對邊會自動跟著修改；左右、上下圖塊會彼此密合。</div>
+<h3>進階小提示</h3><p class="subtle">將輪廓想成小動物、葉片或魚。可以在紙上加上眼睛與花紋，但<strong>外輪廓要維持系統產生的配對關係</strong>，才能完全密鋪。</p>
+<div class="printCard"><h2>④ 複製、下載、列印</h2>
+<div class="btnrow" style="margin-bottom:9px"><button class="primary" id="downloadTile">↓ 下載元件 PNG</button><button id="downloadPattern">↓ 下載鑲嵌 PNG</button></div>
+<div class="field"><label for="paper">紙張尺寸</label><select id="paper"><option value="A4">A4｜210 × 297 mm</option><option value="A3">A3｜297 × 420 mm</option><option value="B5">B5（JIS）｜182 × 257 mm</option><option value="drawing">圖畫紙（8 開）｜393 × 545 mm</option></select></div>
+<div class="twocol"><div class="field"><label for="orientation">方向</label><select id="orientation"><option value="portrait">直式</option><option value="landscape">橫式</option></select></div><div class="field"><label for="tileSize">元件基本邊長（cm）</label><select id="tileSize"><option value="2.5">2.5</option><option value="3.5">3.5</option><option value="5" selected>5</option><option value="6.5">6.5</option><option value="8">8</option></select></div></div>
+<div class="field"><label>列印用途</label><div class="radioRow"><label><input type="radio" name="printKind" value="pattern" checked> 密鋪作品</label><label><input type="radio" name="printKind" value="template"> 剪貼元件模板</label></div></div>
+<div class="btnrow"><button id="print" class="primary">🖨 列印／另存 PDF</button><button id="downloadSVG">↓ 下載可列印 SVG</button></div>
+<div class="notice" style="margin-top:10px"><strong>印製提醒：</strong>「圖畫紙」以常見 8 開 39.3 × 54.5 cm 示範，各校紙張可能不同；實際紙張尺寸與印表機支援範圍請先確認。列印時選「實際大小／100%」，勿勾選「符合頁面」。</div>
+<div id="status" class="status" role="status" aria-live="polite"></div></div>
+</section>
+<section class="panel"><h2>② 元件造型編輯</h2><div class="legend"><span><i class="dot" style="background:#eb9650"></i>拖曳橘點改變邊線</span><span><i class="dot" style="background:#6dc8ac"></i>連動邊線</span></div>
+<svg id="editSvg" viewBox="0 0 500 485" aria-label="元件造型編輯區"><g id="editG"></g></svg><p class="svgnote">觸控或滑鼠皆可拖曳控制點。操作時只有輪廓改變，不會把元件畫出洞。</p></section>
+<section class="panel outputPanel"><h2>③ 即時鑲嵌預覽</h2><div class="designActions" style="margin-bottom:9px"><span class="chip" id="modeChip">平移 · TRANSLATION</span><label class="subtle"><input id="multiColor" type="checkbox" checked> 多色區分圖塊</label></div>
+<svg id="previewSvg" viewBox="0 0 740 540" aria-label="即時鑲嵌預覽"><g id="previewG"></g></svg><p class="svgnote">圖塊能完整接合，不留縫、不重疊；拖曳左側元件控制點觀察變化。</p>
+<div class="hint"><strong>思考：</strong><span id="question">為什麼修改上方邊線，下方邊線也要跟著改？</span></div></section>
+</div></main><div class="footer">藝數探索｜艾薛爾鑲嵌工作室 · 教學用互動工具</div>
+<script>
+'use strict';
+const $=id=>document.getElementById(id);
+const templates={
+ square:[[1,0],[0,1]],rectangle:[[1.18,0],[0,.82]],
+ parallelogram:[[1,0],[.33,.94]],rhombus:[[1,0],[.5,.8660254]]
+};
+const dims={A4:[210,297],A3:[297,420],B5:[182,257],drawing:[393,545]};
+const colorPalette=['#78bbc6','#e9a8a0','#f2d287','#95c8a9','#b8b2dd','#94b5e3'];
+const cfg={mode:'translation',shape:'square',preset:'blank',color:'#79bfc8',outline:true,multiColor:true,values:[],undo:[]};
+const add=(a,b)=>[a[0]+b[0],a[1]+b[1]],sub=(a,b)=>[a[0]-b[0],a[1]-b[1]],scale=(a,s)=>[a[0]*s,a[1]*s],dot=(a,b)=>a[0]*b[0]+a[1]*b[1],len=a=>Math.hypot(a[0],a[1]);
+function vecs(){return templates[cfg.shape]}
+function vertices(){const [u,v]=vecs();return [[0,0],u,add(u,v),v]}
+function normal(a,b){const d=sub(b,a),l=len(d);return [-d[1]/l,d[0]/l]}
+function baseEdges(){const p=vertices();return [[p[0],p[1]],[p[1],p[2]],[p[2],p[3]],[p[3],p[0]]]}
+function resetValues(){cfg.values=Array.from({length:cfg.mode==='translation'?2:4},()=>cfg.mode==='translation'?[0,0,0]:[0,0]);cfg.undo=[]}
+function storeUndo(){cfg.undo.push(cfg.values.map(a=>a.slice()));if(cfg.undo.length>40)cfg.undo.shift()}
+// Catmull-Rom interpolation between editable offsets gives organic, smooth edges.
+function interpolated(t,knots){if(t<=0||t>=1)return 0;let i=0;while(i<knots.length-2&&t>knots[i+1][0])i++;const [x1,y1]=knots[i],[x2,y2]=knots[i+1],s=(t-x1)/(x2-x1);const p0=knots[Math.max(0,i-1)],p3=knots[Math.min(knots.length-1,i+2)];const m1=(y2-p0[1])/(x2-p0[0]),m2=(p3[1]-y1)/(p3[0]-x1),h=x2-x1;return (2*s**3-3*s*s+1)*y1+(s**3-2*s*s+s)*h*m1+(-2*s**3+3*s*s)*y2+(s**3-s*s)*h*m2}
+function rawOffset(i,t){const v=cfg.values[i];if(cfg.mode==='translation')return interpolated(t,[[0,0],[.23,v[0]],[.50,v[1]],[.77,v[2]],[1,0]]);return interpolated(t,[[0,0],[.22,v[0]],[.39,v[1]],[.5,0],[.61,-v[1]],[.78,-v[0]],[1,0]])}
+function rawEdge(i){const [A,B]=baseEdges()[i],n=normal(A,B);const pts=[];for(let k=0;k<=50;k++){const t=k/50;const p=add(add(A,scale(sub(B,A),t)),scale(n,rawOffset(i,t)));pts.push(p)}return pts}
+function edgePts(i){if(cfg.mode==='rotation')return rawEdge(i);if(i===0||i===1)return rawEdge(i);const p=vertices();const base=rawEdge(i===2?0:1),shift=i===2?sub(p[3],p[0]):sub(p[3],p[2]);return base.map(q=>add(q,shift)).reverse()}
+function tilePts(){const r=[];for(let i=0;i<4;i++){const e=edgePts(i);r.push(...(i?e.slice(1):e))}return r}
+function tilePath(points){return 'M'+points.map(p=>p[0].toFixed(3)+','+p[1].toFixed(3)).join(' L')+' Z'}
+function mapped(points,O,unit,halfTurn=false){const verts=vertices(),C=scale(add(verts[0],verts[2]),.5);return points.map(p=>{const q=halfTurn?sub(scale(C,2),p):p;return add(O,scale(q,unit))})}
+function attr(s){return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;')}
+function clamp(x,a,b){return Math.min(b,Math.max(a,x))}
+function templateLimit(){const [u,v]=vecs();return .22*Math.min(len(u),len(v))}
+function drawEditor(){const unit=200,p=tilePts(),vv=vertices(),base=[145,118],g=$('editG');let html='<defs><pattern id="dots" width="24" height="24" patternUnits="userSpaceOnUse"><circle cx="3" cy="3" r="1" fill="#e4edf0"/></pattern></defs><rect width="500" height="485" fill="url(#dots)"/>';
+ html+='<path d="'+tilePath(mapped(p,base,unit))+'" fill="'+cfg.color+'" fill-opacity=".7" stroke="#296477" stroke-width="2.8"/>';
+ const all=baseEdges();const num=cfg.mode==='translation'?2:4;
+ for(let i=0;i<num;i++)for(let j=0;j<cfg.values[i].length;j++){
+   const t=cfg.mode==='translation'?[.23,.5,.77][j]:[.22,.39][j];
+   const [A,B]=all[i],n=normal(A,B),start=add(A,scale(sub(B,A),t)),pos=add(start,scale(n,cfg.values[i][j]));
+   const aa=add(base,scale(start,unit)),bb=add(base,scale(pos,unit));
+   html+='<line x1="'+aa[0]+'" y1="'+aa[1]+'" x2="'+bb[0]+'" y2="'+bb[1]+'" stroke="#c7934a" stroke-dasharray="3 4" stroke-width="2"/>';
+   html+='<circle class="handle" role="button" tabindex="0" aria-label="拖曳第'+(i+1)+'邊第'+(j+1)+'個控制點" data-i="'+i+'" data-j="'+j+'" cx="'+bb[0]+'" cy="'+bb[1]+'" r="10" fill="#ec9a51" stroke="white" stroke-width="3"/>';
+ }
+ // show base polygon in dotted line to compare original geometry
+ html+='<path d="'+tilePath(mapped(vv,base,unit))+'" fill="none" stroke="#7c9fac" stroke-dasharray="7 5" stroke-width="1.7"/>';
+ html+='<text x="25" y="454" font-size="15" fill="#587988">虛線＝原始形狀　橘點＝可調控制點</text>';
+ g.innerHTML=html;
+}
+function fillFor(i,j){return cfg.multiColor?colorPalette[((i-j)%colorPalette.length+colorPalette.length)%colorPalette.length]:cfg.color}
+// Core invariant: translation uses opposite edges copied by lattice vectors;
+// rotation uses half-turn-symmetric edges and alternates tile orientation on checkerboard cells.
+function renderPatternSvg(W,H,unit,opts={}){
+ const [u,v]=vecs(),pu=scale(u,unit),pv=scale(v,unit),p=tilePts();
+ const inv=1/(pu[0]*pv[1]-pu[1]*pv[0]);
+ const toLattice=([x,y])=>[(x*pv[1]-y*pv[0])*inv,(-x*pu[1]+y*pu[0])*inv];
+ const corners=[[0,0],[W,0],[0,H],[W,H]].map(toLattice);
+ const imin=Math.floor(Math.min(...corners.map(a=>a[0])))-3,imax=Math.ceil(Math.max(...corners.map(a=>a[0])))+3;
+ const jmin=Math.floor(Math.min(...corners.map(a=>a[1])))-3,jmax=Math.ceil(Math.max(...corners.map(a=>a[1])))+3;
+ const border=opts.border!==false;
+ let paths=[];
+ for(let i=imin;i<=imax;i++)for(let j=jmin;j<=jmax;j++){
+  let origin=add(scale(pu,i),scale(pv,j));const odd=cfg.mode==='rotation'&&Math.abs(i+j)%2===1;
+  let pts=mapped(p,origin,unit,odd);
+  if(!pts.some(pt=>pt[0]>-1.8*unit&&pt[0]<W+1.8*unit&&pt[1]>-1.8*unit&&pt[1]<H+1.8*unit))continue;
+  paths.push('<path d="'+tilePath(pts)+'" fill="'+(opts.color||fillFor(i,j))+'" stroke="'+(border?'#496e79':'none')+'" stroke-width="'+(opts.strokeWidth||0.7)+'"/>');
+ }
+ return '<svg xmlns="http://www.w3.org/2000/svg" width="'+W+'" height="'+H+'" viewBox="0 0 '+W+' '+H+'"><rect width="100%" height="100%" fill="'+(opts.background||'#fffdf7')+'"/>'+paths.join('')+'</svg>';
+}
+function drawPreview(){const [u,v]=vecs(),unit=140,W=740,H=540,origin=[W/2-(u[0]+v[0])*unit/2,H/2-(u[1]+v[1])*unit/2];const pu=scale(u,unit),pv=scale(v,unit),pts=tilePts();let s='<rect width="740" height="540" fill="#fffcf6"/>';
+ for(let i=-5;i<=5;i++)for(let j=-5;j<=5;j++){
+ const P=add(origin,add(scale(pu,i),scale(pv,j)));
+ if(P[0]<-500||P[0]>1000||P[1]<-500||P[1]>1000)continue;
+ const poly=mapped(pts,P,unit,cfg.mode==='rotation'&&(Math.abs(i+j)%2===1));
+ s+='<path d="'+tilePath(poly)+'" fill="'+fillFor(i,j)+'" stroke="'+(cfg.outline?'#527784':'none')+'" stroke-width="1.5"/>';
+ }
+ $('previewG').innerHTML=s;
+ $('modeChip').textContent=cfg.mode==='translation'?'平移 · TRANSLATION':'180° 旋轉 · HALF-TURN';
+ $('question').textContent=cfg.mode==='translation'?'為什麼修改上方邊線，下方邊線也要跟著改？':'為什麼一塊旋轉 180° 後，交界處還能完全接合？';
+ $('modeHint').textContent=cfg.mode==='translation'?'拖動橘色圓點，對邊會自動跟著修改；上下、左右平移後會密合。':'拖動橘色圓點，該邊的另一半會自動做 180° 對應；相鄰元件半周旋轉後可以密合。';
+}
+function render(){drawEditor();drawPreview()}
+function presetValues(name){
+ resetValues();const l=templateLimit();
+ const t={blank:[0,0,0],fish:[.1,.72,-.18],leaf:[.28,.66,.2],wave:[.44,-.48,.52],zigzag:[.64,-.62,.68]}[name]||[0,0,0];
+ cfg.values=cfg.values.map((v,i)=>v.map((_,j)=>clamp(l*t[(j+i)%t.length]*(i%2?-1:1),-l,l)));
+ if(name==='blank')cfg.values=cfg.values.map(a=>a.map(()=>0));
+}
+function setStatus(message){$('status').textContent=message}
+$('mode').addEventListener('change',e=>{cfg.mode=e.target.value;presetValues($('preset').value);render()});
+$('shape').addEventListener('change',e=>{cfg.shape=e.target.value;presetValues($('preset').value);render()});
+$('preset').addEventListener('change',e=>{cfg.preset=e.target.value;presetValues(cfg.preset);render()});
+$('color').addEventListener('input',e=>{cfg.color=e.target.value;render()});
+$('outline').addEventListener('change',e=>{cfg.outline=e.target.checked;render()});
+$('multiColor').addEventListener('change',e=>{cfg.multiColor=e.target.checked;drawPreview()});
+$('undo').addEventListener('click',()=>{if(cfg.undo.length){cfg.values=cfg.undo.pop();render()}});
+$('reset').addEventListener('click',()=>{storeUndo();cfg.values=cfg.values.map(a=>a.map(()=>0));$('preset').value='blank';render()});
+$('random').addEventListener('click',()=>{storeUndo();const l=templateLimit();cfg.values=cfg.values.map(a=>a.map(()=>((Math.random()-.5)*1.3*l)));render()});
+let dragging=null;
+function svgPos(evt){const svg=$('editSvg'),pt=svg.createSVGPoint();pt.x=evt.clientX;pt.y=evt.clientY;const q=pt.matrixTransform(svg.getScreenCTM().inverse());return [(q.x-145)/200,(q.y-118)/200]}
+$('editSvg').addEventListener('pointerdown',e=>{const h=e.target.closest('.handle');if(!h)return;dragging=[+h.dataset.i,+h.dataset.j];storeUndo();$('editSvg').setPointerCapture(e.pointerId);e.preventDefault()});
+$('editSvg').addEventListener('pointermove',e=>{if(!dragging)return;const [i,j]=dragging,pt=svgPos(e),[A,B]=baseEdges()[i],n=normal(A,B),t=cfg.mode==='translation'?[.23,.5,.77][j]:[.22,.39][j],on=add(A,scale(sub(B,A),t));cfg.values[i][j]=Math.round(clamp(dot(sub(pt,on),n),-templateLimit(),templateLimit())*1000)/1000;render()});
+$('editSvg').addEventListener('pointerup',()=>dragging=null);
+$('editSvg').addEventListener('pointercancel',()=>dragging=null);
+$('editSvg').addEventListener('keydown',e=>{const h=e.target.closest('.handle');if(!h||!['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key))return;e.preventDefault();let i=+h.dataset.i,j=+h.dataset.j;storeUndo();const direction=['ArrowUp','ArrowLeft'].includes(e.key)?-1:1;cfg.values[i][j]=clamp(cfg.values[i][j]+direction*.02,-templateLimit(),templateLimit());render();let newHandle=$('editSvg').querySelector('.handle[data-i="'+i+'"][data-j="'+j+'"]');if(newHandle)newHandle.focus()});
+function downloadBlob(data,filename,type){const blob=data instanceof Blob?data:new Blob([data],{type});const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),15000)}
+async function svgToPng(svg,w,h,filename){const blob=new Blob([svg],{type:'image/svg+xml;charset=utf-8'}),url=URL.createObjectURL(blob);try{const img=new Image();await new Promise((ok,fail)=>{img.onload=ok;img.onerror=fail;img.src=url});const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;const ctx=canvas.getContext('2d');ctx.drawImage(img,0,0,w,h);const png=await new Promise(ok=>canvas.toBlob(ok,'image/png'));if(!png)throw new Error('無法轉換 PNG');downloadBlob(png,filename,'image/png')}finally{URL.revokeObjectURL(url)}}
+$('downloadTile').addEventListener('click',async()=>{try{const pts=tilePts(),xs=pts.map(p=>p[0]),ys=pts.map(p=>p[1]);const x0=Math.min(...xs)-.12,x1=Math.max(...xs)+.12,y0=Math.min(...ys)-.12,y1=Math.max(...ys)+.12;const sc=640/Math.max(x1-x0,y1-y0),W=Math.round((x1-x0)*sc),H=Math.round((y1-y0)*sc);const poly=pts.map(p=>scale(sub(p,[x0,y0]),sc));const svg='<svg xmlns="http://www.w3.org/2000/svg" width="'+W+'" height="'+H+'" viewBox="0 0 '+W+' '+H+'"><path d="'+tilePath(poly)+'" fill="'+cfg.color+'" stroke="#2b5b67" stroke-width="3"/></svg>';await svgToPng(svg,W,H,'我的鑲嵌元件.png');setStatus('已下載透明背景的元件 PNG')}catch(e){setStatus('下載失敗：'+e.message)}});
+$('downloadPattern').addEventListener('click',async()=>{try{let svg=renderPatternSvg(1200,850,190,{strokeWidth:1.6});await svgToPng(svg,1200,850,'我的鑲嵌圖.png');setStatus('已下載完整鑲嵌圖 PNG')}catch(e){setStatus('下載失敗：'+e.message)}});
+function paperSize(){let [w,h]=dims[$('paper').value];return $('orientation').value==='landscape'?[h,w]:[w,h]}
+function selection(){return document.querySelector('input[name="printKind"]:checked').value}
+function getPrintSvg(){const [W,H]=paperSize(),tileMm=Number($('tileSize').value)*10,kind=selection();let content='';if(kind==='pattern'){
+ const svg=renderPatternSvg(W,H,tileMm,{strokeWidth:.33,background:'#fff'});
+ return svg.replace('<svg xmlns=', '<svg data-print="pattern" xmlns=').replace('width="'+W+'" height="'+H+'"', 'width="'+W+'mm" height="'+H+'mm"');
+ }
+ // Cutting template: disconnected copies with ample whitespace around each outline.
+ const pts=tilePts(),xs=pts.map(p=>p[0]),ys=pts.map(p=>p[1]),x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys);
+ const bw=(x1-x0)*tileMm,bh=(y1-y0)*tileMm,sep=8,margin=12,nx=Math.floor((W-margin*2+sep)/(bw+sep)),ny=Math.floor((H-margin*2+sep)/(bh+sep));
+ if(nx<1||ny<1)throw new Error('元件尺寸太大，無法在此紙張上排入完整模板；請縮小元件基本邊長。');
+ for(let i=0;i<nx;i++)for(let j=0;j<ny;j++){
+  const base=[margin+i*(bw+sep)-x0*tileMm,margin+j*(bh+sep)-y0*tileMm];
+  content+='<path d="'+tilePath(mapped(pts,base,tileMm))+'" fill="#fff" stroke="#325e70" stroke-width=".5"/>';
+ }
+ return '<svg xmlns="http://www.w3.org/2000/svg" width="'+W+'mm" height="'+H+'mm" viewBox="0 0 '+W+' '+H+'"><rect width="'+W+'" height="'+H+'" fill="#fff"/>'+content+'</svg>';
+}
+$('downloadSVG').addEventListener('click',()=>{try{let svg=getPrintSvg();downloadBlob(svg,'鑲嵌列印稿_'+$('paper').value+'_'+selection()+'.svg','image/svg+xml');setStatus('已下載指定紙張尺寸 SVG；可用瀏覽器開啟列印。')}catch(e){setStatus(e.message)}});
+$('print').addEventListener('click',()=>{try{const svg=getPrintSvg(),[W,H]=paperSize(),win=window.open('','_blank');if(!win){setStatus('瀏覽器封鎖了列印視窗；請使用「下載可列印 SVG」後再列印。');return}win.document.open();win.document.write('<!doctype html><html><head><meta charset="utf-8"><title>鑲嵌列印稿</title><style>@page{size:'+W+'mm '+H+'mm;margin:0}html,body{padding:0;margin:0;width:'+W+'mm;height:'+H+'mm}svg{display:block;width:'+W+'mm;height:'+H+'mm;max-width:none;max-height:none}@media screen{body{background:#eee}}</style></head><body>'+svg+'<script>window.onload=function(){setTimeout(function(){window.print()},450)}<\/script></body></html>');win.document.close();setStatus('列印頁已開啟。請確認紙張選項、實際大小及印表機支援尺寸。')}catch(e){setStatus('無法列印：'+e.message)}});
+resetValues();render();
+</script>
+</body>
+</html>
