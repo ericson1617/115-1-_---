@@ -34,6 +34,7 @@ main{max-width:1400px;margin:16px auto;padding:0 14px 24px}.intro{background:whi
 </optgroup>
 <optgroup label="動物與趣味造型">
 <option value="wing">翅膀曲線</option><option value="cat">貓耳雙峰</option><option value="puzzle">拼圖凹凸</option>
+<option value="lizard">🦎 蜥蜴｜頭尾與四肢靈感</option>
 </optgroup>
 </select><p class="subtle" style="margin:5px 0 0">先產生邊線輪廓，再拖曳橘點創作自己的元件；預設不是完整的動物圖。</p></div>
 <div class="field"><label>元件顏色與線條</label><div class="btnrow" style="align-items:center"><input id="color" type="color" value="#79bfc8" aria-label="元件顏色"><label style="margin:0;font-weight:500" for="outline"><input type="checkbox" id="outline" checked> 顯示邊界</label></div></div>
@@ -75,11 +76,11 @@ function resetValues(){cfg.values=Array.from({length:cfg.mode==='translation'?2:
 function stateCopy(){return {values:cfg.values.map(a=>a.slice()),positions:cfg.positions.map(a=>a.slice())}}
 function restoreState(s){cfg.values=s.values.map(a=>a.slice());cfg.positions=s.positions.map(a=>a.slice())}
 function storeUndo(){cfg.undo.push(stateCopy());if(cfg.undo.length>40)cfg.undo.shift()}
-function positionBounds(i,j){const a=cfg.positions[i];if(cfg.mode==='rotation')return j===0?[.08,Math.min(.34,a[1]-.07)]:[Math.max(.30,a[0]+.07),.46];return [j===0?.08:a[j-1]+.07,j===a.length-1?.92:a[j+1]-.07]}
+function positionBounds(i,j){const a=cfg.positions[i],gap=a.length>3?.045:.07;if(cfg.mode==='rotation')return [j===0?.06:a[j-1]+gap,j===a.length-1?.46:a[j+1]-gap];return [j===0?.06:a[j-1]+gap,j===a.length-1?.94:a[j+1]-gap]}
 function nearestValidPosition(i,j,t){const [lo,hi]=positionBounds(i,j);return clamp(t,lo,hi)}
 // Catmull-Rom interpolation between editable offsets gives organic, smooth edges.
 function interpolated(t,knots){if(t<=0||t>=1)return 0;let i=0;while(i<knots.length-2&&t>knots[i+1][0])i++;const [x1,y1]=knots[i],[x2,y2]=knots[i+1],s=(t-x1)/(x2-x1);const p0=knots[Math.max(0,i-1)],p3=knots[Math.min(knots.length-1,i+2)];const m1=(y2-p0[1])/(x2-p0[0]),m2=(p3[1]-y1)/(p3[0]-x1),h=x2-x1;return (2*s**3-3*s*s+1)*y1+(s**3-2*s*s+s)*h*m1+(-2*s**3+3*s*s)*y2+(s**3-s*s)*h*m2}
-function rawOffset(i,t){const v=cfg.values[i],p=cfg.positions[i];if(cfg.mode==='translation')return interpolated(t,[[0,0],[p[0],v[0]],[p[1],v[1]],[p[2],v[2]],[1,0]]);return interpolated(t,[[0,0],[p[0],v[0]],[p[1],v[1]],[.5,0],[1-p[1],-v[1]],[1-p[0],-v[0]],[1,0]])}
+function rawOffset(i,t){const v=cfg.values[i],p=cfg.positions[i],knots=[[0,0],...p.map((x,j)=>[x,v[j]])];if(cfg.mode==='translation')return interpolated(t,[...knots,[1,0]]);return interpolated(t,[...knots,[.5,0],...p.map((x,j)=>[1-x,-v[j]]).reverse(),[1,0]])}
 function rawEdge(i){const [A,B]=baseEdges()[i],n=normal(A,B);const pts=[];for(let k=0;k<=50;k++){const t=k/50;const p=add(add(A,scale(sub(B,A),t)),scale(n,rawOffset(i,t)));pts.push(p)}return pts}
 function edgePts(i){if(cfg.mode==='rotation')return rawEdge(i);if(i===0||i===1)return rawEdge(i);const p=vertices();const base=rawEdge(i===2?0:1),shift=i===2?sub(p[3],p[0]):sub(p[3],p[2]);return base.map(q=>add(q,shift)).reverse()}
 function tilePts(){const r=[];for(let i=0;i<4;i++){const e=edgePts(i);r.push(...(i?e.slice(1):e))}return r}
@@ -118,6 +119,7 @@ function validTile(){
 }
 function drawEditor(){const unit=200,p=tilePts(),vv=vertices(),base=[145,118],g=$('editG');let html='<defs><pattern id="dots" width="24" height="24" patternUnits="userSpaceOnUse"><circle cx="3" cy="3" r="1" fill="#e4edf0"/></pattern></defs><rect width="500" height="485" fill="url(#dots)"/>';
  html+='<path d="'+tilePath(mapped(p,base,unit))+'" fill="'+cfg.color+'" fill-opacity=".7" stroke="#296477" stroke-width="2.8"/>';
+ html+=lizardDetails(base,unit);
  const all=baseEdges();const num=cfg.mode==='translation'?2:4;
  for(let i=0;i<num;i++)for(let j=0;j<cfg.values[i].length;j++){
    const t=cfg.positions[i][j];
@@ -130,6 +132,28 @@ function drawEditor(){const unit=200,p=tilePts(),vv=vertices(),base=[145,118],g=
  html+='<path d="'+tilePath(mapped(vv,base,unit))+'" fill="none" stroke="#7c9fac" stroke-dasharray="7 5" stroke-width="1.7"/>';
  html+='<text x="25" y="454" font-size="15" fill="#587988">虛線＝原始形狀　橘點＝可調控制點（'+(cfg.dragMode==='free'?'自由方向':'限制方向')+'）</text>';
  g.innerHTML=html;
+}
+// Stylized lizard markings stay inside the tile; they do not change any edges.
+function lizardDetails(O,unit,halfTurn=false){
+ if(cfg.preset!=='lizard')return '';
+ const [u,v]=vecs();
+ function P(a,b){let p=add(scale(u,a),scale(v,b));if(halfTurn)p=sub(add(u,v),p);return add(O,scale(p,unit))}
+ function line(points,thick=1){const d=points.map(([a,b],i)=>{const q=P(a,b);return(i?'L':'M')+q[0].toFixed(2)+' '+q[1].toFixed(2)}).join(' ');
+  return '<path d="'+d+'" fill="none" stroke="#285168" stroke-linecap="round" stroke-linejoin="round" stroke-width="'+(unit*.011*thick).toFixed(2)+'" opacity=".82"/>';}
+ const eye=P(.73,.27);let res='<g class="lizard-markings">';
+ res+=line([[.14,.80],[.23,.70],[.30,.62],[.42,.54],[.53,.44],[.64,.35],[.77,.24]],1.45);
+ res+=line([[.36,.60],[.29,.48],[.19,.44],[.16,.38]],.88);
+ res+=line([[.17,.44],[.11,.43]],.78);
+ res+=line([[.51,.46],[.38,.33],[.28,.32],[.25,.26]],.88);
+ res+=line([[.28,.32],[.22,.34]],.75);
+ res+=line([[.44,.55],[.35,.68],[.29,.78],[.22,.81]],.95);
+ res+=line([[.29,.78],[.26,.86]],.78);
+ res+=line([[.63,.36],[.73,.48],[.80,.57],[.86,.57]],.95);
+ res+=line([[.80,.57],[.83,.64]],.78);
+ res+=line([[.70,.29],[.83,.24],[.85,.20]],.68);
+ res+='<circle cx="'+eye[0].toFixed(2)+'" cy="'+eye[1].toFixed(2)+'" r="'+(unit*.016).toFixed(2)+'" fill="#1e3a4a"/>';
+ for(const ab of [[.41,.52],[.48,.46],[.56,.40]]){const q=P(...ab);res+='<circle cx="'+q[0].toFixed(2)+'" cy="'+q[1].toFixed(2)+'" r="'+(unit*.008).toFixed(2)+'" fill="#326f82"/>'}
+ return res+'</g>';
 }
 function fillFor(i,j){return cfg.multiColor?colorPalette[((i-j)%colorPalette.length+colorPalette.length)%colorPalette.length]:cfg.color}
 // Core invariant: translation uses opposite edges copied by lattice vectors;
@@ -147,7 +171,7 @@ function renderPatternSvg(W,H,unit,opts={}){
   let origin=add(scale(pu,i),scale(pv,j));const odd=cfg.mode==='rotation'&&Math.abs(i+j)%2===1;
   let pts=mapped(p,origin,unit,odd);
   if(!pts.some(pt=>pt[0]>-1.8*unit&&pt[0]<W+1.8*unit&&pt[1]>-1.8*unit&&pt[1]<H+1.8*unit))continue;
-  paths.push('<path d="'+tilePath(pts)+'" fill="'+(opts.color||fillFor(i,j))+'" stroke="'+(border?'#496e79':'none')+'" stroke-width="'+(opts.strokeWidth||0.7)+'"/>');
+  paths.push('<path d="'+tilePath(pts)+'" fill="'+(opts.color||fillFor(i,j))+'" stroke="'+(border?'#496e79':'none')+'" stroke-width="'+(opts.strokeWidth||0.7)+'"/>'+lizardDetails(origin,unit,odd));
  }
  return '<svg xmlns="http://www.w3.org/2000/svg" width="'+W+'" height="'+H+'" viewBox="0 0 '+W+' '+H+'"><rect width="100%" height="100%" fill="'+(opts.background||'#fffdf7')+'"/>'+paths.join('')+'</svg>';
 }
@@ -156,7 +180,7 @@ function drawPreview(){const [u,v]=vecs(),unit=140,W=740,H=540,origin=[W/2-(u[0]
  const P=add(origin,add(scale(pu,i),scale(pv,j)));
  if(P[0]<-500||P[0]>1000||P[1]<-500||P[1]>1000)continue;
  const poly=mapped(pts,P,unit,cfg.mode==='rotation'&&(Math.abs(i+j)%2===1));
- s+='<path d="'+tilePath(poly)+'" fill="'+fillFor(i,j)+'" stroke="'+(cfg.outline?'#527784':'none')+'" stroke-width="1.5"/>';
+ s+='<path d="'+tilePath(poly)+'" fill="'+fillFor(i,j)+'" stroke="'+(cfg.outline?'#527784':'none')+'" stroke-width="1.5"/>'+lizardDetails(P,unit,cfg.mode==='rotation'&&(Math.abs(i+j)%2===1));
  }
  $('previewG').innerHTML=s;
  $('modeChip').textContent=cfg.mode==='translation'?'平移 · TRANSLATION':'180° 旋轉 · HALF-TURN';
@@ -168,7 +192,19 @@ function render(){drawEditor();drawPreview()}
 // generated by edgePts(), so the corresponding boundaries always match.
 const contourPresets={"cloud":{"translation":[[0.45,0.9,0.45],[0.25,0.75,0.35]],"rotation":[[0.43,0.82],[0.22,0.69],[0.43,0.82],[0.22,0.69]]},"mountain":{"translation":[[-0.12,0.94,-0.08],[0.18,-0.58,0.14]],"rotation":[[0.05,0.96],[-0.28,0.7],[0.05,0.96],[-0.28,0.7]]},"petal":{"translation":[[0.22,0.85,0.22],[0.42,0.72,0.42]],"rotation":[[0.27,0.84],[0.34,0.73],[0.27,0.84],[0.34,0.73]]},"feather":{"translation":[[0.75,-0.57,0.73],[0.46,-0.52,0.48]],"rotation":[[0.88,-0.59],[0.62,-0.45],[0.88,-0.59],[0.62,-0.45]]},"shell":{"translation":[[-0.1,0.35,0.88],[0.84,0.34,-0.08]],"rotation":[[-0.17,0.8],[0.7,-0.31],[-0.17,0.8],[0.7,-0.31]]},"wing":{"translation":[[0.74,0.92,-0.28],[0.68,0.22,-0.42]],"rotation":[[0.74,-0.34],[0.64,0.3],[0.74,-0.34],[0.64,0.3]]},"cat":{"translation":[[0.85,-0.25,0.85],[0.13,0.78,0.11]],"rotation":[[0.9,-0.42],[0.23,0.8],[0.9,-0.42],[0.23,0.8]]},"puzzle":{"translation":[[-0.3,0.98,-0.3],[0.25,-0.85,0.25]],"rotation":[[-0.26,0.91],[0.34,-0.8],[-0.26,0.91],[0.34,-0.8]]}};
 function presetValues(name){
- resetValues();const l=templateLimit();
+ resetValues();cfg.preset=name;const l=templateLimit();
+ if(name==='lizard'){
+  if(cfg.mode==='translation'){
+   cfg.positions=[[.11,.27,.45,.66,.84],[.12,.28,.46,.67,.86]];
+   cfg.values=[[-.43,.85,-.45,.78,-.32],[.39,-.76,.64,-.75,.36]].map(row=>row.map(x=>x*l));
+  }else{
+   cfg.positions=Array.from({length:4},()=>[.10,.22,.35,.44]);
+   cfg.values=[[-.37,.95,-.79,.65],[.42,-.82,.92,-.63],[.45,.85,-.89,.52],[-.50,.76,-.84,.48]].map(row=>row.map(x=>x*l));
+  }
+  for(let k=0;k<9&&!validTile();k++)cfg.values=cfg.values.map(row=>row.map(x=>x*.72));
+  if(!validTile())cfg.values=cfg.values.map(row=>row.map(()=>0));
+  return;
+ }
  // Keep original presets unchanged where geometrically valid.
  const legacy={blank:[0,0,0],fish:[.1,.72,-.18],leaf:[.28,.66,.2],wave:[.44,-.48,.52],zigzag:[.64,-.62,.68]};
  if(Object.prototype.hasOwnProperty.call(legacy,name)){
@@ -195,7 +231,7 @@ $('dragMode').addEventListener('change',e=>{
  setStatus(cfg.dragMode==='free'?'已開啟自由方向拖曳，試著沿斜方向移動橘點。':'已切換為限制方向拖曳。');drawEditor();
 });
 $('undo').addEventListener('click',()=>{if(cfg.undo.length){restoreState(cfg.undo.pop());render()}});
-$('reset').addEventListener('click',()=>{storeUndo();cfg.values=cfg.values.map(a=>a.map(()=>0));cfg.positions=defaultPositions();$('preset').value='blank';render()});
+$('reset').addEventListener('click',()=>{storeUndo();cfg.values=cfg.values.map(a=>a.map(()=>0));cfg.positions=defaultPositions();cfg.preset='blank';$('preset').value='blank';render()});
 $('random').addEventListener('click',()=>{storeUndo();const l=templateLimit();cfg.values=cfg.values.map(a=>a.map(()=>((Math.random()-.5)*1.3*l)));render()});
 let dragging=null;
 function svgPos(evt){const svg=$('editSvg'),pt=svg.createSVGPoint();pt.x=evt.clientX;pt.y=evt.clientY;const q=pt.matrixTransform(svg.getScreenCTM().inverse());return [(q.x-145)/200,(q.y-118)/200]}
@@ -226,7 +262,7 @@ $('editSvg').addEventListener('keydown',e=>{
 });
 function downloadBlob(data,filename,type){const blob=data instanceof Blob?data:new Blob([data],{type});const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),15000)}
 async function svgToPng(svg,w,h,filename){const blob=new Blob([svg],{type:'image/svg+xml;charset=utf-8'}),url=URL.createObjectURL(blob);try{const img=new Image();await new Promise((ok,fail)=>{img.onload=ok;img.onerror=fail;img.src=url});const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;const ctx=canvas.getContext('2d');ctx.drawImage(img,0,0,w,h);const png=await new Promise(ok=>canvas.toBlob(ok,'image/png'));if(!png)throw new Error('無法轉換 PNG');downloadBlob(png,filename,'image/png')}finally{URL.revokeObjectURL(url)}}
-$('downloadTile').addEventListener('click',async()=>{try{const pts=tilePts(),xs=pts.map(p=>p[0]),ys=pts.map(p=>p[1]);const x0=Math.min(...xs)-.12,x1=Math.max(...xs)+.12,y0=Math.min(...ys)-.12,y1=Math.max(...ys)+.12;const sc=640/Math.max(x1-x0,y1-y0),W=Math.round((x1-x0)*sc),H=Math.round((y1-y0)*sc);const poly=pts.map(p=>scale(sub(p,[x0,y0]),sc));const svg='<svg xmlns="http://www.w3.org/2000/svg" width="'+W+'" height="'+H+'" viewBox="0 0 '+W+' '+H+'"><path d="'+tilePath(poly)+'" fill="'+cfg.color+'" stroke="#2b5b67" stroke-width="3"/></svg>';await svgToPng(svg,W,H,'我的鑲嵌元件.png');setStatus('已下載透明背景的元件 PNG')}catch(e){setStatus('下載失敗：'+e.message)}});
+$('downloadTile').addEventListener('click',async()=>{try{const pts=tilePts(),xs=pts.map(p=>p[0]),ys=pts.map(p=>p[1]);const x0=Math.min(...xs)-.12,x1=Math.max(...xs)+.12,y0=Math.min(...ys)-.12,y1=Math.max(...ys)+.12;const sc=640/Math.max(x1-x0,y1-y0),W=Math.round((x1-x0)*sc),H=Math.round((y1-y0)*sc);const poly=pts.map(p=>scale(sub(p,[x0,y0]),sc));const svg='<svg xmlns="http://www.w3.org/2000/svg" width="'+W+'" height="'+H+'" viewBox="0 0 '+W+' '+H+'"><path d="'+tilePath(poly)+'" fill="'+cfg.color+'" stroke="#2b5b67" stroke-width="3"/>'+lizardDetails([-x0*sc,-y0*sc],sc)+'</svg>';await svgToPng(svg,W,H,'我的鑲嵌元件.png');setStatus('已下載透明背景的元件 PNG')}catch(e){setStatus('下載失敗：'+e.message)}});
 $('downloadPattern').addEventListener('click',async()=>{try{let svg=renderPatternSvg(1200,850,190,{strokeWidth:1.6});await svgToPng(svg,1200,850,'我的鑲嵌圖.png');setStatus('已下載完整鑲嵌圖 PNG')}catch(e){setStatus('下載失敗：'+e.message)}});
 function paperSize(){let [w,h]=dims[$('paper').value];return $('orientation').value==='landscape'?[h,w]:[w,h]}
 function selection(){return document.querySelector('input[name="printKind"]:checked').value}
@@ -240,7 +276,7 @@ function getPrintSvg(){const [W,H]=paperSize(),tileMm=Number($('tileSize').value
  if(nx<1||ny<1)throw new Error('元件尺寸太大，無法在此紙張上排入完整模板；請縮小元件基本邊長。');
  for(let i=0;i<nx;i++)for(let j=0;j<ny;j++){
   const base=[margin+i*(bw+sep)-x0*tileMm,margin+j*(bh+sep)-y0*tileMm];
-  content+='<path d="'+tilePath(mapped(pts,base,tileMm))+'" fill="#fff" stroke="#325e70" stroke-width=".5"/>';
+  content+='<path d="'+tilePath(mapped(pts,base,tileMm))+'" fill="#fff" stroke="#325e70" stroke-width=".5"/>'+lizardDetails(base,tileMm);
  }
  return '<svg xmlns="http://www.w3.org/2000/svg" width="'+W+'mm" height="'+H+'mm" viewBox="0 0 '+W+' '+H+'"><rect width="'+W+'" height="'+H+'" fill="#fff"/>'+content+'</svg>';
 }
