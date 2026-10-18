@@ -399,16 +399,64 @@ function render(){
  const opt=$('shape');if(opt)opt.value=s.shape;
 }
 function svgPt(svg,evt){const pt=svg.createSVGPoint();pt.x=evt.clientX;pt.y=evt.clientY;return pt.matrixTransform(svg.getScreenCTM().inverse())}
+function localFromPointer(evt){
+ const svg=$('editorScene').querySelector('svg'),p=svgPt(svg,evt);
+ const unit=s.shape==='hexagon'?138:226,O=s.shape==='hexagon'?[260,214]:[128,93];
+ return[(p.x-O[0])/unit,(p.y-O[1])/unit];
+}
+function sampleFreehand(pos){
+ if(!s.sketching)return;
+ const pts=s.sketching.points,last=pts[pts.length-1];
+ if(norm(sub(last,pos))>.008&&pts.length<175)pts.push(pos);
+ const line=$('editorScene').querySelector('#penStroke');
+ if(line)line.setAttribute('d',path(pts.map(p=>add([128,93],mul(p,226)))));
+}
+function endFreehand(cancelled=false){
+ const active=s.sketching;s.sketching=null;
+ if(!active)return;
+ if(cancelled){render();return}
+ const e=active.edge,src=sourceForSide(e),pr=s.trans[src];
+ if(active.points.length<6){setStatus('線段太短，請沿整條邊畫出較完整的輪廓。');render();return}
+ let points=active.points.map(p=>projectOnSelected(p,e));
+ if(points[0][0]>points[points.length-1][0])points.reverse();
+ if(points.at(-1)[0]-points[0][0]<.48){setStatus('請由這條邊的一端畫向另一端，讓筆畫跨過至少半條邊。');render();return}
+ const limit=.56*minBaseSide(),simplified=[[0,0]];
+ for(const [t,d] of points){
+  if(t<-.18||t>1.18||Math.abs(d)>limit){setStatus('筆畫太遠，請在淡色標示的半邊附近畫出輪廓。');render();return}
+  const last=simplified.at(-1);
+  if(Math.hypot(t-last[0],d-last[1])>.016)simplified.push([+t.toFixed(4),+d.toFixed(4)]);
+ }
+ simplified.push([1,0]);
+ let sketch=simplified;
+ if(sketch.length>80){const step=Math.ceil((sketch.length-2)/76),thin=[sketch[0]];for(let k=1;k<sketch.length-1;k+=step)thin.push(sketch[k]);thin.push([1,0]);sketch=thin}
+ const old=pr.sketch,prior=snapshot();
+ pr.sketch=sketch;
+ if(!valid()){pr.sketch=old;render();setStatus('這個輪廓會與元件其他邊相交，已保留原來的輪廓。請改畫較小的凹凸。');return}
+ s.history.push(prior);if(s.history.length>45)s.history.shift();
+ s.stage=3;s.preset='blank';render();
+ setStatus('已完成「'+edgeLabel(e)+'」的自由畫線，對邊已自動平移配對！');
+}
 function onMove(evt){
+ if(page==='translation'&&s.sketching){sampleFreehand(localFromPointer(evt));return}
  if(!s.drag)return;
- const svg=$('editorScene').querySelector('svg'),point=svgPt(svg,evt),unit=s.shape==='hexagon'?138:226,origin=s.shape==='hexagon'?[260,214]:[128,93],pos=[(point.x-origin[0])/unit,(point.y-origin[1])/unit];
- const {kind,index,edge,j}=s.drag,pr=profile(kind,index),[A,B]=bases()[edge],axis=sub(B,A),len2=dot(axis,axis),n=normal(A,B);
- const oldP=pr.p[j],oldV=pr.v[j];
- const gap=.035,min=kind==='r'?.055:.035,max=kind==='r'?.455:.965;
- const lower=j?pr.p[j-1]+gap:min,upper=j===pr.p.length-1?max:pr.p[j+1]-gap;
- const t=bound(dot(sub(pos,A),axis)/len2,lower,upper);
- const foot=add(A,mul(axis,t)),limit=Math.min(.5,.50*minBaseSide());
- pr.p[j]=Number(t.toFixed(4));pr.v[j]=Number(bound(dot(sub(pos,foot),n),-limit,limit).toFixed(4));
+ const pos=localFromPointer(evt),{kind,index,edge,j,sketch}=s.drag,pr=profile(kind,index),[A,B]=bases()[edge];
+ if(page==='translation'){
+  const [t,d]=projectOnSelected(pos,edge),flipped=edge>=2;
+  if(sketch){
+   const old=pr.sketch[j].slice();
+   pr.sketch[j]=[+bound(t,-.16,1.16).toFixed(4),+bound(d,-.54*minBaseSide(),.54*minBaseSide()).toFixed(4)];
+   if(!valid()){pr.sketch[j]=old;setStatus('這樣會造成線條交叉，控制點已退回。');return}
+  }else{
+   const prevT=pr.p[j],prevD=pr.v[j],lo=j?pr.p[j-1]+.035:.035,hi=j===pr.p.length-1?.965:pr.p[j+1]-.035;
+   pr.p[j]=+bound(t,lo,hi).toFixed(4);pr.v[j]=+bound(d,-.50*minBaseSide(),.50*minBaseSide()).toFixed(4);
+   if(!valid()){pr.p[j]=prevT;pr.v[j]=prevD;setStatus('這樣會造成線條交叉，控制點已退回。');return}
+  }
+  render();return;
+ }
+ const axis=sub(B,A),len2=dot(axis,axis),n=normal(A,B),oldP=pr.p[j],oldV=pr.v[j];
+ const gap=.035,min=kind==='r'?.055:.035,max=kind==='r'?.455:.965,lower=j?pr.p[j-1]+gap:min,upper=j===pr.p.length-1?max:pr.p[j+1]-gap;
+ const t=bound(dot(sub(pos,A),axis)/len2,lower,upper),foot=add(A,mul(axis,t)),limit=Math.min(.5,.50*minBaseSide());
+ pr.p[j]=+t.toFixed(4);pr.v[j]=+bound(dot(sub(pos,foot),n),-limit,limit).toFixed(4);
  if(!valid()){pr.p[j]=oldP;pr.v[j]=oldV;setStatus('這樣會造成輪廓交叉，已限制控制點的位置。');return}
  render();
 }
