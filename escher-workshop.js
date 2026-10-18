@@ -219,8 +219,8 @@ function movementSVG(W,H,unit,progress,print=false){
  if(s.mode==='translate'||s.mode==='mixY'){
   const v=templates[s.shape][1];move=p=>add(p,mul(v,progress));
  }else{
-  angle=s.mode==='rotate90'?-Math.PI/2*progress:s.mode==='rotate120'?-2*Math.PI/3*progress:Math.PI*progress;
-  pivot=s.mode==='rotate90'?[1,0]:s.mode==='rotate120'?hexVerts()[0]:mul(add(bases()[0][0],bases()[0][1]),.5);
+  angle=s.mode==='rotate90'?Math.PI/2*progress:s.mode==='rotate120'?-2*Math.PI/3*progress:Math.PI*progress;
+  pivot=s.mode==='rotate90'?[1,1]:s.mode==='rotate120'?hexVerts()[0]:mul(add(bases()[0][0],bases()[0][1]),.5);
   move=p=>rotate(p,angle,pivot);
  }
  const toPx=p=>add(O,mul(p,unit));
