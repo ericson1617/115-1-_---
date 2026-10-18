@@ -323,7 +323,57 @@ function edgeLabel(e){
  const label=['上邊','右邊','下邊','左邊'];
  return(s.shape==='triangle'?['第 1 邊','第 2 邊','第 3 邊']:label)[e]||'邊線';
 }
+
+function sourceForSide(e){return e%2===0?0:1}
+function pointOnSelected(t,d,e){
+ const src=sourceForSide(e),[A,B]=bases()[src],[u,v]=templates[s.shape],
+ shift=e===2?v:e===3?mul(u,-1):[0,0];
+ return add(add(add(A,mul(sub(B,A),t)),mul(normal(A,B),d)),shift);
+}
+function projectOnSelected(p,e){
+ const src=sourceForSide(e),[A,B]=bases()[src],[u,v]=templates[s.shape],shift=e===2?v:e===3?mul(u,-1):[0,0],q=sub(p,shift),axis=sub(B,A);
+ return [dot(sub(q,A),axis)/dot(axis,axis),dot(sub(q,A),normal(A,B))];
+}
+function editorPoint(e){
+ const [A,B]=bases()[e];return [A,B];
+}
+function drawTranslationEditor(){
+ const W=520,H=425,unit=226,O=[128,93],vs=verts(),e=s.selectedEdge,src=sourceForSide(e),pr=s.trans[src];
+ const toPx=p=>add(O,mul(p,unit));
+ const [a,b,d,c]=vs,mid=(p,q)=>mul(add(p,q),.5);
+ const a01=mid(a,b),a12=mid(b,d),a23=mid(d,c),a30=mid(c,a);
+ const half=e===0?[a,b,a12,a30]:e===1?[b,d,a23,a01]:e===2?[a30,a12,d,c]:[a,a01,a23,c];
+ let svg='<defs><pattern id="gridD" width="23" height="23" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1" fill="#dcecf4"/></pattern></defs><rect width="'+W+'" height="'+H+'" fill="url(#gridD)"/>';
+ svg+='<path d="'+path(half.map(toPx))+'" fill="#fff1df" stroke="none"/>';
+ svg+='<path d="'+path(tile().map(toPx))+'" fill="'+esc(s.color)+'" fill-opacity=".77" stroke="#2c617d" stroke-width="2.4"/>';
+ svg+='<path class="selected-edge" d="'+path(edge(e).map(toPx))+'" fill="none" stroke="#e98b3d" stroke-width="5" stroke-linecap="round"/>';
+ svg+='<path d="'+path(edge((e+2)%4).map(toPx))+'" fill="none" stroke="#329d90" stroke-width="4" stroke-dasharray="6 5"/>';
+ for(const p of bases()[e]){const q=toPx(p);svg+='<circle cx="'+fmt(q[0])+'" cy="'+fmt(q[1])+'" r="5.2" fill="#fff" stroke="#326781" stroke-width="2"/>'}
+ let count=0;
+ if(s.drawTool==='points'){
+  const ink=Array.isArray(pr.sketch)&&pr.sketch.length>2;
+  const list=ink?pr.sketch.slice(1,-1).map((_,j)=>j+1).filter((_,j)=>j%Math.max(1,Math.ceil((pr.sketch.length-2)/9))===0):pr.p.map((_,j)=>j);
+  for(const j of list){
+   const [t,d]=ink?pr.sketch[j]:[pr.p[j],pr.v[j]],p=toPx(pointOnSelected(t,d,e)),base=toPx(pointOnSelected(t,0,e));
+   svg+='<path d="M'+fmt(base[0])+','+fmt(base[1])+' L'+fmt(p[0])+','+fmt(p[1])+'" stroke="#bc8f6e" stroke-width="1.8" stroke-dasharray="3 3"/>';
+   svg+='<circle class="handle" data-kind="t" data-index="'+src+'" data-edge="'+e+'" data-j="'+j+'" data-sketch="'+(ink?'1':'0')+'" cx="'+fmt(p[0])+'" cy="'+fmt(p[1])+'" r="8.4" tabindex="0" role="button"/>';
+   count++;
+  }
+ }
+ for(const p of vs){const q=toPx(p);svg+='<circle cx="'+fmt(q[0])+'" cy="'+fmt(q[1])+'" r="3.5" fill="white" stroke="#2f708e" stroke-width="1.6"/>'}
+ svg+='<path id="penStroke" d="" fill="none" stroke="#f16f33" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/>';
+ $('editorScene').innerHTML='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 425" aria-label="選定邊的平移輪廓編輯區"><g>'+svg+'</g></svg>';
+ $('controlCount').textContent='正在編輯「'+edgeLabel(e)+'」；'+(s.drawTool==='pen'?'直接畫線，另一側會同步配對。':'拖曳 '+count+' 個橘色控制點，另一側同步配對。');
+ $('selectedEdge').value=String(e);
+ document.querySelectorAll('[data-edge-select]').forEach(b=>b.classList.toggle('selected',Number(b.dataset.edgeSelect)===e));
+ document.querySelectorAll('[data-draw-tool]').forEach(b=>b.classList.toggle('selected',b.dataset.drawTool===s.drawTool));
+ $('drawHint').textContent='已選擇「'+edgeLabel(e)+'」；'+(s.drawTool==='pen'?'自由畫線時，請由這條邊的一端畫向另一端。':'拖曳橘點修改線條，綠色虛線是自動配對的對邊。');
+ $('penTip').style.display=s.drawTool==='pen'?'block':'none';
+ $('addPoint').disabled=s.drawTool==='pen'||Boolean(pr.sketch);
+ $('editorScene').classList.toggle('penActive',s.drawTool==='pen');
+}
 function drawEditor(){
+ if(page==='translation')return drawTranslationEditor();
  const W=520,H=425,unit=s.shape==='hexagon'?138:226,origin=s.shape==='hexagon'?[260,214]:[128,93],vs=verts(),pts=transform(tile(),origin,unit),lines=bases();
  let svg='<defs><pattern id="gridD" width="23" height="23" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1" fill="#dcecf4"/></pattern></defs><rect width="'+W+'" height="'+H+'" fill="url(#gridD)"/>';
  svg+='<path d="'+path(pts)+'" stroke="#286482" stroke-width="2.4" fill="'+esc(s.color)+'" fill-opacity=".82"/>';
