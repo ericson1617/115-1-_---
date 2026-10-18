@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f5fbff"><title>藝數探索｜艾薛爾鑲嵌創作室｜綜合變形</title><link rel="stylesheet" href="escher-workshop.css"></head>
 <body data-page="create"><main class="wrap">
-<header class="hero"><div><div class="eyebrow">藝數探索 · ESCHER WORKSHOP · CREATE · COMBINE · PRINT</div><h1>艾薛爾鑲嵌創作室｜綜合變形</h1><p>W9 元件設計 × W10 實體描繪｜平移與半周旋轉可以在同一個元件上合作</p></div><img src="author-avatar.svg" class="heroAvatar" alt="藝數探索老師頭像"></header>
+<header class="hero"><div><div class="eyebrow">藝數探索 · ESCHER WORKSHOP · CREATE · COMBINE · PRINT</div><h1>艾薛爾鑲嵌創作室｜綜合變形</h1></div><div style="display:flex;align-items:center;gap:10px;flex-shrink:0"><span style="font-weight:800;color:#315e7c;white-space:nowrap;font-size:14px">徐丙忠老師</span><img src="author-avatar.svg" class="heroAvatar" alt="徐丙忠老師頭像"></div></header>
 <nav class="links" aria-label="課程網站導航"><a href="escher-translation.html">① 平移原理</a><a href="escher-rotation.html">② 旋轉原理</a><a class="current" href="escher-creation.html">③ 綜合創作</a><a href="tessellation.html">原本的鑲嵌工作室</a></nav>
 <div class="introGrid"><div class="intro"><b>數學上的原理</b><div>同一塊元件可指定<b>一組對邊做平移</b>，另外兩邊各自做<b>180° 旋轉配對</b>。這會產生可無縫延伸的「混合式」鑲嵌。</div></div><div class="intro"><b>觀察與思考</b><div>創作挑戰：想做動物、植物還是幻想生物？先確認輪廓能密鋪，再在紙本創作時畫眼睛、翅膀與圖案。</div></div></div>
 <div class="mainGrid">
@@ -16,9 +16,9 @@
 <div class="field"><label>元件顏色與預覽方式</label><div class="toggleLine"><input type="color" id="color" value="#7dbfcf" aria-label="元件填色"><label><input type="checkbox" id="outline" checked> 顯示邊界</label><label><input type="checkbox" id="multicolor" checked> 多色區塊</label></div></div>
 <div class="status" id="status" aria-live="polite"></div>
 </section>
-<section class="panel"><h2>③ 逐步觀察與即時密鋪預覽</h2>
-<div class="stepbar"><button data-step="0">① 原始圖形</button><button data-step="1">② 第一步</button><button data-step="2">③ 擴充</button><button data-step="3" class="selected">④ 完整密鋪</button></div>
-<div class="field" style="padding:8px 12px;border:1px solid #d2e6ee;background:#f6fbfe;border-radius:12px"><label for="stepProgress">② 第一步：拖曳進度，觀察元件如何移動　<span id="progressValue">100%</span></label><input type="range" id="stepProgress" min="0" max="100" value="100" step="1" style="width:100%;accent-color:#2682ad"></div>
+<section class="panel"><h2>③ 四步驟演示｜剪貼、移動、接合、密鋪</h2>
+<div class="stepbar"><button data-step="0">① 初始元件</button><button data-step="1">② 剪貼與移動</button><button data-step="2">③ 一圈／兩片</button><button data-step="3" class="selected">④ 全面密鋪</button></div>
+<div class="field" style="padding:8px 12px;border:1px solid #d2e6ee;background:#f6fbfe;border-radius:12px"><label for="stepProgress">步驟二：拖曳進度，觀察移動方向與角度　<span id="progressValue">100%</span></label><input type="range" id="stepProgress" min="0" max="100" value="100" step="1" style="width:100%;accent-color:#2682ad"></div>
 <div class="note" id="stepText">從原圖形到可密鋪的元件</div>
 <div class="legend"><span class="tag" id="modeLabel">密鋪模式</span><span>預覽會隨拖曳即時更新；不同步驟使用相同的最新元件</span></div>
 <div class="canvasArea preview scene" id="previewScene"><svg viewBox="0 0 840 560"></svg></div>
