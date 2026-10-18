@@ -21,9 +21,17 @@
  <button type="button" data-draw-tool="points" class="selected">✥ 拖曳控制點</button>
  <button type="button" data-draw-tool="pen">✎ 自由畫線</button>
  </div></div>
+<div class="field" id="lineStyleField">
+  <label>控制點之間要怎麼連接？</label>
+  <div class="toolPicker" role="group" aria-label="控制點連線方式">
+    <button type="button" data-line-style="curve" class="selected">⌒ 曲線連接</button>
+    <button type="button" data-line-style="line">╱ 直線連接</button>
+  </div>
+  <p class="fine">選擇「直線」可做箭頭、稜角；選擇「曲線」適合波浪、葉片。切換時會直接更新目前的輪廓。</p>
+</div>
 <div class="note" id="drawHint">目前選擇「下邊」。拖曳橘色控制點；修改的邊線會同步平移到上邊。</div><div class="legend"><span><i class="swatch"></i>橘點：可拖曳</span><span class="tag">配對邊自動連動</span></div>
 <div class="canvasArea" id="editorScene"><svg viewBox="0 0 520 425" aria-label="元件編輯區"></svg></div>
-<p class="fine" id="controlCount">可拖曳控制點</p><div class="tip" id="penTip" style="display:none">請在編輯區沿著選定的邊，<b>用滑鼠或觸控筆連續畫出一條線</b>。兩端會自動接回頂點，對邊同步產生相同剪貼輪廓。可畫尖角、凹口，不限於原本幾個控制點；若線段相交，系統會拒絕這筆畫。</div>
+<p class="fine" id="controlCount">可拖曳控制點</p><div class="tip" id="penTip" style="display:none"><b>起點、終點已固定！</b>不用對準頂點，直接在淡色區域按住滑鼠或觸控筆，畫出中間想要的波浪、尖角或凹凸，再放開。系統會自動把筆畫接到兩端（畫反方向也沒關係），必要時縮小輪廓以避免圖形交叉。</div>
 <div class="buttongroup"><button id="addPoint">＋ 增加輪廓細節</button><button id="undo">↶ 上一步</button><button id="reset" class="warn">重設全部曲線</button></div>
 <div class="field"><label>元件顏色與預覽方式</label><div class="toggleLine"><input type="color" id="color" value="#7dbfcf" aria-label="元件填色"><label><input type="checkbox" id="outline" checked> 顯示邊界</label><label><input type="checkbox" id="multicolor" checked> 多色區塊</label></div></div>
 <div class="status" id="status" aria-live="polite"></div>
