@@ -35,3 +35,8 @@
 .inspireActions button{flex:1;min-width:98px}
 .inspireEmphasis{color:#a55d24;font-weight:850}
 @media(max-width:520px){.inspireGrid{grid-template-columns:repeat(2,minmax(0,1fr))}.inspirePromptRow{flex-wrap:wrap}.inspirePromptRow button{width:100%}}
+
+/* Larger illustrated examples: the recognizable motifs should be legible on a small student screen. */
+.inspireThumb{height:96px}
+.inspireThumb svg{height:100%;width:100%}
+.inspireCard:focus-visible{outline:3px solid #e59b46;outline-offset:2px}
