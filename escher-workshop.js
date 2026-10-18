@@ -462,6 +462,14 @@ function onMove(evt){
 }
 function attachEvents(){
  $('mode').value=s.mode;
+ if(page==='translation'){
+  const edgeChange=value=>{s.selectedEdge=Number(value);render();setStatus('已切換為「'+edgeLabel(s.selectedEdge)+'」，對邊將保持平移配對。')};
+  $('selectedEdge').addEventListener('change',e=>edgeChange(e.target.value));
+  document.querySelectorAll('[data-edge-select]').forEach(b=>b.addEventListener('click',()=>edgeChange(b.dataset.edgeSelect)));
+  document.querySelectorAll('[data-draw-tool]').forEach(b=>b.addEventListener('click',()=>{
+   s.drawTool=b.dataset.drawTool;render();setStatus(s.drawTool==='pen'?'自由畫線：用滑鼠或觸控筆，沿著淡色半邊畫出輪廓。':'控制點模式：拖曳選定邊的橘色控制點。');
+  }));
+ }
  $('mode').addEventListener('change',e=>{undoSave();s.mode=e.target.value;s.stage=3;render()});
  $('shape').addEventListener('change',e=>{undoSave();s.shape=e.target.value;s.stage=3;render()});
  $('preset').addEventListener('change',e=>{undoSave();presetValues(e.target.value);s.stage=3});
@@ -473,7 +481,8 @@ function attachEvents(){
  $('undo').addEventListener('click',()=>{if(s.history.length)restore(s.history.pop());else setStatus('目前沒有上一步。')});
  $('reset').addEventListener('click',()=>{undoSave();s.trans=[defaultProfile('t'),defaultProfile('t')];s.rot=Array.from({length:4},()=>defaultProfile('r'));s.quarter={p:[.13,.32,.5,.68,.87],v:[0,0,0,0,0]};s.hex=Array.from({length:3},()=>({p:[.18,.36,.57,.78],v:[0,0,0,0]}));s.preset='blank';$('preset').value='blank';s.stage=3;render()});
  $('addPoint').addEventListener('click',()=>{
-  const r=editRoles()[0],pr=profile(r[0],r[1]),max=r[0]==='r'?.47:.96;
+  const r=page==='translation'?['t',sourceForSide(s.selectedEdge),s.selectedEdge]:editRoles()[0],pr=profile(r[0],r[1]),max=r[0]==='r'?.47:.96;
+  if(pr.sketch){setStatus('自由畫線完成後可以拖曳橘點微調；若要改用一般控制點，請按「重設全部曲線」。');return}
   if(pr.p.length>=6){setStatus('每組輪廓最多 6 個可編輯控制點。');return}
   undoSave();let prev=.04,best=.0,at=0;
   for(let i=0;i<=pr.p.length;i++){const next=i===pr.p.length?max:pr.p[i],d=next-prev;if(d>best){best=d;at=i}prev=next}
@@ -482,16 +491,27 @@ function attachEvents(){
  });
  const container=$('editorScene');
  container.addEventListener('pointerdown',e=>{
+  if(page==='translation'&&s.drawTool==='pen'){
+   s.sketching={edge:s.selectedEdge,points:[localFromPointer(e)]};
+   const stroke=container.querySelector('#penStroke');if(stroke)stroke.setAttribute('d','');
+   container.setPointerCapture(e.pointerId);e.preventDefault();return;
+  }
   const h=e.target.closest('[data-kind]');if(!h)return;
-  undoSave();s.drag={kind:h.dataset.kind,index:Number(h.dataset.index),edge:Number(h.dataset.edge),j:Number(h.dataset.j)};
+  undoSave();s.drag={kind:h.dataset.kind,index:Number(h.dataset.index),edge:Number(h.dataset.edge),j:Number(h.dataset.j),sketch:h.dataset.sketch==='1'};
   container.setPointerCapture(e.pointerId);e.preventDefault();
  });
  container.addEventListener('pointermove',onMove);
- for(const ty of ['pointerup','pointercancel','lostpointercapture'])container.addEventListener(ty,()=>s.drag=null);
+ container.addEventListener('pointerup',e=>{if(s.sketching){sampleFreehand(localFromPointer(e));endFreehand()}s.drag=null;});
+ container.addEventListener('pointercancel',()=>{if(s.sketching)endFreehand(true);s.drag=null;});
+ container.addEventListener('lostpointercapture',()=>{if(s.sketching)endFreehand(true);s.drag=null;});
  container.addEventListener('keydown',e=>{
   const h=e.target.closest('[data-kind]');if(!h||!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key))return;
   e.preventDefault();undoSave();const a=profile(h.dataset.kind,Number(h.dataset.index)),j=Number(h.dataset.j),dy=e.key==='ArrowUp'?-.012:e.key==='ArrowDown'?.012:0,dx=e.key==='ArrowLeft'?-.016:e.key==='ArrowRight'?.016:0;
-  const old=a.v[j];a.v[j]+=dy+dx; if(!valid())a.v[j]=old;render();
+  if(h.dataset.sketch==='1'){
+   const old=a.sketch[j][1];a.sketch[j][1]+=dy+dx;if(!valid())a.sketch[j][1]=old;
+  }else{
+   const old=a.v[j];a.v[j]+=dy+dx; if(!valid())a.v[j]=old;
+  }render();
  });
  $('downloadSVG').addEventListener('click',()=>download('image/svg+xml',studentSVG(),'元件設計.svg'));
  $('downloadPNG').addEventListener('click',async()=>{try{await png(tilesSVG(1200,850,210,3),'完整鑲嵌.png')}catch(e){setStatus('PNG 轉換失敗，請先下載 SVG。')}});
