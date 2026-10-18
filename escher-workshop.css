@@ -31,12 +31,12 @@
 .viewCounter img{height:20px;width:auto;max-width:100%;display:block}
 @media print{.viewCounter{display:none!important}}
 
-/* Floating Escher-style avatar decoration, inspired by an illustrated user profile.
-   Intentionally NO rectangular plaque behind either avatar or name. */
-.teacherProfile{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:0 0 auto;width:137px;margin:-11px 4px -8px 0;position:relative;text-align:center;background:none;border:none;box-shadow:none}
-.teacherPortrait{position:relative;width:116px;height:108px;isolation:isolate}
-.teacherPortraitArt{position:absolute;inset:0;width:116px;height:108px;overflow:visible;z-index:2;pointer-events:none;filter:drop-shadow(0 1px 2px #5986a436)}
-.teacherPortraitRing{position:absolute;left:19px;top:13px;width:79px;height:79px;padding:4px;border-radius:50%;background:conic-gradient(from -24deg,#bee7f2 0%,#fff1c7 25%,#a8d6cc 52%,#c7c9ee 74%,#bee7f2 100%);box-shadow:0 4px 13px #345c8132,0 0 0 2px #fff;z-index:1}
+/* Illustrated avatar frame: teacher name on the LEFT, ornamented avatar on the RIGHT.
+   Keep this composition free of a separate card / rectangle backdrop. */
+.teacherProfile{display:flex;flex-direction:row;align-items:center;justify-content:flex-end;gap:11px;flex:0 0 auto;width:auto;margin:0 1px 0 0;position:relative;text-align:right;background:none;border:0;box-shadow:none}
+.teacherProfileName{display:block;color:#1a567a;font-size:15px;font-weight:850;letter-spacing:.04em;white-space:nowrap;text-shadow:0 1px 1px white}
+.teacherPortrait{position:relative;display:block;width:108px;height:103px;flex:0 0 108px;isolation:isolate;overflow:visible}
+.teacherPortraitArt{position:absolute;inset:0;display:block;width:100%;height:100%;z-index:2;pointer-events:none;overflow:visible;filter:drop-shadow(0 2px 2px #5986a436)}
+.teacherPortraitRing{position:absolute;left:16.3%;top:12.3%;width:68.2%;height:74%;padding:4px;border-radius:50%;background:conic-gradient(from -24deg,#bee7f2 0%,#fff1c7 25%,#a8d6cc 52%,#c7c9ee 74%,#bee7f2 100%);box-shadow:0 4px 13px #345c8132,0 0 0 2px #fff;z-index:1}
 .teacherPortraitRing img{display:block;width:100%;height:100%;border-radius:50%;border:3px solid #fff;background:white;object-fit:cover}
-.teacherProfileName{font-weight:850;font-size:15px;letter-spacing:.06em;color:#1a567a;white-space:nowrap;text-shadow:0 1px 2px #ffffff;margin-top:-4px}
-@media(max-width:650px){.hero{flex-wrap:wrap;gap:6px}.teacherProfile{width:126px;margin:-7px -2px -3px auto}.teacherPortrait{transform:scale(.88);transform-origin:center bottom;margin-top:-8px}.teacherProfileName{font-size:14px}}
+@media(max-width:650px){.hero{flex-wrap:wrap;gap:6px}.teacherProfile{gap:7px;margin-left:auto}.teacherPortrait{width:93px;height:90px;flex-basis:93px}.teacherProfileName{font-size:14px}}
