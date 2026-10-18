@@ -271,7 +271,13 @@ function tilesSVG(W,H,unit,stage=3,print=false){
   }
  }else{
   const center=[.5,.5];
-  for(let j=-9;j<=9;j++)for(let i=-10;i<=10;i++){
+  if(s.mode==='rotate90'&&stage===2){
+   // Four distinct quarters around one shared vertex: 0°, 90°, 180°, 270°.
+   const pivot=[1,1];
+   for(let k=0;k<4;k++){
+    insert(poly.map(p=>add(origin,mul(rotate(p,k*Math.PI/2,pivot),unit))),fill(k,0));
+   }
+  }else for(let j=-9;j<=9;j++)for(let i=-10;i<=10;i++){
    if(stage===0&&(i||j))continue;
    if(stage===2){
     const pair=s.mode==='rotate90'?([[0,0],[1,0],[1,1],[0,1]].some(([x,y])=>x===i&&y===j)):
