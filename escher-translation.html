@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f5fbff"><title>藝數探索｜平移鑲嵌｜從鑲嵌到密鋪</title><link rel="canonical" href="https://ericson1617.github.io/115-1-_---/escher-translation.html"><link rel="stylesheet" href="escher-workshop.css?v=20261018-avatar-horizontal"><script>(function(){try{const u=new URL(window.location.href);if(/^chatgpt(?:\.com)?$/i.test(u.searchParams.get('utm_source')||'')){for(const k of Array.from(u.searchParams.keys()))if(k.startsWith('utm_'))u.searchParams.delete(k);window.history.replaceState(window.history.state,'',u.pathname+u.search+u.hash);}}catch(e){}})();</script></head>
+<html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f5fbff"><title>藝數探索｜平移鑲嵌｜從鑲嵌到密鋪</title><link rel="canonical" href="https://ericson1617.github.io/115-1-_---/escher-translation.html"><link rel="stylesheet" href="escher-workshop.css?v=20261018-staggered-layout"><script>(function(){try{const u=new URL(window.location.href);if(/^chatgpt(?:\.com)?$/i.test(u.searchParams.get('utm_source')||'')){for(const k of Array.from(u.searchParams.keys()))if(k.startsWith('utm_'))u.searchParams.delete(k);window.history.replaceState(window.history.state,'',u.pathname+u.search+u.hash);}}catch(e){}})();</script></head>
 <body data-page="translation"><main class="wrap">
 <header class="hero"><div><div class="eyebrow">藝數探索 · ESCHER WORKSHOP · TRANSLATION · 平移</div><h1>平移鑲嵌｜從鑲嵌到密鋪</h1></div><div class="teacherProfile" aria-label="徐丙忠老師">
  <strong class="teacherProfileName">徐丙忠老師</strong>
@@ -84,6 +84,11 @@
 <div class="field" style="padding:8px 12px;border:1px solid #d2e6ee;background:#f6fbfe;border-radius:12px"><label for="stepProgress">步驟二：觀察所選邊的平移方向，拖曳移動進度　<span id="progressValue">100%</span></label><input type="range" id="stepProgress" min="0" max="100" value="100" step="1" style="width:100%;accent-color:#2682ad"></div>
 <div class="note" id="stepText">從原圖形到可密鋪的元件</div>
 <div class="legend"><span class="tag" id="modeLabel">密鋪模式</span><span>預覽會隨拖曳即時更新；不同步驟使用相同的最新元件</span></div>
+<div class="tessLayoutChoice" id="tessLayoutChoice" role="group" aria-label="全面密鋪的平移排列方式">
+<button type="button" data-tess-layout="aligned" class="selected" aria-pressed="true">平移同位鑲嵌</button>
+<button type="button" data-tess-layout="staggered" aria-pressed="false">平移錯位鑲嵌</button>
+</div>
+<p class="tessLayoutHint" id="tessLayoutHint">同位：上下相鄰的元件整齊對齊，拼成無縫圖案。</p>
 <div class="canvasArea preview scene" id="previewScene"><svg viewBox="0 0 840 560"></svg></div>
 <div class="tip" style="margin-top:12px">選擇上、下、左、右其中一邊，再用控制點或自由畫線修改輪廓；對邊會自動平移配對。</div>
 <div class="printPanel"><h2>④ 作品影像與列印</h2>
@@ -103,4 +108,4 @@
  <img src="https://hits.sh/ericson1617.github.io/115-1-_---/escher-translation.html.svg?label=%E7%B6%B2%E7%AB%99%E7%80%8F%E8%A6%BD%E6%AC%A1%E6%95%B8%EF%BC%9A&color=%2389aebe&labelColor=%236f93a6&style=flat" alt="網站瀏覽次數" decoding="async" referrerpolicy="no-referrer">
 </div></div></div></main>
 <div id="printOnly"></div>
-<script src="escher-workshop.js"></script></body></html>
+<script src="escher-workshop.js?v=20261018-staggered-layout"></script></body></html>
