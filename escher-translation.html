@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f5fbff"><title>藝數探索｜平移鑲嵌｜從剪貼到密鋪</title><link rel="stylesheet" href="escher-workshop.css"></head>
+<body data-page="translation"><main class="wrap">
+<header class="hero"><div><div class="eyebrow">藝數探索 · ESCHER WORKSHOP · TRANSLATION · 平移</div><h1>平移鑲嵌｜從剪貼到密鋪</h1><p>W8 · 第一節｜理解「剪下後平移到對邊」的數學原理</p></div><img src="author-avatar.svg" class="heroAvatar" alt="藝數探索老師頭像"></header>
+<nav class="links" aria-label="課程網站導航"><a class="current" href="escher-translation.html">① 平移原理</a><a href="escher-rotation.html">② 旋轉原理</a><a href="escher-creation.html">③ 綜合創作</a><a href="tessellation.html">原本的鑲嵌工作室</a></nav>
+<div class="introGrid"><div class="intro"><b>數學上的原理</b><div>剪下圖形一側的輪廓，<b>不翻轉、不旋轉</b>，原封不動平移到對邊。平移方向有兩組，因此可以做單邊或雙邊變形。</div></div><div class="intro"><b>觀察與思考</b><div>課堂提問：剪下的部分要貼在哪裡？如果移動到錯誤位置，圖形之間會發生什麼事？</div></div></div>
+<div class="mainGrid">
+<section class="panel" aria-label="元件設定與編輯"><h2>① 選擇鑲嵌方式與起始形狀</h2>
+<div class="twoFields"><div class="field"><label for="mode">變形方式</label><select id="mode"><option value="translate">平移鑲嵌（單邊／雙邊）</option></select></div><div class="field"><label for="shape">起始多邊形</label><select id="shape"><option value="square">正方形</option><option value="rectangle">長方形</option><option value="parallelogram">平行四邊形</option><option value="rhombus">菱形</option><option value="triangle">三角形（旋轉限定）</option></select></div></div>
+<div class="field"><label for="preset">輪廓靈感（可自行拉成不同造型）</label><select id="preset"><option value="blank">平整｜從頭開始</option><option value="wave">水波</option><option value="fish">魚尾</option><option value="leaf">葉片</option><option value="cloud">雲朵</option><option value="flower">花瓣</option><option value="wing">翅膀</option><option value="cat">耳朵雙峰</option><option value="zigzag">稜角</option><option value="mountain">山峰</option></select></div>
+<div class="note" id="concept">單邊平移和雙邊平移：修改下邊會自動連動上邊；修改右邊會自動連動左邊。</div>
+<h3>② 拖曳橘色控制點，修改元件</h3><div class="legend"><span><i class="swatch"></i>橘點：可拖曳</span><span class="tag">配對邊自動連動</span></div>
+<div class="canvasArea" id="editorScene"><svg viewBox="0 0 520 425" aria-label="元件編輯區"></svg></div>
+<p class="fine" id="controlCount">可拖曳控制點</p>
+<div class="buttongroup"><button id="addPoint">＋ 增加輪廓細節</button><button id="undo">↶ 上一步</button><button id="reset" class="warn">重設全部曲線</button></div>
+<div class="field"><label>元件顏色與預覽方式</label><div class="toggleLine"><input type="color" id="color" value="#7dbfcf" aria-label="元件填色"><label><input type="checkbox" id="outline" checked> 顯示邊界</label><label><input type="checkbox" id="multicolor" checked> 多色區塊</label></div></div>
+<div class="status" id="status" aria-live="polite"></div>
+</section>
+<section class="panel"><h2>③ 逐步觀察與即時密鋪預覽</h2>
+<div class="stepbar"><button data-step="0">① 原始圖形</button><button data-step="1">② 第一步</button><button data-step="2">③ 擴充</button><button data-step="3" class="selected">④ 完整密鋪</button></div>
+<div class="note" id="stepText">從原圖形到可密鋪的元件</div>
+<div class="legend"><span class="tag" id="modeLabel">密鋪模式</span><span>若有圖塊交叉，控制點會自動受到限制</span></div>
+<div class="canvasArea preview scene" id="previewScene"><svg viewBox="0 0 840 560"></svg></div>
+<div class="tip" style="margin-top:12px">單邊平移和雙邊平移：修改下邊會自動連動上邊；修改右邊會自動連動左邊。</div>
+<div class="printPanel"><h2>④ 儲存作品與列印描繪模板</h2>
+<div class="nameGrid"><div class="field"><label for="className">班級</label><input id="className" type="text" placeholder="701"></div><div class="field"><label for="seat">座號</label><input id="seat" type="text" placeholder="12"></div><div class="field"><label for="student">姓名／代號</label><input id="student" type="text" placeholder="請填寫"></div></div>
+<div class="buttongroup"><button class="primary" id="downloadSVG">↓ 下載可再次編輯的 SVG 作品</button><button id="downloadPNG">↓ 完整密鋪 PNG</button><button id="downloadTilePNG">↓ 單一元件 PNG</button></div>
+<div class="field"><label for="load">載入之前存下的 SVG（繼續修改）</label><input type="file" id="load" accept=".svg,.json,image/svg+xml,application/json"></div>
+<div class="twoFields"><div class="field"><label for="paper">紙張</label><select id="paper"><option value="A4">A4</option><option value="A3">A3</option><option value="B5">B5（JIS）</option><option value="drawing">8 開圖畫紙（39.3 × 54.5 cm）</option></select></div><div class="field"><label for="tileCm">元件長邊（實際尺寸）</label><select id="tileCm"><option value="3">3 cm</option><option value="4">4 cm</option><option value="5">5 cm</option><option value="6" selected>6 cm</option><option value="7.5">7.5 cm</option><option value="9">9 cm</option></select></div></div>
+<div class="field"><label for="printKind">列印用途</label><select id="printKind"><option value="tile">W10 元件剪貼／描繪模板</option><option value="pattern">完整密鋪練習圖</option></select></div>
+<div class="buttongroup"><button id="downloadPrint" class="primary">↓ 下載列印 SVG</button><button id="print">🖨 直接列印</button></div>
+<div class="note"><b>上傳提醒：</b>學生填好班級、座號和姓名後，下載「可再次編輯的 SVG 作品」，再上傳至老師指定的資料夾。SVG 含作品與可重新編輯的資料；印刷時選「實際大小／100%」。</div>
+<p class="fine">本網站為課堂用數位工具，不會自動把檔案傳到學校雲端；需使用老師提供的上傳連結。</p>
+</div></section></div></main>
+<div id="printOnly"></div><footer class="footer">藝數探索｜徐丙忠老師 · 平移 × 半周旋轉 × 幾何創作</footer>
+<script src="escher-workshop.js"></script></body></html>
