@@ -6,8 +6,8 @@
 <div class="introGrid"><div class="intro"><b>數學上的原理</b><div>同一塊元件可指定<b>一組對邊做平移</b>，另外兩邊各自做<b>180° 旋轉配對</b>。這會產生可無縫延伸的「混合式」鑲嵌。</div></div><div class="intro"><b>觀察與思考</b><div>創作挑戰：想做動物、植物還是幻想生物？先確認輪廓能密鋪，再在紙本創作時畫眼睛、翅膀與圖案。</div></div></div>
 <div class="mainGrid">
 <section class="panel" aria-label="元件設定與編輯"><h2>① 選擇鑲嵌方式與起始形狀</h2>
-<div class="twoFields"><div class="field"><label for="mode">變形方式</label><select id="mode"><option value="mixX">綜合 A｜左右平移 × 上下旋轉</option><option value="mixY">綜合 B｜上下平移 × 左右旋轉</option><option value="translate">僅平移（保留編輯資料）</option><option value="rotate">僅旋轉（保留編輯資料）</option></select></div><div class="field"><label for="shape">起始多邊形</label><select id="shape"><option value="square">正方形</option><option value="rectangle">長方形</option><option value="parallelogram">平行四邊形</option><option value="rhombus">菱形</option><option value="triangle">三角形（旋轉限定）</option></select></div></div>
-<div class="field"><label for="preset">輪廓靈感（可自行拉成不同造型）</label><select id="preset"><option value="blank">平整｜從頭開始</option><option value="wave">水波</option><option value="fish">魚尾</option><option value="leaf">葉片</option><option value="cloud">雲朵</option><option value="flower">花瓣</option><option value="wing">翅膀</option><option value="cat">耳朵雙峰</option><option value="zigzag">稜角</option><option value="mountain">山峰</option></select></div>
+<div class="twoFields"><div class="field"><label for="mode">變形方式</label><select id="mode"><option value="mixX">綜合 A｜左右平移 × 上下旋轉</option><option value="mixY">綜合 B｜上下平移 × 左右旋轉</option><option value="translate">僅平移（保留編輯資料）</option><option value="rotate">180° 邊中點旋轉</option><option value="rotate90">90° 頂點旋轉｜正方形</option><option value="rotate120">120° 頂點旋轉｜正六邊形</option></select></div><div class="field"><label for="shape">起始多邊形</label><select id="shape"><option value="square">正方形</option><option value="rectangle">長方形</option><option value="parallelogram">平行四邊形</option><option value="rhombus">菱形</option><option value="triangle">三角形（180° 旋轉）</option><option value="hexagon">正六邊形（120° 旋轉）</option></select></div></div>
+<div class="field"><label for="preset">輪廓靈感（可自行拉成不同造型）</label><select id="preset"><option value="blank">平整｜從頭開始</option><option value="arrow">➡ 箭頭｜尖角剪貼（平移）</option><option value="wave">水波</option><option value="fish">魚尾</option><option value="leaf">葉片</option><option value="cloud">雲朵</option><option value="flower">花瓣</option><option value="wing">翅膀</option><option value="cat">耳朵雙峰</option><option value="zigzag">稜角</option><option value="mountain">山峰</option></select></div>
 <div class="note" id="concept">先選擇「綜合變形」，同一塊元件能讓某些邊平移配對、其他邊旋轉配對。可儲存 SVG 再重新載入修改。</div>
 <h3>② 拖曳橘色控制點，修改元件</h3><div class="legend"><span><i class="swatch"></i>橘點：可拖曳</span><span class="tag">配對邊自動連動</span></div>
 <div class="canvasArea" id="editorScene"><svg viewBox="0 0 520 425" aria-label="元件編輯區"></svg></div>
@@ -19,7 +19,7 @@
 <section class="panel"><h2>③ 逐步觀察與即時密鋪預覽</h2>
 <div class="stepbar"><button data-step="0">① 原始圖形</button><button data-step="1">② 第一步</button><button data-step="2">③ 擴充</button><button data-step="3" class="selected">④ 完整密鋪</button></div>
 <div class="note" id="stepText">從原圖形到可密鋪的元件</div>
-<div class="legend"><span class="tag" id="modeLabel">密鋪模式</span><span>若有圖塊交叉，控制點會自動受到限制</span></div>
+<div class="legend"><span class="tag" id="modeLabel">密鋪模式</span><span>預覽會隨拖曳即時更新；不同步驟使用相同的最新元件</span></div>
 <div class="canvasArea preview scene" id="previewScene"><svg viewBox="0 0 840 560"></svg></div>
 <div class="tip" style="margin-top:12px">先選擇「綜合變形」，同一塊元件能讓某些邊平移配對、其他邊旋轉配對。可儲存 SVG 再重新載入修改。</div>
 <div class="printPanel"><h2>④ 儲存作品與列印描繪模板</h2>
