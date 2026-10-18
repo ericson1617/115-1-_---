@@ -38,6 +38,32 @@
  <p class="fine" id="pointSelectionStatus">每條邊最少保留 1 個控制點；兩端固定頂點無法刪除。</p>
 </div><div class="tip" id="penTip" style="display:none"><b>起點、終點已固定！</b>不用對準頂點，直接在淡色區域按住滑鼠或觸控筆，畫出中間想要的波浪、尖角或凹凸，再放開。系統會自動把筆畫接到兩端（畫反方向也沒關係），必要時縮小輪廓以避免圖形交叉。</div>
 <div class="buttongroup"><button id="addPoint">＋ 增加控制點</button><button id="deletePoint" class="warn" disabled>－ 刪除選取點</button><button id="undo" disabled>↶ 上一步（復原）</button><button id="redo" disabled>↷ 下一步（重做）</button><button id="reset" class="warn">重設全部曲線</button></div>
+<details class="inspirationHub" id="inspirationHub">
+<summary>💡 創作靈感與小助理 <span class="inspireSubtitle">從想法出發，自己拉出輪廓</span></summary>
+<div class="inspireContent">
+<p class="fine">這些是<b>只用平移、對邊精確配對</b>的輪廓參考。選一種喜歡的主題，或輸入你想畫的東西；小助理會教你選邊、拉控制點，不會直接替你完成作品。</p>
+<div class="inspireGrid" role="group" aria-label="六種鑲嵌靈感">
+<button type="button" data-inspire="arrow" class="inspireCard"><span class="inspireThumb" aria-hidden="true"></span><strong>➡ 箭頭</strong><small>入門・尖角</small></button>
+<button type="button" data-inspire="fish" class="inspireCard"><span class="inspireThumb" aria-hidden="true"></span><strong>🐟 小魚</strong><small>入門・魚鰭與尾巴</small></button>
+<button type="button" data-inspire="bird" class="inspireCard"><span class="inspireThumb" aria-hidden="true"></span><strong>🐦 飛鳥</strong><small>中等・翅膀</small></button>
+<button type="button" data-inspire="rocket" class="inspireCard"><span class="inspireThumb" aria-hidden="true"></span><strong>🚀 火箭</strong><small>中等・尖端與尾翼</small></button>
+<button type="button" data-inspire="monster" class="inspireCard"><span class="inspireThumb" aria-hidden="true"></span><strong>👾 小怪獸</strong><small>中等・創意凹凸</small></button>
+<button type="button" data-inspire="pegasus" class="inspireCard"><span class="inspireThumb" aria-hidden="true"></span><strong>🪽 飛馬</strong><small>挑戰・抽象輪廓</small></button>
+</div>
+<div class="field"><label for="inspirationPrompt">你想創作什麼？</label>
+<div class="inspirePromptRow"><input id="inspirationPrompt" type="text" maxlength="70" placeholder="例如：我想畫一隻有翅膀的魚"><button type="button" class="primary" id="inspirationAsk">給我引導</button></div>
+</div>
+<p class="fine" id="inspirationMessage" role="status" aria-live="polite">先選一張靈感卡片，或輸入想畫的主題。</p>
+<div id="inspirationGuide" class="inspirationGuide" hidden>
+<div class="inspirationGuideTop"><strong id="inspirationTitle">創作步驟</strong><span id="inspirationCounter" class="tag">1 / 4</span></div>
+<div class="inspireFocus" id="inspirationInstruction"></div>
+<div class="inspireActions"><button type="button" id="inspirationPrev" disabled>← 上個提示</button><button type="button" id="inspirationNext">下個提示 →</button><button type="button" id="inspirationLocate" class="positive">◎ 在編輯區定位</button></div>
+<div class="inspireActions"><button type="button" id="inspirationStart">建立空白練習（可復原）</button></div>
+<p class="fine">「定位」只會選取邊線與橘點，不會修改你的圖形。「建立空白練習」會重設現有輪廓，可用上一步復原。圖形外形只是創意方向；眼睛、羽毛等細節可在紙上加畫。</p>
+</div>
+<p class="fine">這是<b>免登入、規則式的創作引導</b>，不是連線生成式 AI；輸入內容只在這個頁面判讀。</p>
+</div>
+</details>
 <div class="field"><label>元件顏色與預覽方式</label><div class="toggleLine"><input type="color" id="color" value="#7dbfcf" aria-label="元件填色"><label><input type="checkbox" id="outline" checked> 顯示邊界</label><label><input type="checkbox" id="multicolor" checked> 多色區塊</label></div></div>
 <div class="status" id="status" aria-live="polite"></div>
 </section>
