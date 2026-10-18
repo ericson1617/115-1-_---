@@ -681,9 +681,9 @@ function galleryPreview(key){
   good=valid();points=tile();
  }finally{s.mode=originalMode;s.shape=originalShape;s.trans=originalTrans}
  if(!good)return '<span class="fine">此圖形尚未通過密鋪檢查</span>';
- const [u,v]=templates[item.shape],unit=95,ox=-34,oy=11;
+ const [u,v]=templates[item.shape],unit=107,ox=-37,oy=24;
  const n=key.replace(/[^a-z]/g,'');
- let svg='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 252 117" aria-hidden="true"><rect width="252" height="117" rx="8" fill="#f8fbff"/>';
+ let svg='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 145" aria-hidden="true"><rect width="220" height="145" rx="8" fill="#f8fbff"/>';
  for(let j=-1;j<=1;j++)for(let i=0;i<=3;i++){
   const off=add(mul(u,i),mul(v,j));
   const tx=ox+unit*off[0],ty=oy+unit*off[1];
