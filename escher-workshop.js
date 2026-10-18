@@ -14,7 +14,7 @@ const s={
  rot:Array.from({length:4},()=>defaultProfile('r')),hex:Array.from({length:3},()=>({p:[.18,.36,.57,.78],v:[0,0,0,0]})),quarter:{p:[.13,.32,.5,.68,.87],v:[0,0,0,0,0]},preset:'blank',
  color:'#7dbfcf',outline:true,multicolor:true,stage:3,
  className:'',seat:'',student:'',tileCm:6,paper:'A4',printKind:'tile',
- history:[],drag:null,stepProgress:1
+ history:[],drag:null,stepProgress:1,selectedEdge:2,drawTool:'points',sketching:null
 };
 const add=(a,b)=>[a[0]+b[0],a[1]+b[1]],sub=(a,b)=>[a[0]-b[0],a[1]-b[1]];
 const mul=(a,k)=>[a[0]*k,a[1]*k],cross=(a,b)=>a[0]*b[1]-a[1]*b[0];
@@ -59,6 +59,9 @@ function cubic(t,knots){
 }
 function rawEdge(e,kind,index){
  const [A,B]=bases()[e],n=normal(A,B),pr=profile(kind,index);
+ if(kind==='t'&&Array.isArray(pr.sketch)&&pr.sketch.length>=2){
+  return pr.sketch.map(([t,d])=>add(add(A,mul(sub(B,A),t)),mul(n,d)));
+ }
  const knots=kind==='r'?halfKnots(pr):fullKnots(pr);
  const pts=[];
  for(let i=0;i<=68;i++){const t=i/68;pts.push(add(add(A,mul(sub(B,A),t)),mul(n,offset(t,knots,pr.angular))))}
@@ -107,8 +110,8 @@ function valid(){
  }
  return true;
 }
-function snapshot(){return JSON.stringify({mode:s.mode,shape:s.shape,trans:s.trans,rot:s.rot,quarter:s.quarter,hex:s.hex,color:s.color,preset:s.preset})}
-function restore(x){const a=typeof x==='string'?JSON.parse(x):x;for(const k of ['mode','shape','trans','rot','quarter','hex','color','preset'])if(a[k]!==undefined)s[k]=a[k];$('mode').value=s.mode;$('shape').value=s.shape;$('color').value=s.color;render()}
+function snapshot(){return JSON.stringify({mode:s.mode,shape:s.shape,trans:s.trans,rot:s.rot,quarter:s.quarter,hex:s.hex,color:s.color,preset:s.preset,selectedEdge:s.selectedEdge})}
+function restore(x){const a=typeof x==='string'?JSON.parse(x):x;for(const k of ['mode','shape','trans','rot','quarter','hex','color','preset','selectedEdge'])if(a[k]!==undefined)s[k]=a[k];$('mode').value=s.mode;$('shape').value=s.shape;$('color').value=s.color;render()}
 function undoSave(){s.history.push(snapshot());if(s.history.length>45)s.history.shift()}
 function setStatus(x){$('status').textContent=x}
 function ensureShape(){
@@ -217,7 +220,8 @@ function movementSVG(W,H,unit,progress,print=false){
  const V=verts(),P=tile(),ctr=s.shape==='hexagon'?[0,0]:[.5,.5],O=s.shape==='hexagon'?[W*.45,H*.53]:[W*.33,H*.36];
  let angle=0,pivot=[0,0],move=p=>p;
  if(s.mode==='translate'||s.mode==='mixY'){
-  const v=templates[s.shape][1];move=p=>add(p,mul(v,progress));
+  const [u,v]=templates[s.shape],shift=s.mode==='translate'?(s.selectedEdge===0?mul(v,-1):s.selectedEdge===2?v:s.selectedEdge===1?u:mul(u,-1)):v;
+  move=p=>add(p,mul(shift,progress));
  }else{
   angle=s.mode==='rotate90'?Math.PI/2*progress:s.mode==='rotate120'?-2*Math.PI/3*progress:Math.PI*progress;
   pivot=s.mode==='rotate90'?[1,1]:s.mode==='rotate120'?hexVerts()[0]:mul(add(bases()[0][0],bases()[0][1]),.5);
@@ -240,8 +244,11 @@ function movementSVG(W,H,unit,progress,print=false){
  drawings+='<path d="'+path(moved)+'" fill="'+(print?'white':'#f3c39d')+'" fill-opacity=".72" stroke="#c3773c" stroke-width="2.6"/>';
  drawings+=visualLabel('原始位置（虛線）',32,40,'#547b93')+visualLabel('彩色線段＝修改的邊界',32,69,'#b26a32');
  if(s.mode==='translate'||s.mode==='mixY'){
-  const center=P.reduce((sum,p)=>add(sum,p),[0,0]).map(v=>v/P.length),a=toPx(add(center,[0,-.55])),b=toPx(add(move(center),[0,-.55]));
-  drawings+=arrowMark(a,b)+visualLabel('平移方向 →',b[0]+16,b[1]-13,'#a46c39');
+  const center=P.reduce((sum,p)=>add(sum,p),[0,0]).map(v=>v/P.length);
+  const shift=sub(move(center),center),d=norm(shift),perp=d>1e-6?[-shift[1]/d,shift[0]/d]:[0,-1];
+  const a=toPx(add(center,mul(perp,.48))),b=toPx(add(move(center),mul(perp,.48)));
+  const direction=s.mode==='translate'?['往上','往右','往下','往左'][s.selectedEdge]:'平移';
+  drawings+=arrowMark(a,b)+visualLabel(direction+'平移',b[0]+15,b[1]-11,'#a46c39');
  }else{
   const Q=toPx(pivot),radius=63,start=-Math.PI*.43,end=start+angle;
   const pathArc='M'+fmt(Q[0]+radius*Math.cos(start))+','+fmt(Q[1]+radius*Math.sin(start))+' A'+radius+','+radius+' 0 '+(Math.abs(angle)>Math.PI?'1':'0')+' '+(angle>=0?'1':'0')+' '+fmt(Q[0]+radius*Math.cos(end))+','+fmt(Q[1]+radius*Math.sin(end));
@@ -313,7 +320,7 @@ function drawPreview(){
  $('modeLabel').textContent=names[s.mode];
 }
 function edgeLabel(e){
- const label=['下邊','右邊','上邊','左邊'];
+ const label=['上邊','右邊','下邊','左邊'];
  return(s.shape==='triangle'?['第 1 邊','第 2 邊','第 3 邊']:label)[e]||'邊線';
 }
 function drawEditor(){
@@ -411,7 +418,7 @@ function attachEvents(){
   e.target.value='';
  });
 }
-function studentData(){return{app:'藝數探索艾薛爾工作室',version:3,mode:s.mode,shape:s.shape,trans:s.trans,rot:s.rot,quarter:s.quarter,hex:s.hex,color:s.color,preset:s.preset,className:s.className,seat:s.seat,student:s.student}}
+function studentData(){return{app:'藝數探索艾薛爾工作室',version:4,selectedEdge:s.selectedEdge,mode:s.mode,shape:s.shape,trans:s.trans,rot:s.rot,quarter:s.quarter,hex:s.hex,color:s.color,preset:s.preset,className:s.className,seat:s.seat,student:s.student}}
 function filename(suffix){let name=[safe(s.className),safe(s.seat),safe(s.student)].filter(Boolean).join('_');return(name||'藝數探索_未命名')+'_'+suffix}
 function projectMeta(){return'<metadata id="escher-project">'+esc(JSON.stringify(studentData()))+'</metadata>'}
 function singleSVG(W,H,transparent=false){
