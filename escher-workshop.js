@@ -649,10 +649,10 @@ function attachEvents(){
    const old=a.v[j];a.v[j]+=dy+dx; if(!valid())a.v[j]=old;
   }recordUndoState(baseline);render();
  });
- $('downloadSVG').addEventListener('click',()=>download('image/svg+xml',studentSVG(),'元件設計.svg'));
+ if($('downloadSVG'))$('downloadSVG').addEventListener('click',()=>download('image/svg+xml',studentSVG(),'元件設計.svg'));
  $('downloadPNG').addEventListener('click',async()=>{try{await png(tilesSVG(1200,850,210,3),'完整鑲嵌.png')}catch(e){setStatus('PNG 轉換失敗，請先下載 SVG。')}});
  $('downloadTilePNG').addEventListener('click',async()=>{try{await png(singleSVG(850,700,true),'我的元件.png')}catch(e){setStatus('PNG 轉換失敗，請先下載 SVG。')}});
- $('downloadPrint').addEventListener('click',()=>download('image/svg+xml',printSVG(),s.printKind==='tile'?'描繪元件模板.svg':'密鋪參考圖.svg'));
+ if($('downloadPrint'))$('downloadPrint').addEventListener('click',()=>download('image/svg+xml',printSVG(),s.printKind==='tile'?'描繪元件模板.svg':'密鋪參考圖.svg'));
  $('print').addEventListener('click',()=>{
   const node=$('printOnly');node.innerHTML=printSVG();window.print();
  });
@@ -660,7 +660,7 @@ function attachEvents(){
  $('tileCm').addEventListener('change',e=>s.tileCm=Number(e.target.value));
  $('printKind').addEventListener('change',e=>s.printKind=e.target.value);
  for(const [id,key] of [['className','className'],['seat','seat'],['student','student']])$(id).addEventListener('input',e=>s[key]=e.target.value);
- $('load').addEventListener('change',async e=>{
+ if($('load'))$('load').addEventListener('change',async e=>{
   const file=e.target.files?.[0];if(!file)return;
   try{let t=await file.text(),d;
    if(t.trimStart().startsWith('<')){const xml=new DOMParser().parseFromString(t,'image/svg+xml'),node=xml.querySelector('#escher-project');if(!node)throw Error('SVG 沒有專案資料');d=JSON.parse(node.textContent)}
@@ -687,14 +687,14 @@ function studentSVG(){
 }
 function printSVG(){
  const [W,H]=paperDims[s.paper],kind=s.printKind,margin=14;
- if(kind==='pattern'){
+ if(kind==='pattern'||(page==='translation'&&kind==='trace')){
   const body=tilesSVG(W,H,s.tileCm*10,3,true);
   const inner=body.replace(/^<svg[^>]*>/,'').replace(/<\/svg>$/,'');
   return'<svg xmlns="http://www.w3.org/2000/svg" width="'+W+'mm" height="'+H+'mm" viewBox="0 0 '+W+' '+H+'">'+inner+'</svg>';
  }
  const pts=tile(),xs=pts.map(p=>p[0]),ys=pts.map(p=>p[1]),a=Math.min(...xs),b=Math.max(...xs),c=Math.min(...ys),d=Math.max(...ys),sc=s.tileCm*10/Math.max(b-a,d-c);
  const O=[W/2-(a+b)*sc/2,H/2-(c+d)*sc/2];
- return'<svg xmlns="http://www.w3.org/2000/svg" width="'+W+'mm" height="'+H+'mm" viewBox="0 0 '+W+' '+H+'"><rect width="'+W+'" height="'+H+'" fill="white"/><text x="14" y="17" fill="#465769" font-family="sans-serif" font-size="4.5">藝數探索｜元件描繪模板　'+esc(names[s.mode])+'</text><text x="14" y="24" fill="#6a7c87" font-family="sans-serif" font-size="3.7">剪下外框，以厚紙描繪並連續移動；列印請使用「實際大小 100%」。</text><path d="'+path(transform(pts,O,sc))+'" fill="white" stroke="#1e3d4f" stroke-width=".72"/><text x="14" y="'+(H-12)+'" fill="#6a7c87" font-family="sans-serif" font-size="3.7">'+esc([s.className,s.seat,s.student].filter(Boolean).join(' / '))+'</text></svg>';
+ return'<svg xmlns="http://www.w3.org/2000/svg" width="'+W+'mm" height="'+H+'mm" viewBox="0 0 '+W+' '+H+'"><rect width="'+W+'" height="'+H+'" fill="white"/><text x="14" y="17" fill="#465769" font-family="sans-serif" font-size="4.5">藝數探索｜'+(page==='translation'?'元件':'元件描繪模板')+'　'+esc(names[s.mode])+'</text><text x="14" y="24" fill="#6a7c87" font-family="sans-serif" font-size="3.7">剪下外框，以厚紙描繪並連續移動；列印請使用「實際大小 100%」。</text><path d="'+path(transform(pts,O,sc))+'" fill="white" stroke="#1e3d4f" stroke-width=".72"/><text x="14" y="'+(H-12)+'" fill="#6a7c87" font-family="sans-serif" font-size="3.7">'+esc([s.className,s.seat,s.student].filter(Boolean).join(' / '))+'</text></svg>';
 }
 function download(type,content,suffix){
  const blob=new Blob([content],{type:type+';charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');
