@@ -12,7 +12,7 @@ const defaultProfile=(kind)=>({p:kind==='t'?[.22,.5,.78]:[.19,.36],v:kind==='t'?
 const s={
  mode:initialMode,shape:'square',trans:[defaultProfile('t'),defaultProfile('t')],
  rot:Array.from({length:4},()=>defaultProfile('r')),hex:Array.from({length:3},()=>({p:[.18,.36,.57,.78],v:[0,0,0,0]})),quarter:{p:[.13,.32,.5,.68,.87],v:[0,0,0,0,0]},preset:'blank',
- color:'#7dbfcf',outline:true,multicolor:true,stage:3,
+ color:'#7dbfcf',outline:true,multicolor:true,stage:3,tileLayout:'aligned',
  className:'',seat:'',student:'',tileCm:page==='translation'?9:6,paper:'A4',printKind:'tile',
  history:[],future:[],drag:null,stepProgress:1,selectedEdge:2,drawTool:'points',sketching:null,selectedPoint:null
 };
@@ -319,6 +319,11 @@ function tilesSVG(W,H,unit,stage=3,print=false){
  const v=templates[s.shape],origin=s.shape==='hexagon'?[W/2,H/2]:
   [W*.46-(v[0][0]+v[1][0])*unit*.46,H*.45-(v[0][1]+v[1][1])*unit*.46];
  let paths='',count=0;const poly=tile(),line=s.outline?'#426e83':'none';
+ // 錯位模式：上、下邊為直線時採交錯半格的磚牆排法；
+ // 若使用者改出波浪上下邊，改採仿射錯位平移，保證曲線邊界仍完全吻合。
+ const staggered=page==='translation'&&s.mode==='translate'&&s.tileLayout==='staggered'&&stage===3&&s.shape!=='triangle'&&s.shape!=='hexagon';
+ const topStraight=staggered&&edge(0).every(p=>Math.abs(cross(sub(p,verts()[0]),v[0]))<1e-5);
+ const sheared=p=>[p[0]+(v[0][0]*.5/v[1][1])*(p[1]-origin[1]),p[1]];
  const fill=(i,j)=>print?'#fff':s.multicolor?palette[((i*3+j*5)%palette.length+palette.length)%palette.length]:s.color;
  const insert=(pts,col)=>{paths+='<path d="'+path(pts)+'" fill="'+col+'" stroke="'+(print?'#526875':line)+'" stroke-width="'+(print?.8:1.3)+'"/>';count++};
  if(s.shape==='hexagon'){
@@ -347,14 +352,16 @@ function tilesSVG(W,H,unit,stage=3,print=false){
        ((i===0&&j===0)||(i===picked[0]&&j===picked[1]));
     if(!pair)continue;
    }
-   const cell=add(origin,add(mul(v[0],i*unit),mul(v[1],j*unit)));
+   const rowOffset=staggered&&topStraight&&Math.abs(j)%2===1?.5:0;
+   const cell=add(origin,add(mul(v[0],(i+rowOffset)*unit),mul(v[1],j*unit)));
    if(cell[0]<-420||cell[0]>W+420||cell[1]<-420||cell[1]>H+420)continue;
    if(s.mode==='rotate90'){
     const k=((-(i+j))%4+4)%4;
     insert(poly.map(p=>add(cell,mul(rotate(p,k*Math.PI/2,center),unit))),fill(i,j));
    }else{
     const turned=s.mode==='rotate'?(Math.abs(i+j)%2===1):s.mode==='mixX'?(Math.abs(j)%2===1):s.mode==='mixY'?(Math.abs(i)%2===1):false;
-    insert(transform(poly,cell,unit,turned),fill(i,j));
+    const pts=transform(poly,cell,unit,turned);
+    insert(staggered&&!topStraight?pts.map(sheared):pts,fill(i,j));
    }
   }
  }
@@ -373,7 +380,23 @@ function drawPreview(){
  if(progressLabel)progressLabel.textContent=s.stage===1?Math.round(s.stepProgress*100)+'%':'請選「步驟二」操作';
  $('stepText').textContent=stepsLabel(s.stage)+'｜'+modeText();
  document.querySelectorAll('[data-step]').forEach(b=>b.classList.toggle('selected',Number(b.dataset.step)===s.stage));
- $('modeLabel').textContent=names[s.mode];
+ const layoutBox=$('tessLayoutChoice'),layoutHint=$('tessLayoutHint');
+ if(layoutBox&&layoutHint){
+  layoutBox.hidden=s.stage!==3;
+  layoutHint.hidden=s.stage!==3;
+  layoutBox.querySelectorAll('[data-tess-layout]').forEach(b=>{
+   const chosen=b.dataset.tessLayout===s.tileLayout;
+   b.classList.toggle('selected',chosen);
+   b.setAttribute('aria-pressed',String(chosen));
+  });
+  const curved=s.tileLayout==='staggered'&&edge(0).some(p=>Math.abs(cross(sub(p,verts()[0]),templates[s.shape][0]))>=1e-5);
+  layoutHint.textContent=s.tileLayout==='aligned'
+   ?'同位：上下相鄰的元件整齊對齊，拼成無縫圖案。'
+   :curved?'錯位：上下排相差半格；曲線上下邊會同步斜向平移，確保邊界相接、不留空隙。'
+   :'錯位：相鄰兩排左右錯開半格，像磚牆堆砌一樣，仍保持無縫密鋪。';
+ }
+ $('modeLabel').textContent=page==='translation'&&s.stage===3
+  ?(s.tileLayout==='staggered'?'平移錯位鑲嵌':'平移同位鑲嵌'):names[s.mode];
 }
 function edgeLabel(e){
  const label=['上邊','右邊','下邊','左邊'];
@@ -721,6 +744,11 @@ function attachEvents(){
  $('color').addEventListener('input',e=>{s.color=e.target.value;render()});
  $('outline').addEventListener('change',e=>{s.outline=e.target.checked;drawPreview()});
  $('multicolor').addEventListener('change',e=>{s.multicolor=e.target.checked;drawPreview()});
+ if(page==='translation')document.querySelectorAll('[data-tess-layout]').forEach(b=>b.addEventListener('click',()=>{
+  s.tileLayout=b.dataset.tessLayout;
+  s.stage=3;
+  drawPreview();
+ }));
  document.querySelectorAll('[data-step]').forEach(b=>b.addEventListener('click',()=>{
   const next=Number(b.dataset.step);
   // Entering the motion demonstration always starts with the unmoved shape.
