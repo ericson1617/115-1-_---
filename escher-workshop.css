@@ -47,3 +47,5 @@
 .tessLayoutChoice button{min-width:0;padding:10px 7px;font-size:13px;white-space:normal}
 .tessLayoutHint{font-size:12px;line-height:1.6;color:#52788d;margin:0 0 10px}
 .tessLayoutChoice[hidden],.tessLayoutHint[hidden]{display:none!important}
+
+.tessLayoutChoice button:disabled{opacity:.45;cursor:not-allowed;background:#edf1f4;color:#738897;border-color:#d0dbe0}
