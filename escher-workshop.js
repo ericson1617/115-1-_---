@@ -171,47 +171,79 @@ function transform(points,off,unit,turn=false){
 function transformTriangle(points,offset,unit,sign){return points.map(p=>add(offset,mul(p,unit*sign)))}
 function triangleInstances(W,H,unit,origin,stage){
  const queue=[{sign:1,o:[0,0]}],seen=new Set(),items=[],centroid=mul(verts().reduce((a,p)=>add(a,p),[0,0]),1/3);
- const edges=bases().map(([a,b])=>mul(add(a,b),.5));
- while(queue.length&&items.length<180){
-  const a=queue.shift(),ct=add(mul(centroid,a.sign),a.o),k=ct.map(v=>Math.round(v*1e5)).join(',');
-  if(seen.has(k))continue;seen.add(k);
+ const corners=bases().map(([a,b])=>mul(add(a,b),.5));
+ while(queue.length&&items.length<220){
+  const a=queue.shift(),ct=add(mul(centroid,a.sign),a.o),key=ct.map(x=>Math.round(x*1e5)).join(',');
+  if(seen.has(key))continue;seen.add(key);
   const X=origin[0]+ct[0]*unit,Y=origin[1]+ct[1]*unit;
-  if(X<-160||X>W+160||Y<-160||Y>H+160)continue;
+  if(X<-170||X>W+170||Y<-170||Y>H+170)continue;
+  items.push(a);if(stage===0||stage===1&&items.length>=2||stage===2&&items.length>=14)break;
+  for(const m of corners)queue.push({sign:-a.sign,o:add(a.o,mul(m,2*a.sign))});
+ }
+ return items;
+}
+function hexInstances(W,H,unit,origin,stage){
+ const queue=[{c:[0,0],k:0}],seen=new Set(),items=[],V=hexVerts();
+ while(queue.length&&items.length<380){
+  const a=queue.shift(),key=a.c.map(x=>Math.round(x*1e5)).join(',');
+  if(seen.has(key))continue;seen.add(key);
+  const X=origin[0]+a.c[0]*unit,Y=origin[1]+a.c[1]*unit;
+  if(X<-200||X>W+200||Y<-200||Y>H+200)continue;
   items.push(a);
-  if(stage===0)break;
-  if(stage===1&&items.length>=2)break;
-  if(stage===2&&items.length>=13)break;
-  for(const m of edges)queue.push({sign:-a.sign,o:add(a.o,mul(m,2*a.sign))});
+  if(stage===0||stage===1&&items.length>=2||stage===2&&items.length>=10)break;
+  for(const index of [0,2,4]){
+   const pivot=add(a.c,rotate(V[index],a.k*2*Math.PI/3));
+   for(const dir of [-1,1]){
+    const next=rotate(a.c,dir*2*Math.PI/3,pivot);
+    queue.push({c:next,k:(a.k+dir+3)%3});
+   }
+  }
  }
  return items;
 }
 function tilesSVG(W,H,unit,stage=3,print=false){
- const vs=verts(),v=templates[s.shape],origin=[W*.46-(v[0][0]+v[1][0])*unit*.46,H*.45-(v[0][1]+v[1][1])*unit*.46];
- let paths='',count=0;const poly=tile(stage),line=s.outline?'#426e83':'none';
- if(s.shape==='triangle'){
-  const instances=triangleInstances(W,H,unit,origin,stage);
-  for(const it of instances){
+ const v=templates[s.shape],origin=s.shape==='hexagon'?[W/2,H/2]:
+  [W*.46-(v[0][0]+v[1][0])*unit*.46,H*.45-(v[0][1]+v[1][1])*unit*.46];
+ let paths='',count=0;const poly=tile(),line=s.outline?'#426e83':'none';
+ const fill=(i,j)=>print?'#fff':s.multicolor?palette[((i*3+j*5)%palette.length+palette.length)%palette.length]:s.color;
+ const insert=(pts,col)=>{paths+='<path d="'+path(pts)+'" fill="'+col+'" stroke="'+(print?'#526875':line)+'" stroke-width="'+(print?.8:1.3)+'"/>';count++};
+ if(s.shape==='hexagon'){
+  for(const it of hexInstances(W,H,unit,origin,stage)){
+   const p=poly.map(q=>add(origin,mul(add(rotate(q,it.k*2*Math.PI/3),it.c),unit)));
+   insert(p,fill(it.k,count));
+  }
+ }else if(s.shape==='triangle'){
+  for(const it of triangleInstances(W,H,unit,origin,stage)){
    const pts=transformTriangle(poly,add(origin,mul(it.o,unit)),unit,it.sign);
-   const color=s.multicolor?palette[(count+Math.abs(it.sign))%palette.length]:s.color;
-   paths+='<path d="'+path(pts)+'" fill="'+(print?'#fff':color)+'" stroke="'+(print?'#526875':line)+'" stroke-width="'+(print?.9:1.3)+'"/>';count++;
+   insert(pts,fill(count,it.sign));
   }
  }else{
+  const center=[.5,.5];
   for(let j=-9;j<=9;j++)for(let i=-10;i<=10;i++){
    if(stage===0&&(i||j))continue;
    if(stage===1&&!((i===0&&j===0)||(i===0&&j===-1)))continue;
    if(stage===2&&(Math.abs(i)>1||Math.abs(j)>1))continue;
-   const cell=add(origin,add(mul(v[0],i*unit),mul(v[1],j*unit))),turned=
-    s.mode==='rotate'?(Math.abs(i+j)%2===1):s.mode==='mixX'?(Math.abs(j)%2===1):s.mode==='mixY'?(Math.abs(i)%2===1):false;
+   const cell=add(origin,add(mul(v[0],i*unit),mul(v[1],j*unit)));
    if(cell[0]<-420||cell[0]>W+420||cell[1]<-420||cell[1]>H+420)continue;
-   const pts=transform(poly,cell,unit,turned),color=s.multicolor?palette[((i*3+j*5)%palette.length+palette.length)%palette.length]:s.color;
-   paths+='<path d="'+path(pts)+'" fill="'+(print?'#fff':color)+'" stroke="'+(print?'#526875':line)+'" stroke-width="'+(print?.75:1.1)+'"/>';count++;
+   if(s.mode==='rotate90'){
+    const k=((-(i+j))%4+4)%4;
+    insert(poly.map(p=>add(cell,mul(rotate(p,k*Math.PI/2,center),unit))),fill(i,j));
+   }else{
+    const turned=s.mode==='rotate'?(Math.abs(i+j)%2===1):s.mode==='mixX'?(Math.abs(j)%2===1):s.mode==='mixY'?(Math.abs(i)%2===1):false;
+    insert(transform(poly,cell,unit,turned),fill(i,j));
+   }
   }
+ }
+ if(stage===0){
+  const base=verts(),O=s.shape==='hexagon'?origin:origin;
+  const shape=base.map(p=>add(O,mul(p,unit)));
+  paths+='<path d="'+path(shape)+'" fill="none" stroke="#d6773c" stroke-width="2.4" stroke-dasharray="7 5"/>';
  }
  return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 '+W+' '+H+'" width="'+W+'" height="'+H+'"><rect width="100%" height="100%" fill="'+(print?'white':'#fbfeff')+'"/>'+paths+'</svg>';
 }
 function drawPreview(){
  const box=$('previewScene');if(!box)return;
- const W=840,H=560,unit=s.shape==='triangle'?180:150;
+ const W=840,H=560,unit=s.shape==='triangle'?180:s.shape==='hexagon'?122:150;
  box.innerHTML=tilesSVG(W,H,unit,s.stage);
  $('stepText').textContent=stepsLabel(s.stage)+'｜'+modeText();
  document.querySelectorAll('[data-step]').forEach(b=>b.classList.toggle('selected',Number(b.dataset.step)===s.stage));
@@ -222,7 +254,7 @@ function edgeLabel(e){
  return(s.shape==='triangle'?['第 1 邊','第 2 邊','第 3 邊']:label)[e]||'邊線';
 }
 function drawEditor(){
- const W=520,H=425,unit=226,origin=[128,93],vs=verts(),pts=transform(tile(),origin,unit),lines=bases();
+ const W=520,H=425,unit=s.shape==='hexagon'?138:226,origin=s.shape==='hexagon'?[260,214]:[128,93],vs=verts(),pts=transform(tile(),origin,unit),lines=bases();
  let svg='<defs><pattern id="gridD" width="23" height="23" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1" fill="#dcecf4"/></pattern></defs><rect width="'+W+'" height="'+H+'" fill="url(#gridD)"/>';
  svg+='<path d="'+path(pts)+'" stroke="#286482" stroke-width="2.4" fill="'+esc(s.color)+'" fill-opacity=".82"/>';
  let handles=0;
@@ -249,10 +281,10 @@ function render(){
 function svgPt(svg,evt){const pt=svg.createSVGPoint();pt.x=evt.clientX;pt.y=evt.clientY;return pt.matrixTransform(svg.getScreenCTM().inverse())}
 function onMove(evt){
  if(!s.drag)return;
- const svg=$('editorScene').querySelector('svg'),point=svgPt(svg,evt),pos=[(point.x-128)/226,(point.y-93)/226];
+ const svg=$('editorScene').querySelector('svg'),point=svgPt(svg,evt),unit=s.shape==='hexagon'?138:226,origin=s.shape==='hexagon'?[260,214]:[128,93],pos=[(point.x-origin[0])/unit,(point.y-origin[1])/unit];
  const {kind,index,edge,j}=s.drag,pr=profile(kind,index),[A,B]=bases()[edge],axis=sub(B,A),len2=dot(axis,axis),n=normal(A,B);
  const oldP=pr.p[j],oldV=pr.v[j];
- const gap=.045,min=kind==='r'?.055:.045,max=kind==='r'?.455:.955;
+ const gap=.035,min=kind==='r'?.055:.035,max=kind==='r'?.455:.965;
  const lower=j?pr.p[j-1]+gap:min,upper=j===pr.p.length-1?max:pr.p[j+1]-gap;
  const t=bound(dot(sub(pos,A),axis)/len2,lower,upper);
  const foot=add(A,mul(axis,t)),limit=Math.min(.5,.50*minBaseSide());
@@ -270,7 +302,7 @@ function attachEvents(){
  $('multicolor').addEventListener('change',e=>{s.multicolor=e.target.checked;drawPreview()});
  document.querySelectorAll('[data-step]').forEach(b=>b.addEventListener('click',()=>{s.stage=Number(b.dataset.step);drawPreview()}));
  $('undo').addEventListener('click',()=>{if(s.history.length)restore(s.history.pop());else setStatus('目前沒有上一步。')});
- $('reset').addEventListener('click',()=>{undoSave();s.trans=[defaultProfile('t'),defaultProfile('t')];s.rot=Array.from({length:4},()=>defaultProfile('r'));s.preset='blank';$('preset').value='blank';s.stage=3;render()});
+ $('reset').addEventListener('click',()=>{undoSave();s.trans=[defaultProfile('t'),defaultProfile('t')];s.rot=Array.from({length:4},()=>defaultProfile('r'));s.quarter={p:[.13,.32,.5,.68,.87],v:[0,0,0,0,0]};s.hex=Array.from({length:3},()=>({p:[.18,.36,.57,.78],v:[0,0,0,0]}));s.preset='blank';$('preset').value='blank';s.stage=3;render()});
  $('addPoint').addEventListener('click',()=>{
   const r=editRoles()[0],pr=profile(r[0],r[1]),max=r[0]==='r'?.47:.96;
   if(pr.p.length>=6){setStatus('每組輪廓最多 6 個可編輯控制點。');return}
