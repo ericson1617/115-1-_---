@@ -283,7 +283,38 @@ function movementSVG(W,H,unit,progress,print=false){
  }
  return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 '+W+' '+H+'" width="'+W+'" height="'+H+'"><rect width="100%" height="100%" fill="'+(print?'white':'#fbfeff')+'"/>'+drawings+'</svg>';
 }
+// Compare the actual starting polygon (left) and the CURRENT edited tile (right).
+// Both are fitted independently without changing their geometric proportions.
+function translationComparisonSVG(W,H,print=false){
+ const initial=verts(),edited=tile(),midY=H*.53;
+ const background=print?'white':'#fbfeff';
+ function fit(points,cx){
+  const xs=points.map(p=>p[0]),ys=points.map(p=>p[1]);
+  const xMin=Math.min(...xs),xMax=Math.max(...xs),yMin=Math.min(...ys),yMax=Math.max(...ys);
+  const dx=Math.max(xMax-xMin,.01),dy=Math.max(yMax-yMin,.01);
+  const scale=Math.min(180,(W*.38)/dx,(H*.59)/dy);
+  const mx=(xMin+xMax)/2,my=(yMin+yMax)/2;
+  return{O:[cx-mx*scale,midY-my*scale],scale};
+ }
+ const left=fit(initial,W*.25),right=fit(edited,W*.75);
+ const apply=(arr,F)=>arr.map(p=>add(F.O,mul(p,F.scale)));
+ const leftOutline='<path d="'+path(apply(initial,left))+'" fill="'+(print?'white':'#dfedf5')+'" stroke="#367594" stroke-width="2.7"/>';
+ const rightOutline='<path d="'+path(apply(edited,right))+'" fill="'+(print?'white':'#cde6ec')+'" stroke="#245f7f" stroke-width="2.7"/>';
+ // Highlight both the changed side and its automatically paired opposite side.
+ const e=s.selectedEdge;
+ const accented='<path d="'+linePath(apply(edge(e),right))+'" stroke="#ed8e45" stroke-width="5" fill="none" stroke-linecap="round"/>'+
+  '<path d="'+linePath(apply(edge((e+2)%4),right))+'" stroke="#3e9b87" stroke-width="3.6" stroke-dasharray="7 5" fill="none"/>';
+ const labels=visualLabel('原始圖形',W*.25-38,72,'#2b6588')+
+  visualLabel('剪貼後的圖形',W*.75-61,72,'#2b6588');
+ return'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 '+W+' '+H+'" width="'+W+'" height="'+H+'">'+
+  '<rect width="100%" height="100%" fill="'+background+'"/>'+
+  '<path d="M'+fmt(W/2)+' 86 L'+fmt(W/2)+' '+fmt(H-50)+'" stroke="#d6e5ed" stroke-width="2" stroke-dasharray="6 8"/>'+
+  labels+leftOutline+rightOutline+accented+
+  '<text x="'+fmt(W/2)+'" y="'+fmt(H-20)+'" font-size="16" fill="#668397" font-family="sans-serif" text-anchor="middle">左：剪貼前　／　右：目前設計的元件</text>'+
+  '</svg>';
+}
 function tilesSVG(W,H,unit,stage=3,print=false){
+ if(stage===0&&page==='translation')return translationComparisonSVG(W,H,print);
  if(stage===1)return movementSVG(W,H,unit,s.stepProgress,print);
  const v=templates[s.shape],origin=s.shape==='hexagon'?[W/2,H/2]:
   [W*.46-(v[0][0]+v[1][0])*unit*.46,H*.45-(v[0][1]+v[1][1])*unit*.46];
@@ -370,7 +401,8 @@ function drawTranslationEditor(){
  const half=e===0?[a,b,a12,a30]:e===1?[b,d,a23,a01]:e===2?[a30,a12,d,c]:[a,a01,a23,c];
  let svg='<defs><pattern id="gridD" width="23" height="23" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1" fill="#dcecf4"/></pattern></defs><rect width="'+W+'" height="'+H+'" fill="url(#gridD)"/>';
  svg+='<path d="'+path(half.map(toPx))+'" fill="#fff1df" stroke="none"/>';
- svg+='<path d="'+path(tile().map(toPx))+'" fill="'+esc(s.color)+'" fill-opacity=".77" stroke="#2c617d" stroke-width="2.4"/>';
+ // Keep the editable half highlighted: a solid blue tile would conceal it.
+ svg+='<path d="'+path(tile().map(toPx))+'" fill="none" stroke="#2c617d" stroke-width="2.4"/>';
  svg+='<path class="selected-edge" d="'+linePath(edge(e).map(toPx))+'" fill="none" stroke="#e98b3d" stroke-width="5" stroke-linecap="round"/>';
  svg+='<path d="'+linePath(edge((e+2)%4).map(toPx))+'" fill="none" stroke="#329d90" stroke-width="4" stroke-dasharray="6 5"/>';
  for(const [j,p] of [pointOnSelected(0,0,e),pointOnSelected(1,0,e)].entries()){
@@ -604,7 +636,12 @@ function attachEvents(){
  $('color').addEventListener('input',e=>{s.color=e.target.value;render()});
  $('outline').addEventListener('change',e=>{s.outline=e.target.checked;drawPreview()});
  $('multicolor').addEventListener('change',e=>{s.multicolor=e.target.checked;drawPreview()});
- document.querySelectorAll('[data-step]').forEach(b=>b.addEventListener('click',()=>{s.stage=Number(b.dataset.step);drawPreview()}));
+ document.querySelectorAll('[data-step]').forEach(b=>b.addEventListener('click',()=>{
+  const next=Number(b.dataset.step);
+  // Entering the motion demonstration always starts with the unmoved shape.
+  if(next===1&&page==='translation')s.stepProgress=0;
+  s.stage=next;drawPreview();
+ }));
  const progress=$('stepProgress');if(progress)progress.addEventListener('input',e=>{s.stepProgress=Number(e.target.value)/100;drawPreview()});
  $('undo').addEventListener('click',undoEdit);
  if(page==='translation')$('redo').addEventListener('click',redoEdit);
