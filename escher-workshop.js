@@ -600,8 +600,198 @@ function removeSelectedPoint(){
  recordUndoState(baseline);s.selectedPoint=null;render();
  setStatus('已刪除選定的控制點。按「上一步（復原）」即可找回。');
 }
+
+// Classroom creativity coach: deliberately local, deterministic and translation-only.
+// Shapes are geometric starting points, not automatically recognizable finished animals.
+const ideas={
+ arrow:{
+  label:'箭頭',shape:'square',
+  profiles:[
+   {p:[.12,.26,.47,.68,.86],v:[0,-.09,.17,-.09,0],angular:true},
+   {p:[.12,.28,.50,.72,.87],v:[0,-.07,-.24,-.07,0],angular:true}
+  ],
+  steps:[
+   {title:'從正方形開始',tip:'選擇「正方形」，把兩邊的線條想成剪下來、搬到另一邊的紙片。箭頭需要尖角，所以接下來使用「直線連接」。'},
+   {title:'做出箭頭尖角',tip:'點「上邊」，選「直線連接」，把第三個橘點稍微向下拉，兩旁橘點略向上。這樣就會有一個明顯的尖角。',edge:0,point:2},
+   {title:'做出另一側凹口',tip:'換成「右邊」，將中間橘點向右拉約一個小格，左右對應的邊會自動成形。',edge:1,point:2},
+   {title:'檢查對邊與重複排列',tip:'試點「④ 全面密鋪」。如果輪廓不像你想要的箭頭，可回到橘點慢慢修正；不需要旋轉或鏡射。',edge:0,point:2}
+  ]
+ },
+ fish:{
+  label:'小魚',shape:'rectangle',
+  profiles:[
+   {p:[.13,.32,.52,.72,.89],v:[0,-.05,-.11,-.04,0]},
+   {p:[.12,.30,.50,.71,.88],v:[0,.06,-.21,.06,0],angular:true}
+  ],
+  steps:[
+   {title:'先建立魚身',tip:'選擇「長方形」，比較容易留下魚身的空間。這是魚形創作的輪廓起點，魚眼與鱗片最後可以另外畫。'},
+   {title:'上邊拉出背鰭',tip:'點「上邊」，選曲線；試著把中間橘點往上拉約半格，形成一個淺淺的背鰭。',edge:0,point:2},
+   {title:'右邊做出魚尾',tip:'點「右邊」，試用「直線連接」並把中間橘點向右拉，形成較尖的尾巴或魚嘴輪廓。',edge:1,point:2},
+   {title:'觀察魚如何游成一排',tip:'看「④ 全面密鋪」後，再決定哪端當魚頭、哪端當魚尾；在完成的紙本元件加上魚眼與魚鱗。',edge:1,point:2}
+  ]
+ },
+ bird:{
+  label:'飛鳥',shape:'square',
+  profiles:[
+   {p:[.12,.27,.44,.65,.85],v:[-.01,-.06,-.15,-.07,0]},
+   {p:[.12,.30,.50,.72,.88],v:[0,-.04,-.10,.055,0],angular:true}
+  ],
+  steps:[
+   {title:'從正方形觀察翅膀',tip:'先選「正方形」。把上邊想像成展開的翅膀，右邊留給鳥嘴或尾羽。'},
+   {title:'把翅膀往外拉',tip:'選「上邊」與「曲線連接」，將第三個橘點向上拉，旁邊的點只要稍微調整即可。',edge:0,point:2},
+   {title:'用尖角暗示鳥嘴',tip:'點「右邊」，選「直線連接」，把靠上方的橘點略向右拉成尖角；觀察左邊自動補上的輪廓。',edge:1,point:1},
+   {title:'畫出羽毛與眼睛',tip:'確認能完整密鋪後，把細節留到紙本：眼睛、羽毛與羽色，往往比輪廓更能讓別人看出是飛鳥。',edge:0,point:2}
+  ]
+ },
+ rocket:{
+  label:'火箭',shape:'rectangle',
+  profiles:[
+   {p:[.12,.28,.50,.73,.87],v:[0,-.06,-.10,-.06,0],angular:true},
+   {p:[.10,.25,.50,.75,.90],v:[.03,.09,-.20,.09,.03],angular:true}
+  ],
+  steps:[
+   {title:'選長方形做火箭本體',tip:'先選「長方形」，輪廓可以用比較多直線，火箭窗戶等內部細節稍後再畫。'},
+   {title:'做出尖頭',tip:'點「右邊」，選「直線連接」，把第三個橘點往右拉成尖端。由於另一側會平移配對，記得觀察它如何形成凹口。',edge:1,point:2},
+   {title:'加上尾翼凹凸',tip:'再點「上邊」，把第二或第四個橘點往上拉一小段，讓輪廓看起來有尾翼的稜角。',edge:0,point:3},
+   {title:'用顏色表現火箭',tip:'看完整密鋪，確認每片可以接合後，在紙上加入火箭窗、火焰或太空圖案。',edge:1,point:2}
+  ]
+ },
+ monster:{
+  label:'小怪獸',shape:'square',
+  profiles:[
+   {p:[.12,.28,.46,.67,.86],v:[-.01,-.12,.045,-.13,-.01],angular:true},
+   {p:[.12,.29,.50,.72,.88],v:[.04,-.055,.10,-.07,.04]}
+  ],
+  steps:[
+   {title:'先決定怪獸的外型',tip:'選「正方形」。怪獸可以很自由，不必先想得很像：有角、有耳朵、有凸凸的手就很好玩。'},
+   {title:'用上邊做兩隻角',tip:'選「上邊」與「直線連接」，把第二和第四個橘點往上拉一點，就像長出兩隻角。',edge:0,point:1},
+   {title:'用右邊做小手',tip:'選「右邊」，把中間的橘點向左或向右拉，觀察對邊會如何連動。',edge:1,point:2},
+   {title:'畫表情讓怪獸活起來',tip:'完整密鋪後，在紙本圖案中加入眼睛、牙齒、手掌和不同顏色的表情。',edge:1,point:2}
+  ]
+ },
+ pegasus:{
+  label:'飛馬',shape:'square',
+  profiles:[
+   {p:[.12,.27,.46,.67,.86],v:[-.01,-.08,-.13,.035,.07]},
+   {p:[.12,.29,.49,.71,.87],v:[0,.06,-.13,.08,0],angular:true}
+  ],
+  steps:[
+   {title:'飛馬是進階創作',tip:'先選「正方形」。真正能辨認的飛馬輪廓很有挑戰；可以先用抽象外框表示翅膀，再靠紙本細節畫出馬頭。'},
+   {title:'用曲線做大翅膀',tip:'選「上邊」和「曲線連接」，把第三個橘點向上拉，再稍微調整第二點，讓它像伸展的翅膀。',edge:0,point:2},
+   {title:'用右邊做頭部輪廓',tip:'點「右邊」，用「直線連接」把中間橘點向右拉少許，試做出輪廓突出的部分。',edge:1,point:2},
+   {title:'用內部線條補充飛馬特徵',tip:'確認純平移密鋪成立，再在紙上畫馬鬃、眼睛、腳與羽毛；不必強求所有細節都由邊界完成。',edge:0,point:2}
+  ]
+ }
+};
+let activeIdea=null,activeHint=0;
+function ideaPreview(spec){
+ const oldShape=s.shape,oldMode=s.mode,oldTrans=s.trans;
+ let pts,ok;
+ try{
+  s.mode='translate';s.shape=spec.shape;s.trans=spec.profiles;
+  pts=tile();ok=valid();
+ }finally{s.shape=oldShape;s.mode=oldMode;s.trans=oldTrans}
+ if(!ok)return '<span class="fine">輪廓檢查中</span>';
+ const [u,v]=templates[spec.shape],scale=53,origin=[30,9];
+ let g='<rect width="230" height="85" rx="7" fill="#f9fcfe"/>';
+ for(let j=-1;j<=1;j++)for(let i=-1;i<=3;i++){
+  const delta=add(mul(u,i),mul(v,j));
+  const coords=pts.map(p=>add(origin,mul(add(p,delta),scale)));
+  const fill=palette[((i+j*3)%palette.length+palette.length)%palette.length];
+  g+='<path d="'+path(coords)+'" fill="'+fill+'" fill-opacity=".89" stroke="#47798a" stroke-width=".95"/>';
+ }
+ return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 230 85" aria-hidden="true">'+g+'</svg>';
+}
+function paintInspirationCards(){
+ if(page!=='translation')return;
+ document.querySelectorAll('[data-inspire]').forEach(b=>{
+  const key=b.dataset.inspire;
+  if(ideas[key]){const n=b.querySelector('.inspireThumb');if(n)n.innerHTML=ideaPreview(ideas[key]);}
+ });
+}
+function identifyIdea(input){
+ const txt=input.trim().toLowerCase().replace(/\s+/g,'');
+ if(!txt)return null;
+ if(/飛馬|天馬|獨角獸|馬/.test(txt))return 'pegasus';
+ if(/火箭|太空|宇宙|飛船|飛機|飛碟/.test(txt))return 'rocket';
+ if(/魚|海豚|鯊|鯨|水母|海洋/.test(txt))return 'fish';
+ if(/鳥|老鷹|企鵝|鴨|雞|燕|翅膀/.test(txt))return 'bird';
+ if(/怪獸|怪物|恐龍|史萊姆|鬼|貓|狗|兔|熊|動物/.test(txt))return 'monster';
+ if(/箭頭|方向|箭|閃電|幾何/.test(txt))return 'arrow';
+ return null;
+}
+function chooseIdea(key,input=''){
+ if(page!=='translation'||!ideas[key])return;
+ activeIdea=key;activeHint=0;
+ const spec=ideas[key];
+ $('inspirationGuide').hidden=false;
+ $('inspirationMessage').textContent=input?'你想畫「'+input.slice(0,36)+'」：可先用「'+spec.label+'」的輪廓方法試試看，再加入自己的變化。':'已選「'+spec.label+'」。先看看每一步，再親自試著拉出輪廓！';
+ document.querySelectorAll('[data-inspire]').forEach(b=>b.classList.toggle('selected',b.dataset.inspire===key));
+ showIdeaHint();
+}
+function showIdeaHint(){
+ if(page!=='translation'||!activeIdea)return;
+ const spec=ideas[activeIdea],step=spec.steps[activeHint];
+ $('inspirationTitle').textContent=spec.label+'｜'+step.title;
+ $('inspirationCounter').textContent=(activeHint+1)+' / '+spec.steps.length;
+ $('inspirationInstruction').textContent=step.tip;
+ $('inspirationPrev').disabled=activeHint===0;
+ $('inspirationNext').disabled=activeHint===spec.steps.length-1;
+ $('inspirationLocate').disabled=step.edge===undefined;
+}
+function moveIdeaHint(delta){
+ if(!activeIdea)return;
+ activeHint=bound(activeHint+delta,0,ideas[activeIdea].steps.length-1);
+ showIdeaHint();
+}
+function locateIdeaHint(){
+ if(!activeIdea)return;
+ const step=ideas[activeIdea].steps[activeHint];
+ if(step.edge===undefined){
+  setStatus('請先在「起始多邊形」選擇「'+(ideas[activeIdea].shape==='rectangle'?'長方形':'正方形')+'」，或點選建立空白練習。');
+  return;
+ }
+ s.selectedEdge=step.edge;s.drawTool='points';
+ const k=sourceForSide(step.edge),pr=s.trans[k],sketch=Array.isArray(pr.sketch)&&pr.sketch.length>2;
+ const j=sketch?1:Math.min(step.point||0,pr.p.length-1);
+ s.selectedPoint={index:k,j,sketch};
+ render();
+ setStatus('已定位「'+edgeLabel(step.edge)+'」的橘色控制點。請依小助理的提示自行拖曳。');
+ const editor=$('editorScene');
+ if(editor&&typeof editor.scrollIntoView==='function')editor.scrollIntoView({behavior:'smooth',block:'center'});
+}
+function startIdeaPractice(){
+ if(!activeIdea)return;
+ const spec=ideas[activeIdea];
+ const baseline=snapshot();
+ s.mode='translate';s.shape=spec.shape;
+ s.trans=[defaultProfile('t'),defaultProfile('t')];s.preset='blank';
+ s.drawTool='points';s.selectedPoint=null;s.selectedEdge=2;s.stage=0;
+ recordUndoState(baseline);render();
+ activeHint=0;showIdeaHint();
+ setStatus('已準備「'+spec.label+'」的空白練習圖形。你可以自行畫，也可按「上一步（復原）」回到舊作品。');
+}
+function initializeInspiration(){
+ if(page!=='translation')return;
+ paintInspirationCards();
+ document.querySelectorAll('[data-inspire]').forEach(b=>b.addEventListener('click',()=>chooseIdea(b.dataset.inspire)));
+ const ask=()=>{
+  const input=$('inspirationPrompt').value.trim(),match=identifyIdea(input);
+  if(match)chooseIdea(match,input);
+  else{
+   $('inspirationMessage').textContent=input?'目前沒有「'+input.slice(0,36)+'」的專用教學；可以先選上面六個靈感主題，或請老師一起拆解成凹凸輪廓。':'可以輸入想畫的東西，例如「魚」「飛鳥」「火箭」，或點選上方卡片。';
+  }
+ };
+ $('inspirationAsk').addEventListener('click',ask);
+ $('inspirationPrompt').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();ask();}});
+ $('inspirationPrev').addEventListener('click',()=>moveIdeaHint(-1));
+ $('inspirationNext').addEventListener('click',()=>moveIdeaHint(1));
+ $('inspirationLocate').addEventListener('click',locateIdeaHint);
+ $('inspirationStart').addEventListener('click',startIdeaPractice);
+}
 function attachEvents(){
  $('mode').value=s.mode;
+ initializeInspiration();
  if(page==='translation'){
   const edgeChange=value=>{s.selectedEdge=Number(value);s.selectedPoint=null;render();setStatus('已切換為「'+edgeLabel(s.selectedEdge)+'」，對邊將保持平移配對。')};
   $('selectedEdge').addEventListener('change',e=>edgeChange(e.target.value));
@@ -749,6 +939,6 @@ async function png(svg,suffix){
  const link=URL.createObjectURL(b),a=document.createElement('a');a.href=link;a.download=filename(suffix);a.click();setTimeout(()=>URL.revokeObjectURL(link),1000);
  setStatus('已準備下載：'+a.download);
 }
-window.EscherWorkshopDebug={state:s,valid,tile,edge,tilesSVG,triangleInstances,printSVG,snapshot,restore,presetValues,sourceForSide,pointOnSelected,projectOnSelected,endFreehand,movementSVG,undoEdit,redoEdit,recordUndoState};
+window.EscherWorkshopDebug={state:s,valid,tile,edge,tilesSVG,triangleInstances,printSVG,snapshot,restore,presetValues,sourceForSide,pointOnSelected,projectOnSelected,endFreehand,movementSVG,undoEdit,redoEdit,recordUndoState,ideas,ideaPreview,identifyIdea,chooseIdea,showIdeaHint,locateIdeaHint,startIdeaPractice};
 attachEvents();render();
 })();
