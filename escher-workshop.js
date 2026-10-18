@@ -92,6 +92,7 @@ function edge(e){
 }
 function tile(){const out=[];bases().forEach((_,i)=>out.push(...(i?edge(i).slice(1):edge(i))));return out}
 function path(pts){return'M'+pts.map(p=>fmt(p[0])+','+fmt(p[1])).join(' L')+' Z'}
+function linePath(pts){return'M'+pts.map(p=>fmt(p[0])+','+fmt(p[1])).join(' L')}
 function simpleInter(a,b,c,d){
  const A=sub(b,a),B=sub(d,c),eps=1e-9,v1=cross(A,sub(c,a)),v2=cross(A,sub(d,a)),v3=cross(B,sub(a,c)),v4=cross(B,sub(b,c));
  if(v1*v2< -eps&&v3*v4< -eps)return true;
@@ -238,7 +239,7 @@ function movementSVG(W,H,unit,progress,print=false){
  for(let k=0;k<Math.min(roles.length,4);k++){
   const e=roles[k][2],edited=edge(e).map(toPx);
   const [A,B]=shapeEdges[e],mid=toPx(mul(add(A,B),.5));
-  drawings+='<path d="'+path(edited)+'" fill="none" stroke="'+hues[k]+'" stroke-width="5" stroke-linecap="round"/>';
+  drawings+='<path d="'+linePath(edited)+'" fill="none" stroke="'+hues[k]+'" stroke-width="5" stroke-linecap="round"/>';
   if(k<2)drawings+='<circle cx="'+fmt(mid[0])+'" cy="'+fmt(mid[1])+'" r="5" fill="'+hues[k]+'"/>';
  }
  drawings+='<path d="'+path(moved)+'" fill="'+(print?'white':'#f3c39d')+'" fill-opacity=".72" stroke="#c3773c" stroke-width="2.6"/>';
@@ -347,8 +348,8 @@ function drawTranslationEditor(){
  let svg='<defs><pattern id="gridD" width="23" height="23" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1" fill="#dcecf4"/></pattern></defs><rect width="'+W+'" height="'+H+'" fill="url(#gridD)"/>';
  svg+='<path d="'+path(half.map(toPx))+'" fill="#fff1df" stroke="none"/>';
  svg+='<path d="'+path(tile().map(toPx))+'" fill="'+esc(s.color)+'" fill-opacity=".77" stroke="#2c617d" stroke-width="2.4"/>';
- svg+='<path class="selected-edge" d="'+path(edge(e).map(toPx))+'" fill="none" stroke="#e98b3d" stroke-width="5" stroke-linecap="round"/>';
- svg+='<path d="'+path(edge((e+2)%4).map(toPx))+'" fill="none" stroke="#329d90" stroke-width="4" stroke-dasharray="6 5"/>';
+ svg+='<path class="selected-edge" d="'+linePath(edge(e).map(toPx))+'" fill="none" stroke="#e98b3d" stroke-width="5" stroke-linecap="round"/>';
+ svg+='<path d="'+linePath(edge((e+2)%4).map(toPx))+'" fill="none" stroke="#329d90" stroke-width="4" stroke-dasharray="6 5"/>';
  for(const [j,p] of [pointOnSelected(0,0,e),pointOnSelected(1,0,e)].entries()){
   const q=toPx(p);
   svg+='<circle cx="'+fmt(q[0])+'" cy="'+fmt(q[1])+'" r="7.5" fill="#fff" stroke="#1f9679" stroke-width="3"/>';
@@ -419,7 +420,7 @@ function sampleFreehand(pos){
  if(line){
   const e=s.sketching.edge;
   const shaped=[pointOnSelected(0,0,e),...pts,pointOnSelected(1,0,e)];
-  line.setAttribute('d',path(shaped.map(p=>add([128,93],mul(p,226)))));
+  line.setAttribute('d',linePath(shaped.map(p=>add([128,93],mul(p,226)))));
  }
 }
 function anchoredSketch(points,e){
