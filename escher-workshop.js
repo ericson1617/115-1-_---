@@ -13,7 +13,7 @@ const s={
  mode:initialMode,shape:'square',trans:[defaultProfile('t'),defaultProfile('t')],
  rot:Array.from({length:4},()=>defaultProfile('r')),hex:Array.from({length:3},()=>({p:[.18,.36,.57,.78],v:[0,0,0,0]})),quarter:{p:[.13,.32,.5,.68,.87],v:[0,0,0,0,0]},preset:'blank',
  color:'#7dbfcf',outline:true,multicolor:true,stage:3,
- className:'',seat:'',student:'',tileCm:6,paper:'A4',printKind:'tile',
+ className:'',seat:'',student:'',tileCm:page==='translation'?9:6,paper:'A4',printKind:'tile',
  history:[],future:[],drag:null,stepProgress:1,selectedEdge:2,drawTool:'points',sketching:null,selectedPoint:null
 };
 const add=(a,b)=>[a[0]+b[0],a[1]+b[1]],sub=(a,b)=>[a[0]-b[0],a[1]-b[1]];
