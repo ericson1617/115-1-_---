@@ -18,6 +18,7 @@
 </section>
 <section class="panel"><h2>③ 逐步觀察與即時密鋪預覽</h2>
 <div class="stepbar"><button data-step="0">① 原始圖形</button><button data-step="1">② 第一步</button><button data-step="2">③ 擴充</button><button data-step="3" class="selected">④ 完整密鋪</button></div>
+<div class="field" style="padding:8px 12px;border:1px solid #d2e6ee;background:#f6fbfe;border-radius:12px"><label for="stepProgress">② 第一步：拖曳進度，觀察元件如何移動　<span id="progressValue">100%</span></label><input type="range" id="stepProgress" min="0" max="100" value="100" step="1" style="width:100%;accent-color:#2682ad"></div>
 <div class="note" id="stepText">從原圖形到可密鋪的元件</div>
 <div class="legend"><span class="tag" id="modeLabel">密鋪模式</span><span>預覽會隨拖曳即時更新；不同步驟使用相同的最新元件</span></div>
 <div class="canvasArea preview scene" id="previewScene"><svg viewBox="0 0 840 560"></svg></div>
