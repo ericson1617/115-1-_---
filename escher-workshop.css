@@ -10,3 +10,28 @@
 #editorScene .selected-edge{filter:drop-shadow(0 0 3px #e28c3f80)}
 #selectedEdge{max-width:420px}
 @media(max-width:520px){.edgePicker{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* Translation inspiration and locally guided learning */
+.inspirationHub{border:1px solid #c5e0ed;border-radius:16px;background:linear-gradient(150deg,#f1faff,#fff);margin:18px 0 12px;overflow:hidden}
+.inspirationHub>summary{cursor:pointer;padding:14px;font-size:15px;font-weight:850;color:#1e6387;list-style-position:inside}
+.inspirationHub>summary:focus-visible{outline:3px solid #e5a24e;outline-offset:-3px}
+.inspireSubtitle{font-size:11px;color:#6a8b9d;font-weight:600;margin-left:7px}
+.inspireContent{padding:0 13px 15px}
+.inspireGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:12px 0}
+.inspireCard{padding:7px;background:#fff;border:1px solid #cbdfeb;display:flex;flex-direction:column;align-items:center;gap:4px;min-width:0;text-align:center;border-radius:12px}
+.inspireCard strong{font-size:13px}
+.inspireCard small{font-size:10px;color:#648698;line-height:1.5}
+.inspireCard.selected{border-color:#1c729b;background:#e8f6ff;color:#175d85;box-shadow:0 0 0 2px #a5d7f0}
+.inspireThumb{display:block;width:100%;height:80px;background:#f9fcfe;border-radius:8px;overflow:hidden}
+.inspireThumb svg{display:block;width:100%;height:100%}
+.inspirePromptRow{display:flex;gap:7px}
+.inspirePromptRow input{flex:1;min-width:0}
+.inspirePromptRow button{white-space:nowrap}
+.inspirationGuide{padding:12px;background:white;border-radius:13px;border:1px solid #c8e0eb;margin-top:12px}
+.inspirationGuide[hidden]{display:none}
+.inspirationGuideTop{display:flex;align-items:center;justify-content:space-between;gap:8px;color:#215d80;margin-bottom:10px;font-size:13px}
+.inspireFocus{font-size:13px;color:#3a657b;line-height:1.85;white-space:pre-line}
+.inspireActions{display:flex;gap:7px;flex-wrap:wrap;margin:12px 0 4px}
+.inspireActions button{flex:1;min-width:98px}
+.inspireEmphasis{color:#a55d24;font-weight:850}
+@media(max-width:520px){.inspireGrid{grid-template-columns:repeat(2,minmax(0,1fr))}.inspirePromptRow{flex-wrap:wrap}.inspirePromptRow button{width:100%}}
