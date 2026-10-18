@@ -779,6 +779,10 @@ function initializeInspiration(){
   const input=$('inspirationPrompt').value.trim(),match=identifyIdea(input);
   if(match)chooseIdea(match,input);
   else{
+   // Never leave an unrelated previous guide onscreen after an unknown prompt.
+   activeIdea=null;
+   $('inspirationGuide').hidden=true;
+   document.querySelectorAll('[data-inspire]').forEach(b=>b.classList.toggle('selected',false));
    $('inspirationMessage').textContent=input?'目前沒有「'+input.slice(0,36)+'」的專用教學；可以先選上面六個靈感主題，或請老師一起拆解成凹凸輪廓。':'可以輸入想畫的東西，例如「魚」「飛鳥」「火箭」，或點選上方卡片。';
   }
  };
