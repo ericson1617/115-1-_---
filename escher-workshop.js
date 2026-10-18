@@ -111,8 +111,8 @@ function valid(){
  }
  return true;
 }
-function snapshot(){return JSON.stringify({mode:s.mode,shape:s.shape,trans:s.trans,rot:s.rot,quarter:s.quarter,hex:s.hex,color:s.color,preset:s.preset,selectedEdge:s.selectedEdge})}
-function restore(x){const a=typeof x==='string'?JSON.parse(x):x;for(const k of ['mode','shape','trans','rot','quarter','hex','color','preset','selectedEdge'])if(a[k]!==undefined)s[k]=a[k];$('mode').value=s.mode;$('shape').value=s.shape;$('color').value=s.color;render()}
+function snapshot(){return JSON.stringify({mode:s.mode,shape:s.shape,trans:s.trans,rot:s.rot,quarter:s.quarter,hex:s.hex,color:s.color,preset:s.preset,selectedEdge:s.selectedEdge,tileLayout:s.tileLayout})}
+function restore(x){const a=typeof x==='string'?JSON.parse(x):x;for(const k of ['mode','shape','trans','rot','quarter','hex','color','preset','selectedEdge','tileLayout'])if(a[k]!==undefined)s[k]=a[k];$('mode').value=s.mode;$('shape').value=s.shape;$('color').value=s.color;render()}
 function updateHistoryButtons(){
  const undo=$('undo'),redo=$('redo');
  if(undo)undo.disabled=s.history.length===0;
@@ -313,17 +313,27 @@ function translationComparisonSVG(W,H,print=false){
   '<text x="'+fmt(W/2)+'" y="'+fmt(H-20)+'" font-size="16" fill="#668397" font-family="sans-serif" text-anchor="middle">左：剪貼前　／　右：目前設計的元件</text>'+
   '</svg>';
 }
+// Which untouched opposite sides permit a staggered tiling?
+// Translation pairs are linked: edge 0 ↔ edge 2; edge 1 ↔ edge 3.
+function staggerDirectionAvailable(){
+ if(page!=='translation'||s.mode!=='translate'||s.shape==='triangle'||s.shape==='hexagon')return null;
+ const pairUnchanged=e=>{
+  const [a,b]=bases()[e],direction=sub(b,a),length=norm(direction);
+  return length>0&&edge(e).every(p=>Math.abs(cross(sub(p,a),direction))<=1e-6*length);
+ };
+ if(pairUnchanged(0)&&pairUnchanged(2))return 'rows'; // 上下完整：相鄰橫排沿原上邊方向錯開半格
+ if(pairUnchanged(1)&&pairUnchanged(3))return 'columns'; // 左右完整：相鄰直列沿原側邊方向錯開半格
+ return null;
+}
 function tilesSVG(W,H,unit,stage=3,print=false){
  if(stage===0&&page==='translation')return translationComparisonSVG(W,H,print);
  if(stage===1)return movementSVG(W,H,unit,s.stepProgress,print);
  const v=templates[s.shape],origin=s.shape==='hexagon'?[W/2,H/2]:
   [W*.46-(v[0][0]+v[1][0])*unit*.46,H*.45-(v[0][1]+v[1][1])*unit*.46];
  let paths='',count=0;const poly=tile(),line=s.outline?'#426e83':'none';
- // 錯位模式：上、下邊為直線時採交錯半格的磚牆排法；
- // 若使用者改出波浪上下邊，改採仿射錯位平移，保證曲線邊界仍完全吻合。
- const staggered=page==='translation'&&s.mode==='translate'&&s.tileLayout==='staggered'&&stage===3&&s.shape!=='triangle'&&s.shape!=='hexagon';
- const topStraight=staggered&&edge(0).every(p=>Math.abs(cross(sub(p,verts()[0]),v[0]))<1e-5);
- const sheared=p=>[p[0]+(v[0][0]*.5/v[1][1])*(p[1]-origin[1]),p[1]];
+ // 只有一組對邊仍是原本的直線，才允許「堆砌交錯」。
+ // 每片僅做平移，不可縮放、斜切或改變曲線輪廓。
+ const staggerDirection=stage===3&&s.tileLayout==='staggered'?staggerDirectionAvailable():null;
  const fill=(i,j)=>print?'#fff':s.multicolor?palette[((i*3+j*5)%palette.length+palette.length)%palette.length]:s.color;
  const insert=(pts,col)=>{paths+='<path d="'+path(pts)+'" fill="'+col+'" stroke="'+(print?'#526875':line)+'" stroke-width="'+(print?.8:1.3)+'"/>';count++};
  if(s.shape==='hexagon'){
@@ -352,16 +362,16 @@ function tilesSVG(W,H,unit,stage=3,print=false){
        ((i===0&&j===0)||(i===picked[0]&&j===picked[1]));
     if(!pair)continue;
    }
-   const rowOffset=staggered&&topStraight&&Math.abs(j)%2===1?.5:0;
-   const cell=add(origin,add(mul(v[0],(i+rowOffset)*unit),mul(v[1],j*unit)));
+   const rowOffset=staggerDirection==='rows'&&Math.abs(j)%2===1?.5:0;
+   const columnOffset=staggerDirection==='columns'&&Math.abs(i)%2===1?.5:0;
+   const cell=add(origin,add(mul(v[0],(i+rowOffset)*unit),mul(v[1],(j+columnOffset)*unit)));
    if(cell[0]<-420||cell[0]>W+420||cell[1]<-420||cell[1]>H+420)continue;
    if(s.mode==='rotate90'){
     const k=((-(i+j))%4+4)%4;
     insert(poly.map(p=>add(cell,mul(rotate(p,k*Math.PI/2,center),unit))),fill(i,j));
    }else{
     const turned=s.mode==='rotate'?(Math.abs(i+j)%2===1):s.mode==='mixX'?(Math.abs(j)%2===1):s.mode==='mixY'?(Math.abs(i)%2===1):false;
-    const pts=transform(poly,cell,unit,turned);
-    insert(staggered&&!topStraight?pts.map(sheared):pts,fill(i,j));
+    insert(transform(poly,cell,unit,turned),fill(i,j));
    }
   }
  }
@@ -375,6 +385,9 @@ function tilesSVG(W,H,unit,stage=3,print=false){
 function drawPreview(){
  const box=$('previewScene');if(!box)return;
  const W=840,H=560,unit=s.shape==='triangle'?180:s.shape==='hexagon'?122:150;
+ const direction=page==='translation'?staggerDirectionAvailable():null;
+ // If the last straight opposite pair is edited, immediately return to aligned layout.
+ if(s.tileLayout==='staggered'&&!direction)s.tileLayout='aligned';
  box.innerHTML=tilesSVG(W,H,unit,s.stage);
  const progress=$('stepProgress'),progressLabel=$('progressValue');if(progress){progress.disabled=s.stage!==1;progress.value=Math.round(s.stepProgress*100)}
  if(progressLabel)progressLabel.textContent=s.stage===1?Math.round(s.stepProgress*100)+'%':'請選「步驟二」操作';
@@ -388,12 +401,17 @@ function drawPreview(){
    const chosen=b.dataset.tessLayout===s.tileLayout;
    b.classList.toggle('selected',chosen);
    b.setAttribute('aria-pressed',String(chosen));
+   b.disabled=b.dataset.tessLayout==='staggered'&&!direction;
+   if(b.disabled)b.title='至少保留上下或左右一組未修改的直線對邊';
+   else b.removeAttribute('title');
   });
-  const curved=s.tileLayout==='staggered'&&edge(0).some(p=>Math.abs(cross(sub(p,verts()[0]),templates[s.shape][0]))>=1e-5);
-  layoutHint.textContent=s.tileLayout==='aligned'
-   ?'同位：上下相鄰的元件整齊對齊，拼成無縫圖案。'
-   :curved?'錯位：上下排相差半格；曲線上下邊會同步斜向平移，確保邊界相接、不留空隙。'
-   :'錯位：相鄰兩排左右錯開半格，像磚牆堆砌一樣，仍保持無縫密鋪。';
+  layoutHint.textContent=!direction
+   ?'錯位功能暫不可用：上下與左右兩組對邊都已變形。請先保留或恢復其中一組原本的直線。'
+   :s.tileLayout==='aligned'
+    ?direction==='rows'?'可選錯位：上下兩邊未變形，相鄰橫排可像磚牆左右錯開半格。'
+     :'可選錯位：左右兩邊未變形，相鄰直列可上下錯開半格。'
+    :direction==='rows'?'錯位：每隔一排沿未變形的上下邊平移半格；原圖形完全不變、沒有縫隙。'
+     :'錯位：每隔一直列沿未變形的左右邊平移半格；原圖形完全不變、沒有縫隙。';
  }
  $('modeLabel').textContent=page==='translation'&&s.stage===3
   ?(s.tileLayout==='staggered'?'平移錯位鑲嵌':'平移同位鑲嵌'):names[s.mode];
@@ -745,6 +763,7 @@ function attachEvents(){
  $('outline').addEventListener('change',e=>{s.outline=e.target.checked;drawPreview()});
  $('multicolor').addEventListener('change',e=>{s.multicolor=e.target.checked;drawPreview()});
  if(page==='translation')document.querySelectorAll('[data-tess-layout]').forEach(b=>b.addEventListener('click',()=>{
+  if(b.dataset.tessLayout==='staggered'&&!staggerDirectionAvailable())return;
   s.tileLayout=b.dataset.tessLayout;
   s.stage=3;
   drawPreview();
@@ -822,7 +841,7 @@ function attachEvents(){
   e.target.value='';
  });
 }
-function studentData(){return{app:'藝數探索艾薛爾工作室',version:4,selectedEdge:s.selectedEdge,mode:s.mode,shape:s.shape,trans:s.trans,rot:s.rot,quarter:s.quarter,hex:s.hex,color:s.color,preset:s.preset,className:s.className,seat:s.seat,student:s.student}}
+function studentData(){return{app:'藝數探索艾薛爾工作室',version:4,selectedEdge:s.selectedEdge,mode:s.mode,shape:s.shape,trans:s.trans,rot:s.rot,quarter:s.quarter,hex:s.hex,color:s.color,preset:s.preset,tileLayout:s.tileLayout,className:s.className,seat:s.seat,student:s.student}}
 function filename(suffix){let name=[safe(s.className),safe(s.seat),safe(s.student)].filter(Boolean).join('_');return(name||'藝數探索_未命名')+'_'+suffix}
 function projectMeta(){return'<metadata id="escher-project">'+esc(JSON.stringify(studentData()))+'</metadata>'}
 function singleSVG(W,H,transparent=false){
