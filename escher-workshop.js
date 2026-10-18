@@ -246,7 +246,7 @@ function attachEvents(){
  container.addEventListener('pointerdown',e=>{
   const h=e.target.closest('[data-kind]');if(!h)return;
   undoSave();s.drag={kind:h.dataset.kind,index:Number(h.dataset.index),edge:Number(h.dataset.edge),j:Number(h.dataset.j)};
-  container.querySelector('svg').setPointerCapture(e.pointerId);e.preventDefault();
+  container.setPointerCapture(e.pointerId);e.preventDefault();
  });
  container.addEventListener('pointermove',onMove);
  for(const ty of ['pointerup','pointercancel','lostpointercapture'])container.addEventListener(ty,()=>s.drag=null);
