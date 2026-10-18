@@ -14,7 +14,7 @@ const s={
  rot:Array.from({length:4},()=>defaultProfile('r')),hex:Array.from({length:3},()=>({p:[.18,.36,.57,.78],v:[0,0,0,0]})),quarter:{p:[.13,.32,.5,.68,.87],v:[0,0,0,0,0]},preset:'blank',
  color:'#7dbfcf',outline:true,multicolor:true,stage:3,
  className:'',seat:'',student:'',tileCm:6,paper:'A4',printKind:'tile',
- history:[],drag:null,stepProgress:1,selectedEdge:2,drawTool:'points',sketching:null
+ history:[],future:[],drag:null,stepProgress:1,selectedEdge:2,drawTool:'points',sketching:null,selectedPoint:null
 };
 const add=(a,b)=>[a[0]+b[0],a[1]+b[1]],sub=(a,b)=>[a[0]-b[0],a[1]-b[1]];
 const mul=(a,k)=>[a[0]*k,a[1]*k],cross=(a,b)=>a[0]*b[1]-a[1]*b[0];
@@ -113,7 +113,30 @@ function valid(){
 }
 function snapshot(){return JSON.stringify({mode:s.mode,shape:s.shape,trans:s.trans,rot:s.rot,quarter:s.quarter,hex:s.hex,color:s.color,preset:s.preset,selectedEdge:s.selectedEdge})}
 function restore(x){const a=typeof x==='string'?JSON.parse(x):x;for(const k of ['mode','shape','trans','rot','quarter','hex','color','preset','selectedEdge'])if(a[k]!==undefined)s[k]=a[k];$('mode').value=s.mode;$('shape').value=s.shape;$('color').value=s.color;render()}
-function undoSave(){s.history.push(snapshot());if(s.history.length>45)s.history.shift()}
+function updateHistoryButtons(){
+ const undo=$('undo'),redo=$('redo');
+ if(undo)undo.disabled=s.history.length===0;
+ if(redo)redo.disabled=s.future.length===0;
+}
+function recordUndoState(before){
+ if(before===snapshot())return false;
+ s.history.push(before);if(s.history.length>60)s.history.shift();
+ s.future=[];updateHistoryButtons();return true;
+}
+function undoSave(){
+ s.history.push(snapshot());if(s.history.length>60)s.history.shift();
+ s.future=[];updateHistoryButtons();
+}
+function undoEdit(){
+ if(!s.history.length){setStatus('目前沒有可以復原的修改。');return}
+ const previous=s.history.pop();s.future.push(snapshot());s.selectedPoint=null;
+ restore(previous);setStatus('已復原上一個修改，按「下一步（重做）」可以恢復。');
+}
+function redoEdit(){
+ if(!s.future.length){setStatus('目前沒有可以重做的修改。');return}
+ const next=s.future.pop();s.history.push(snapshot());s.selectedPoint=null;
+ restore(next);setStatus('已恢復剛剛撤銷的修改。');
+}
 function setStatus(x){$('status').textContent=x}
 function ensureShape(){
  const shape=$('shape');
@@ -362,7 +385,9 @@ function drawTranslationEditor(){
   for(const j of list){
    const [t,d]=ink?pr.sketch[j]:[pr.p[j],pr.v[j]],p=toPx(pointOnSelected(t,d,e)),base=toPx(pointOnSelected(t,0,e));
    svg+='<path d="M'+fmt(base[0])+','+fmt(base[1])+' L'+fmt(p[0])+','+fmt(p[1])+'" stroke="#bc8f6e" stroke-width="1.8" stroke-dasharray="3 3"/>';
-   svg+='<circle class="handle" data-kind="t" data-index="'+src+'" data-edge="'+e+'" data-j="'+j+'" data-sketch="'+(ink?'1':'0')+'" cx="'+fmt(p[0])+'" cy="'+fmt(p[1])+'" r="8.4" tabindex="0" role="button"/>';
+   const selected=s.selectedPoint&&s.selectedPoint.index===src&&s.selectedPoint.j===j&&s.selectedPoint.sketch===ink;
+   if(selected)svg+='<circle cx="'+fmt(p[0])+'" cy="'+fmt(p[1])+'" r="14.2" fill="none" stroke="#d94438" stroke-width="3"/>';
+   svg+='<circle class="handle" data-kind="t" data-index="'+src+'" data-edge="'+e+'" data-j="'+j+'" data-sketch="'+(ink?'1':'0')+'" cx="'+fmt(p[0])+'" cy="'+fmt(p[1])+'" r="8.4" tabindex="0" role="button" aria-label="選擇第'+(j+1)+'個控制點"/>';
    count++;
   }
  }
@@ -379,6 +404,7 @@ function drawTranslationEditor(){
  document.querySelectorAll('[data-line-style]').forEach(b=>b.classList.toggle('selected',b.dataset.lineStyle===(pr.angular?'line':'curve')));
  $('addPoint').disabled=s.drawTool==='pen'||Boolean(pr.sketch);
  $('editorScene').classList.toggle('penActive',s.drawTool==='pen');
+ pointOptions();
 }
 function drawEditor(){
  if(page==='translation')return drawTranslationEditor();
@@ -401,7 +427,7 @@ function drawEditor(){
  $('controlCount').textContent='可拖曳 '+handles+' 個橘色控制點（支援上下左右與斜向移動）';
 }
 function render(){
- ensureShape();drawEditor();drawPreview();
+ ensureShape();drawEditor();drawPreview();updateHistoryButtons();
  const text=$('concept');if(text)text.textContent=modeText();
  const cur=$('mode');if(cur)cur.value=s.mode;
  const opt=$('shape');if(opt)opt.value=s.shape;
@@ -462,8 +488,8 @@ function endFreehand(cancelled=false){
   pr.sketch=sketch.map(([t,d])=>[t,+(d*factor).toFixed(5)]);
  }
  if(!valid()){pr.sketch=old;setStatus('目前兩組邊線太接近，請先調整另一條邊。');render();return}
- s.history.push(prior);if(s.history.length>45)s.history.shift();
- s.stage=3;s.preset='blank';render();
+ recordUndoState(prior);
+ s.stage=3;s.preset='blank';s.selectedPoint=null;render();
  setStatus(factor<.999?'兩端已自動固定！為避免圖形交叉，系統也稍微縮小了筆畫幅度。':'自由畫線成功！兩端已固定，對邊已自動平移配對。');
 }
 
@@ -482,6 +508,9 @@ function onMove(evt){
    pr.p[j]=+bound(t,lo,hi).toFixed(4);pr.v[j]=+bound(d,-.50*minBaseSide(),.50*minBaseSide()).toFixed(4);
    if(!valid()){pr.p[j]=prevT;pr.v[j]=prevD;setStatus('這樣會造成線條交叉，控制點已退回。');return}
   }
+  if(s.drag&&!s.drag.saved&&s.drag.baseline!==snapshot()){
+   recordUndoState(s.drag.baseline);s.drag.saved=true;
+  }
   render();return;
  }
  const axis=sub(B,A),len2=dot(axis,axis),n=normal(A,B),oldP=pr.p[j],oldV=pr.v[j];
@@ -489,16 +518,66 @@ function onMove(evt){
  const t=bound(dot(sub(pos,A),axis)/len2,lower,upper),foot=add(A,mul(axis,t)),limit=Math.min(.5,.50*minBaseSide());
  pr.p[j]=+t.toFixed(4);pr.v[j]=+bound(dot(sub(pos,foot),n),-limit,limit).toFixed(4);
  if(!valid()){pr.p[j]=oldP;pr.v[j]=oldV;setStatus('這樣會造成輪廓交叉，已限制控制點的位置。');return}
+ if(s.drag&&!s.drag.saved&&s.drag.baseline!==snapshot()){
+  recordUndoState(s.drag.baseline);s.drag.saved=true;
+ }
  render();
+}
+
+function currentPointProfile(){
+ if(page!=='translation')return null;
+ return s.trans[sourceForSide(s.selectedEdge)];
+}
+function pointOptions(){
+ if(page!=='translation')return;
+ const pr=currentPointProfile(),sel=$('pointToDelete'),point=s.selectedPoint;
+ const sketch=Array.isArray(pr.sketch)&&pr.sketch.length>2;
+ // For freehand curves, every stroke sample is an actual editable vertex.
+ // Expose a manageable subset in the selection menu, matching the orange dots.
+ const candidates=sketch?pr.sketch.slice(1,-1).map((_,j)=>j+1).filter((_,j)=>j%Math.max(1,Math.ceil((pr.sketch.length-2)/9))===0):pr.p.map((_,j)=>j);
+ sel.innerHTML='<option value="">請選擇要刪除的控制點</option>'+candidates.map((j,k)=>'<option value="'+j+'">第 '+(k+1)+' 點'+(sketch?'（手繪點）':'')+'</option>').join('');
+ const correct=point&&point.index===sourceForSide(s.selectedEdge)&&point.sketch===sketch&&candidates.includes(point.j);
+ if(!correct)s.selectedPoint=null;
+ sel.value=s.selectedPoint?String(s.selectedPoint.j):'';
+ const total=sketch?pr.sketch.length-2:pr.p.length;
+ $('deletePoint').disabled=!s.selectedPoint||total<=1||s.drawTool!=='points';
+ $('pointSelectionStatus').textContent=total<=1
+  ?'本邊僅剩 1 個控制點，不能再刪除。固定頂點仍會保留。'
+  :s.selectedPoint?'已選擇第 '+(candidates.indexOf(s.selectedPoint.j)+1)+' 點；可按「刪除選取點」。'
+  :'請點擊橘色控制點或使用選單選擇；目前有 '+total+' 個內部輪廓點（最低 1 個）。';
+}
+function choosePoint(index){
+ const pr=currentPointProfile(),sketch=Array.isArray(pr.sketch)&&pr.sketch.length>2;
+ const j=Number(index);
+ s.selectedPoint=index===''?null:{index:sourceForSide(s.selectedEdge),j,sketch};
+ drawTranslationEditor();
+}
+function removeSelectedPoint(){
+ if(page!=='translation'||!s.selectedPoint){setStatus('請先選擇要刪除的控制點。');return}
+ const pr=currentPointProfile(),point=s.selectedPoint,sketch=Array.isArray(pr.sketch)&&pr.sketch.length>2;
+ if(point.index!==sourceForSide(s.selectedEdge)||point.sketch!==sketch){s.selectedPoint=null;render();return}
+ const count=sketch?pr.sketch.length-2:pr.p.length;
+ if(count<=1){setStatus('每條邊至少要保留 1 個內部控制點，不能再刪除。');render();return}
+ const baseline=snapshot();
+ if(sketch)pr.sketch.splice(point.j,1);
+ else{pr.p.splice(point.j,1);pr.v.splice(point.j,1)}
+ if(!valid()){
+  restore(baseline);s.selectedPoint=point;
+  setStatus('刪除這個點會造成輪廓交叉，已保留原狀。');return;
+ }
+ recordUndoState(baseline);s.selectedPoint=null;render();
+ setStatus('已刪除選定的控制點。按「上一步（復原）」即可找回。');
 }
 function attachEvents(){
  $('mode').value=s.mode;
  if(page==='translation'){
-  const edgeChange=value=>{s.selectedEdge=Number(value);render();setStatus('已切換為「'+edgeLabel(s.selectedEdge)+'」，對邊將保持平移配對。')};
+  const edgeChange=value=>{s.selectedEdge=Number(value);s.selectedPoint=null;render();setStatus('已切換為「'+edgeLabel(s.selectedEdge)+'」，對邊將保持平移配對。')};
   $('selectedEdge').addEventListener('change',e=>edgeChange(e.target.value));
+  $('pointToDelete').addEventListener('change',e=>choosePoint(e.target.value));
+  $('deletePoint').addEventListener('click',removeSelectedPoint);
   document.querySelectorAll('[data-edge-select]').forEach(b=>b.addEventListener('click',()=>edgeChange(b.dataset.edgeSelect)));
   document.querySelectorAll('[data-draw-tool]').forEach(b=>b.addEventListener('click',()=>{
-   s.drawTool=b.dataset.drawTool;render();setStatus(s.drawTool==='pen'?'自由畫線：用滑鼠或觸控筆，沿著淡色半邊畫出輪廓。':'控制點模式：拖曳選定邊的橘色控制點。');
+   s.drawTool=b.dataset.drawTool;s.selectedPoint=null;render();setStatus(s.drawTool==='pen'?'自由畫線：用滑鼠或觸控筆，沿著淡色半邊畫出輪廓。':'控制點模式：拖曳選定邊的橘色控制點。');
   }));
   document.querySelectorAll('[data-line-style]').forEach(b=>b.addEventListener('click',()=>{
    const pr=s.trans[sourceForSide(s.selectedEdge)],style=b.dataset.lineStyle;
@@ -516,7 +595,7 @@ function attachEvents(){
     delete pr.sketch;
    }
    pr.angular=style==='line';
-   render();setStatus(style==='line'?'已切換成直線連接：適合尖角與稜角輪廓。':'已切換成曲線連接：適合柔和的波浪輪廓。');
+   s.selectedPoint=null;render();setStatus(style==='line'?'已切換成直線連接：適合尖角與稜角輪廓。':'已切換成曲線連接：適合柔和的波浪輪廓。');
   }));
  }
  $('mode').addEventListener('change',e=>{undoSave();s.mode=e.target.value;s.stage=3;render()});
@@ -527,8 +606,9 @@ function attachEvents(){
  $('multicolor').addEventListener('change',e=>{s.multicolor=e.target.checked;drawPreview()});
  document.querySelectorAll('[data-step]').forEach(b=>b.addEventListener('click',()=>{s.stage=Number(b.dataset.step);drawPreview()}));
  const progress=$('stepProgress');if(progress)progress.addEventListener('input',e=>{s.stepProgress=Number(e.target.value)/100;drawPreview()});
- $('undo').addEventListener('click',()=>{if(s.history.length)restore(s.history.pop());else setStatus('目前沒有上一步。')});
- $('reset').addEventListener('click',()=>{undoSave();s.trans=[defaultProfile('t'),defaultProfile('t')];s.rot=Array.from({length:4},()=>defaultProfile('r'));s.quarter={p:[.13,.32,.5,.68,.87],v:[0,0,0,0,0]};s.hex=Array.from({length:3},()=>({p:[.18,.36,.57,.78],v:[0,0,0,0]}));s.preset='blank';$('preset').value='blank';s.stage=3;render()});
+ $('undo').addEventListener('click',undoEdit);
+ if(page==='translation')$('redo').addEventListener('click',redoEdit);
+ $('reset').addEventListener('click',()=>{undoSave();s.trans=[defaultProfile('t'),defaultProfile('t')];s.rot=Array.from({length:4},()=>defaultProfile('r'));s.quarter={p:[.13,.32,.5,.68,.87],v:[0,0,0,0,0]};s.hex=Array.from({length:3},()=>({p:[.18,.36,.57,.78],v:[0,0,0,0]}));s.preset='blank';$('preset').value='blank';s.stage=3;s.selectedPoint=null;render()});
  $('addPoint').addEventListener('click',()=>{
   const r=page==='translation'?['t',sourceForSide(s.selectedEdge),s.selectedEdge]:editRoles()[0],pr=profile(r[0],r[1]),max=r[0]==='r'?.47:.96;
   if(pr.sketch){setStatus('自由畫線完成後可以拖曳橘點微調；若要改用一般控制點，請按「重設全部曲線」。');return}
@@ -536,7 +616,9 @@ function attachEvents(){
   undoSave();let prev=.04,best=.0,at=0;
   for(let i=0;i<=pr.p.length;i++){const next=i===pr.p.length?max:pr.p[i],d=next-prev;if(d>best){best=d;at=i}prev=next}
   const before=at?pr.p[at-1]:.04,after=at===pr.p.length?max:pr.p[at];
-  pr.p.splice(at,0,(before+after)/2);pr.v.splice(at,0,0);render();setStatus('已替第一組邊線增加一個可自由拖曳的控制點。')
+  pr.p.splice(at,0,(before+after)/2);pr.v.splice(at,0,0);
+  s.selectedPoint=page==='translation'?{index:r[1],j:at,sketch:false}:null;
+  render();setStatus('已增加控制點，可以先點選想保留或刪除的點。')
  });
  const container=$('editorScene');
  container.addEventListener('pointerdown',e=>{
@@ -546,7 +628,12 @@ function attachEvents(){
    container.setPointerCapture(e.pointerId);e.preventDefault();return;
   }
   const h=e.target.closest('[data-kind]');if(!h)return;
-  undoSave();s.drag={kind:h.dataset.kind,index:Number(h.dataset.index),edge:Number(h.dataset.edge),j:Number(h.dataset.j),sketch:h.dataset.sketch==='1'};
+  const index=Number(h.dataset.index),j=Number(h.dataset.j),sketch=h.dataset.sketch==='1';
+  if(page==='translation'){
+   s.selectedPoint={index,j,sketch};
+   drawTranslationEditor();
+  }
+  s.drag={kind:h.dataset.kind,index,edge:Number(h.dataset.edge),j,sketch,baseline:snapshot(),saved:false};
   container.setPointerCapture(e.pointerId);e.preventDefault();
  });
  container.addEventListener('pointermove',onMove);
@@ -555,12 +642,12 @@ function attachEvents(){
  container.addEventListener('lostpointercapture',()=>{if(s.sketching)endFreehand(true);s.drag=null;});
  container.addEventListener('keydown',e=>{
   const h=e.target.closest('[data-kind]');if(!h||!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key))return;
-  e.preventDefault();undoSave();const a=profile(h.dataset.kind,Number(h.dataset.index)),j=Number(h.dataset.j),dy=e.key==='ArrowUp'?-.012:e.key==='ArrowDown'?.012:0,dx=e.key==='ArrowLeft'?-.016:e.key==='ArrowRight'?.016:0;
+  e.preventDefault();const baseline=snapshot(),a=profile(h.dataset.kind,Number(h.dataset.index)),j=Number(h.dataset.j),dy=e.key==='ArrowUp'?-.012:e.key==='ArrowDown'?.012:0,dx=e.key==='ArrowLeft'?-.016:e.key==='ArrowRight'?.016:0;
   if(h.dataset.sketch==='1'){
    const old=a.sketch[j][1];a.sketch[j][1]+=dy+dx;if(!valid())a.sketch[j][1]=old;
   }else{
    const old=a.v[j];a.v[j]+=dy+dx; if(!valid())a.v[j]=old;
-  }render();
+  }recordUndoState(baseline);render();
  });
  $('downloadSVG').addEventListener('click',()=>download('image/svg+xml',studentSVG(),'元件設計.svg'));
  $('downloadPNG').addEventListener('click',async()=>{try{await png(tilesSVG(1200,850,210,3),'完整鑲嵌.png')}catch(e){setStatus('PNG 轉換失敗，請先下載 SVG。')}});
@@ -625,6 +712,6 @@ async function png(svg,suffix){
  const link=URL.createObjectURL(b),a=document.createElement('a');a.href=link;a.download=filename(suffix);a.click();setTimeout(()=>URL.revokeObjectURL(link),1000);
  setStatus('已準備下載：'+a.download);
 }
-window.EscherWorkshopDebug={state:s,valid,tile,edge,tilesSVG,triangleInstances,printSVG,snapshot,restore,presetValues,sourceForSide,pointOnSelected,projectOnSelected,endFreehand,movementSVG};
+window.EscherWorkshopDebug={state:s,valid,tile,edge,tilesSVG,triangleInstances,printSVG,snapshot,restore,presetValues,sourceForSide,pointOnSelected,projectOnSelected,endFreehand,movementSVG,undoEdit,redoEdit,recordUndoState};
 attachEvents();render();
 })();
