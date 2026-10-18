@@ -48,15 +48,12 @@
 <div class="legend"><span class="tag" id="modeLabel">密鋪模式</span><span>預覽會隨拖曳即時更新；不同步驟使用相同的最新元件</span></div>
 <div class="canvasArea preview scene" id="previewScene"><svg viewBox="0 0 840 560"></svg></div>
 <div class="tip" style="margin-top:12px">選擇上、下、左、右其中一邊，再用控制點或自由畫線修改輪廓；對邊會自動平移配對。</div>
-<div class="printPanel"><h2>④ 儲存作品與列印描繪模板</h2>
-<div class="nameGrid"><div class="field"><label for="className">班級</label><input id="className" type="text" placeholder="701"></div><div class="field"><label for="seat">座號</label><input id="seat" type="text" placeholder="12"></div><div class="field"><label for="student">姓名／代號</label><input id="student" type="text" placeholder="請填寫"></div></div>
-<div class="buttongroup"><button class="primary" id="downloadSVG">↓ 下載可再次編輯的 SVG 作品</button><button id="downloadPNG">↓ 完整密鋪 PNG</button><button id="downloadTilePNG">↓ 單一元件 PNG</button></div>
-<div class="field"><label for="load">載入之前存下的 SVG（繼續修改）</label><input type="file" id="load" accept=".svg,.json,image/svg+xml,application/json"></div>
+<div class="printPanel"><h2>④ 作品影像與列印</h2>
+<div class="nameGrid"><div class="field"><label for="className">班級</label><input id="className" type="text" placeholder="701"></div><div class="field"><label for="seat">座號</label><input id="seat" type="text" placeholder="12"></div><div class="field"><label for="student">姓名</label><input id="student" type="text" placeholder="請填寫"></div></div>
+<div class="buttongroup"><button class="primary" id="downloadPNG">↓ 完整密鋪 PNG</button><button id="downloadTilePNG">↓ 單一元件 PNG</button></div>
 <div class="twoFields"><div class="field"><label for="paper">紙張</label><select id="paper"><option value="A4">A4</option><option value="A3">A3</option><option value="B5">B5（JIS）</option><option value="drawing">8 開圖畫紙（39.3 × 54.5 cm）</option></select></div><div class="field"><label for="tileCm">元件長邊（實際尺寸）</label><select id="tileCm"><option value="3">3 cm</option><option value="4">4 cm</option><option value="5">5 cm</option><option value="6" selected>6 cm</option><option value="7.5">7.5 cm</option><option value="9">9 cm</option></select></div></div>
-<div class="field"><label for="printKind">列印用途</label><select id="printKind"><option value="tile">W10 元件剪貼／描繪模板</option><option value="pattern">完整密鋪練習圖</option></select></div>
-<div class="buttongroup"><button id="downloadPrint" class="primary">↓ 下載列印 SVG</button><button id="print">🖨 直接列印</button></div>
-<div class="note"><b>上傳提醒：</b>學生填好班級、座號和姓名後，下載「可再次編輯的 SVG 作品」，再上傳至老師指定的資料夾。SVG 含作品與可重新編輯的資料；印刷時選「實際大小／100%」。</div>
-<p class="fine">本網站為課堂用數位工具，不會自動把檔案傳到學校雲端；需使用老師提供的上傳連結。</p>
+<div class="field"><label for="printKind">列印用途</label><select id="printKind"><option value="tile">元件</option><option value="trace">描繪模板</option></select></div>
+<div class="buttongroup"><button class="primary" id="print">🖨 直接列印</button></div>
 </div></section></div></main>
 <div id="printOnly"></div><footer class="footer">藝數探索｜徐丙忠老師 · 平移 × 半周旋轉 × 幾何創作</footer>
 <script src="escher-workshop.js"></script></body></html>
