@@ -31,8 +31,13 @@
 </div>
 <div class="note" id="drawHint">目前選擇「下邊」。拖曳橘色控制點；修改的邊線會同步平移到上邊。</div><div class="legend"><span><i class="swatch"></i>橘點：可拖曳</span><span class="tag">配對邊自動連動</span></div>
 <div class="canvasArea" id="editorScene"><svg viewBox="0 0 520 425" aria-label="元件編輯區"></svg></div>
-<p class="fine" id="controlCount">可拖曳控制點</p><div class="tip" id="penTip" style="display:none"><b>起點、終點已固定！</b>不用對準頂點，直接在淡色區域按住滑鼠或觸控筆，畫出中間想要的波浪、尖角或凹凸，再放開。系統會自動把筆畫接到兩端（畫反方向也沒關係），必要時縮小輪廓以避免圖形交叉。</div>
-<div class="buttongroup"><button id="addPoint">＋ 增加輪廓細節</button><button id="undo">↶ 上一步</button><button id="reset" class="warn">重設全部曲線</button></div>
+<p class="fine" id="controlCount">可拖曳控制點</p>
+<div class="field" id="pointDeleteField">
+ <label for="pointToDelete">選擇要刪除的控制點（也可以直接點選橘點）</label>
+ <select id="pointToDelete" aria-label="選擇要刪除的控制點"><option value="">請先選擇一個控制點</option></select>
+ <p class="fine" id="pointSelectionStatus">每條邊最少保留 1 個控制點；兩端固定頂點無法刪除。</p>
+</div><div class="tip" id="penTip" style="display:none"><b>起點、終點已固定！</b>不用對準頂點，直接在淡色區域按住滑鼠或觸控筆，畫出中間想要的波浪、尖角或凹凸，再放開。系統會自動把筆畫接到兩端（畫反方向也沒關係），必要時縮小輪廓以避免圖形交叉。</div>
+<div class="buttongroup"><button id="addPoint">＋ 增加控制點</button><button id="deletePoint" class="warn" disabled>－ 刪除選取點</button><button id="undo" disabled>↶ 上一步（復原）</button><button id="redo" disabled>↷ 下一步（重做）</button><button id="reset" class="warn">重設全部曲線</button></div>
 <div class="field"><label>元件顏色與預覽方式</label><div class="toggleLine"><input type="color" id="color" value="#7dbfcf" aria-label="元件填色"><label><input type="checkbox" id="outline" checked> 顯示邊界</label><label><input type="checkbox" id="multicolor" checked> 多色區塊</label></div></div>
 <div class="status" id="status" aria-live="polite"></div>
 </section>
