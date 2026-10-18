@@ -424,6 +424,8 @@ function endFreehand(cancelled=false){
  const limit=.56*minBaseSide(),simplified=[[0,0]];
  for(const [t,d] of points){
   if(t<-.18||t>1.18||Math.abs(d)>limit){setStatus('筆畫太遠，請在淡色標示的半邊附近畫出輪廓。');render();return}
+  // Endpoints are added once and only once; duplicate vertices mimic a false intersection.
+  if(t>=0&&t<.006||t<=1&&t>.994)continue;
   const last=simplified.at(-1);
   if(Math.hypot(t-last[0],d-last[1])>.016)simplified.push([+t.toFixed(4),+d.toFixed(4)]);
  }
