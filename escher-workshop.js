@@ -4,17 +4,17 @@
 const $=id=>document.getElementById(id);
 const page=document.body.dataset.page||'create';
 const initialMode=page==='translation'?'translate':page==='rotation'?'rotate':'mixX';
-const names={translate:'平移鑲嵌',rotate:'180° 旋轉鑲嵌',mixX:'左右平移＋上下旋轉',mixY:'上下平移＋左右旋轉'};
-const templates={square:[[1,0],[0,1]],rectangle:[[1.2,0],[0,.83]],parallelogram:[[1,0],[.32,.92]],rhombus:[[1,0],[.5,.8660254]],triangle:[[1,0],[.51,.86]]};
+const names={translate:'平移鑲嵌',rotate:'180° 旋轉鑲嵌',mixX:'左右平移＋上下旋轉',mixY:'上下平移＋左右旋轉',rotate90:'90° 頂點旋轉｜正方形',rotate120:'120° 頂點旋轉｜正六邊形'};
+const templates={square:[[1,0],[0,1]],rectangle:[[1.2,0],[0,.83]],parallelogram:[[1,0],[.32,.92]],rhombus:[[1,0],[.5,.8660254]],triangle:[[1,0],[.51,.86]],hexagon:[[1,0],[.5,.8660254]]};
 const paperDims={A4:[210,297],A3:[297,420],B5:[182,257],drawing:[393,545]};
 const palette=['#93cbdc','#f4c6a6','#b9d8bb','#e9c6dd','#a4c6e4','#ecd89b'];
 const defaultProfile=(kind)=>({p:kind==='t'?[.22,.5,.78]:[.19,.36],v:kind==='t'?[0,0,0]:[0,0]});
 const s={
  mode:initialMode,shape:'square',trans:[defaultProfile('t'),defaultProfile('t')],
- rot:Array.from({length:4},()=>defaultProfile('r')),preset:'blank',
+ rot:Array.from({length:4},()=>defaultProfile('r')),hex:Array.from({length:3},()=>({p:[.18,.36,.57,.78],v:[0,0,0,0]})),quarter:{p:[.13,.32,.5,.68,.87],v:[0,0,0,0,0]},preset:'blank',
  color:'#7dbfcf',outline:true,multicolor:true,stage:3,
  className:'',seat:'',student:'',tileCm:6,paper:'A4',printKind:'tile',
- history:[],drag:null
+ history:[],drag:null,stepProgress:1
 };
 const add=(a,b)=>[a[0]+b[0],a[1]+b[1]],sub=(a,b)=>[a[0]-b[0],a[1]-b[1]];
 const mul=(a,k)=>[a[0]*k,a[1]*k],cross=(a,b)=>a[0]*b[1]-a[1]*b[0];
@@ -23,22 +23,29 @@ const bound=(x,lo,hi)=>Math.max(lo,Math.min(hi,x));
 const fmt=x=>Number(x).toFixed(2);
 const safe=t=>String(t||'').replace(/[<>:"/\\|?*\x00-\x1f]/g,'').trim().slice(0,40);
 const esc=t=>String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-function verts(){const [u,v]=templates[s.shape];return s.shape==='triangle'?[[0,0],u,v]:[[0,0],u,add(u,v),v]}
+const rotate=(p,a,center=[0,0])=>{const q=sub(p,center),C=Math.cos(a),S=Math.sin(a);return add(center,[q[0]*C-q[1]*S,q[0]*S+q[1]*C])};
+const hexVerts=()=>Array.from({length:6},(_,k)=>[Math.cos(k*Math.PI/3),Math.sin(k*Math.PI/3)]);
+function verts(){if(s.shape==='hexagon')return hexVerts();const [u,v]=templates[s.shape];return s.shape==='triangle'?[[0,0],u,v]:[[0,0],u,add(u,v),v]}
 function bases(){const v=verts();return v.map((p,i)=>[p,v[(i+1)%v.length]])}
 function normal(A,B){const d=sub(B,A),l=norm(d);return[-d[1]/l,d[0]/l]}
+function minBaseSide(){return Math.min(...bases().map(([a,b])=>norm(sub(b,a))))}
 function role(e){
+ if(s.mode==='rotate90')return e===0?['q',0]:['quarterPair',e];
+ if(s.mode==='rotate120')return e%2===1?['h',(e-1)/2]:['hexPair',e];
  if(s.mode==='translate')return e<2?['t',e]:['paired',e===2?0:1];
  if(s.mode==='rotate')return ['r',e];
  if(s.mode==='mixX')return e===1?['t',1]:e===3?['paired',1]:['r',e];
  return e===0?['t',0]:e===2?['paired',0]:['r',e];
 }
 function editRoles(){
+ if(s.mode==='rotate90')return [['q',0,0]];
+ if(s.mode==='rotate120')return [['h',0,1],['h',1,3],['h',2,5]];
  if(s.mode==='translate')return [['t',0,0],['t',1,1]];
  if(s.mode==='rotate')return bases().map((_,i)=>['r',i,i]);
  if(s.mode==='mixX')return[['r',0,0],['t',1,1],['r',2,2]];
  return[['t',0,0],['r',1,1],['r',3,3]];
 }
-function profile(k,i){return k==='t'?s.trans[i]:s.rot[i]}
+function profile(k,i){return k==='t'?s.trans[i]:k==='r'?s.rot[i]:k==='q'?s.quarter:s.hex[i]}
 function halfKnots(pr){const k=[[0,0]];pr.p.forEach((x,j)=>k.push([x,pr.v[j]]));k.push([.5,0]);for(let j=pr.p.length-1;j>=0;j--)k.push([1-pr.p[j],-pr.v[j]]);k.push([1,0]);return k}
 function fullKnots(pr){return[[0,0],...pr.p.map((p,j)=>[p,pr.v[j]]),[1,0]]}
 function cubic(t,knots){
@@ -50,22 +57,37 @@ function cubic(t,knots){
  const m1=(y2-p[1])/(x2-p[0]),m2=(q[1]-y1)/(q[0]-x1);
  return(2*s**3-3*s*s+1)*y1+(s**3-2*s*s+s)*dx*m1+(-2*s**3+3*s*s)*y2+(s**3-s*s)*dx*m2;
 }
-function rawEdge(e,kind,index,showStage=3){
+function rawEdge(e,kind,index){
  const [A,B]=bases()[e],n=normal(A,B),pr=profile(kind,index);
- let knots=kind==='t'?fullKnots(pr):halfKnots(pr);
- if(showStage===0||(showStage===1&&e!==0))knots=[[0,0],[1,0]];
+ const knots=kind==='r'?halfKnots(pr):fullKnots(pr);
  const pts=[];
- for(let i=0;i<=34;i++){const t=i/34;pts.push(add(add(A,mul(sub(B,A),t)),mul(n,cubic(t,knots))))}
+ for(let i=0;i<=68;i++){const t=i/68;pts.push(add(add(A,mul(sub(B,A),t)),mul(n,offset(t,knots,pr.angular))))}
  return pts;
 }
-function edge(e,stage=3){
+// Piecewise linear interpolation preserves the sharp vertices in the arrow cut-out.
+function offset(t,knots,angular){
+ if(!angular)return cubic(t,knots);
+ if(t<=0||t>=1)return 0;let i=0;while(i<knots.length-2&&t>knots[i+1][0])i++;
+ const [x,y]=knots[i],[xx,yy]=knots[i+1];return y+(yy-y)*(t-x)/(xx-x);
+}
+function edge(e){
  const [kind,k]=role(e);
- if(kind!=='paired')return rawEdge(e,kind,k,stage);
+ if(kind==='quarterPair'){
+  const P=rawEdge(0,'q',0),A=[0,0],B=[1,0],C=[1,1];
+  if(e===1)return P.map(p=>rotate(p,-Math.PI/2,B)).reverse();
+  if(e===2)return P.map(p=>[1-p[0],1-p[1]]);
+  return P.map(p=>rotate(p,Math.PI/2,A)).reverse();
+ }
+ if(kind==='hexPair'){
+  const V=verts(),pivot=V[e],src=(e+5)%6;
+  return rawEdge(src,'h',(src-1)/2).map(p=>rotate(p,-Math.PI*2/3,pivot)).reverse();
+ }
+ if(kind!=='paired')return rawEdge(e,kind,k);
  const [u,v]=templates[s.shape];
- const p=rawEdge(k,'t',k,stage),shift=e===2?v:mul(u,-1);
+ const p=rawEdge(k,'t',k),shift=e===2?v:mul(u,-1);
  return p.map(q=>add(q,shift)).reverse();
 }
-function tile(stage=3){const out=[];bases().forEach((_,i)=>out.push(...(i?edge(i,stage).slice(1):edge(i,stage))));return out}
+function tile(){const out=[];bases().forEach((_,i)=>out.push(...(i?edge(i).slice(1):edge(i))));return out}
 function path(pts){return'M'+pts.map(p=>fmt(p[0])+','+fmt(p[1])).join(' L')+' Z'}
 function simpleInter(a,b,c,d){
  const A=sub(b,a),B=sub(d,c),eps=1e-9,v1=cross(A,sub(c,a)),v2=cross(A,sub(d,a)),v3=cross(B,sub(a,c)),v4=cross(B,sub(b,c));
@@ -85,15 +107,28 @@ function valid(){
  }
  return true;
 }
-function snapshot(){return JSON.stringify({mode:s.mode,shape:s.shape,trans:s.trans,rot:s.rot,color:s.color,preset:s.preset})}
-function restore(x){const a=typeof x==='string'?JSON.parse(x):x;for(const k of ['mode','shape','trans','rot','color','preset'])if(a[k]!==undefined)s[k]=a[k];$('mode').value=s.mode;$('shape').value=s.shape;$('color').value=s.color;render()}
+function snapshot(){return JSON.stringify({mode:s.mode,shape:s.shape,trans:s.trans,rot:s.rot,quarter:s.quarter,hex:s.hex,color:s.color,preset:s.preset})}
+function restore(x){const a=typeof x==='string'?JSON.parse(x):x;for(const k of ['mode','shape','trans','rot','quarter','hex','color','preset'])if(a[k]!==undefined)s[k]=a[k];$('mode').value=s.mode;$('shape').value=s.shape;$('color').value=s.color;render()}
 function undoSave(){s.history.push(snapshot());if(s.history.length>45)s.history.shift()}
 function setStatus(x){$('status').textContent=x}
 function ensureShape(){
- const tri=$('shape').querySelector('option[value="triangle"]');if(tri)tri.disabled=s.mode!=='rotate';
- if(s.shape==='triangle'&&s.mode!=='rotate'){s.shape='square';$('shape').value='square';setStatus('三角形只適用於旋轉示範；綜合變形會切換為正方形。')}
+ const shape=$('shape');
+ const tr=shape.querySelector('option[value="triangle"]'),hx=shape.querySelector('option[value="hexagon"]');
+ if(tr)tr.disabled=s.mode!=='rotate';
+ if(hx)hx.disabled=s.mode!=='rotate120';
+ if(s.mode==='rotate90'&&s.shape!=='square')s.shape='square';
+ else if(s.mode==='rotate120'&&s.shape!=='hexagon')s.shape='hexagon';
+ else if(s.mode!=='rotate120'&&s.shape==='hexagon')s.shape='square';
+ else if(s.mode!=='rotate'&&s.shape==='triangle')s.shape='square';
+ shape.value=s.shape;
 }
 function presetValues(name){
+ if(name==='arrow'&&s.mode==='translate'){
+  s.trans[0]={p:[.12,.26,.47,.68,.86],v:[0,-.11,.18,-.11,0],angular:true};
+  s.trans[1]={p:[.14,.28,.5,.72,.86],v:[0,-.08,-.43,-.08,0],angular:true};
+  s.preset=name;render();return;
+ }
+ for(const [kind,i] of editRoles())profile(kind,i).angular=false;
  const effect={
   blank:t=>0,wave:t=>.56*Math.sin(t*Math.PI*2),fish:t=>.80*Math.sin(Math.PI*t)-.18*Math.sin(3*Math.PI*t),
   cloud:t=>.72*Math.sin(Math.PI*t)**2,leaf:t=>.67*Math.sin(Math.PI*t),
@@ -103,7 +138,7 @@ function presetValues(name){
   flower:t=>.72*Math.sin(3*Math.PI*t),
   mountain:t=>.72*Math.sin(3.3*Math.PI*t)
  }[name]||(()=>0);
- const l=.18*Math.min(...templates[s.shape].map(norm));
+ const l=.18*minBaseSide();
  for(const [k,i] of editRoles()){
   const pr=profile(k,i);pr.v=pr.p.map((t,j)=>{
    const z=k==='r'?effect(t)*((i%2===0)?1:-1):effect(t+(i===1?.08:0));
@@ -115,7 +150,9 @@ function presetValues(name){
  s.preset=name;render();
 }
 function modeText(){
- if(s.mode==='translate')return '將邊線剪下、平移到對邊；對應邊必須形狀相同，方向相反。可以只改一組邊，也可以同時改兩組。';
+ if(s.mode==='rotate90')return '正方形頂點旋轉：每個相鄰元件繞共用角點旋轉 90°；四片不同方向的元件可組成一個週期，再向外延伸。';
+ if(s.mode==='rotate120')return '正六邊形頂點旋轉：每三片元件繞共用頂點旋轉 120°；三條自由邊與另外三條配對邊保持精確接合。';
+ if(s.mode==='translate')return '將邊線剪下、平移到對邊；對應邊必須形狀相同，方向相反。箭頭可以有尖角、凹口，不必只用光滑曲線。';
  if(s.mode==='rotate')return '沿邊的中點進行 180° 半周旋轉。系統自動讓同一條邊的後半段與前半段旋轉配對，因此圖塊可交錯密鋪。';
  if(s.mode==='mixX')return '左右兩邊維持平移配對；上下兩邊各自滿足 180° 旋轉配對。上下相鄰的圖塊半周旋轉，左右相鄰的圖塊平移。';
  return '上下兩邊維持平移配對；左右兩邊各自滿足 180° 旋轉配對。左右相鄰的圖塊半周旋轉，上下相鄰的圖塊平移。';
@@ -218,10 +255,10 @@ function onMove(evt){
  const gap=.045,min=kind==='r'?.055:.045,max=kind==='r'?.455:.955;
  const lower=j?pr.p[j-1]+gap:min,upper=j===pr.p.length-1?max:pr.p[j+1]-gap;
  const t=bound(dot(sub(pos,A),axis)/len2,lower,upper);
- const foot=add(A,mul(axis,t)),limit=Math.min(.23,.24*Math.min(...templates[s.shape].map(norm)));
+ const foot=add(A,mul(axis,t)),limit=Math.min(.5,.50*minBaseSide());
  pr.p[j]=Number(t.toFixed(4));pr.v[j]=Number(bound(dot(sub(pos,foot),n),-limit,limit).toFixed(4));
  if(!valid()){pr.p[j]=oldP;pr.v[j]=oldV;setStatus('這樣會造成輪廓交叉，已限制控制點的位置。');return}
- s.stage=3;render();
+ render();
 }
 function attachEvents(){
  $('mode').value=s.mode;
@@ -278,7 +315,7 @@ function attachEvents(){
   e.target.value='';
  });
 }
-function studentData(){return{app:'藝數探索艾薛爾工作室',version:2,mode:s.mode,shape:s.shape,trans:s.trans,rot:s.rot,color:s.color,preset:s.preset,className:s.className,seat:s.seat,student:s.student}}
+function studentData(){return{app:'藝數探索艾薛爾工作室',version:3,mode:s.mode,shape:s.shape,trans:s.trans,rot:s.rot,quarter:s.quarter,hex:s.hex,color:s.color,preset:s.preset,className:s.className,seat:s.seat,student:s.student}}
 function filename(suffix){let name=[safe(s.className),safe(s.seat),safe(s.student)].filter(Boolean).join('_');return(name||'藝數探索_未命名')+'_'+suffix}
 function projectMeta(){return'<metadata id="escher-project">'+esc(JSON.stringify(studentData()))+'</metadata>'}
 function singleSVG(W,H,transparent=false){
