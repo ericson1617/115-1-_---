@@ -40,3 +40,10 @@
 .teacherPortraitRing{position:absolute;left:16.3%;top:12.3%;width:68.2%;height:74%;padding:4px;border-radius:50%;background:conic-gradient(from -24deg,#bee7f2 0%,#fff1c7 25%,#a8d6cc 52%,#c7c9ee 74%,#bee7f2 100%);box-shadow:0 4px 13px #345c8132,0 0 0 2px #fff;z-index:1}
 .teacherPortraitRing img{display:block;width:100%;height:100%;border-radius:50%;border:3px solid #fff;background:white;object-fit:cover}
 @media(max-width:650px){.hero{flex-wrap:wrap;gap:6px}.teacherProfile{gap:7px;margin-left:auto}.teacherPortrait{width:93px;height:90px;flex-basis:93px}.teacherProfileName{font-size:14px}}
+
+
+/* 平移鑲嵌站：全面密鋪可切換同位／交錯排列，手機畫面亦適用。 */
+.tessLayoutChoice{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:10px 0 6px}
+.tessLayoutChoice button{min-width:0;padding:10px 7px;font-size:13px;white-space:normal}
+.tessLayoutHint{font-size:12px;line-height:1.6;color:#52788d;margin:0 0 10px}
+.tessLayoutChoice[hidden],.tessLayoutHint[hidden]{display:none!important}
