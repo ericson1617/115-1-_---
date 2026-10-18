@@ -201,7 +201,31 @@ function hexInstances(W,H,unit,origin,stage){
  }
  return items;
 }
+// One real, editable tile is moved by the exact classroom transformation.
+// At 100% it lands on its actual neighbouring cell; at 0% it overlaps the original.
+function movementSVG(W,H,unit,progress,print=false){
+ const v=templates[s.shape],O=s.shape==='hexagon'?[W/2,H/2]:
+ [W*.46-(v[0][0]+v[1][0])*unit*.46,H*.45-(v[0][1]+v[1][1])*unit*.46];
+ const P=tile(),move=p=>{
+  if(s.mode==='translate'||s.mode==='mixY')return add(p,mul(v[1],-progress));
+  if(s.mode==='rotate90')return rotate(p,progress*Math.PI/2,[1,0]);
+  if(s.mode==='rotate120')return rotate(p,-progress*2*Math.PI/3,hexVerts()[0]);
+  return rotate(p,progress*Math.PI,mul(add(bases()[0][0],bases()[0][1]),.5));
+ };
+ const base=P.map(p=>add(O,mul(p,unit))),moved=P.map(p=>add(O,mul(move(p),unit)));
+ const pivot=s.mode==='rotate90'?[1,0]:s.mode==='rotate120'?hexVerts()[0]:mul(add(bases()[0][0],bases()[0][1]),.5);
+ const Q=add(O,mul(pivot,unit));
+ let mark='';
+ if(s.mode==='rotate90'||s.mode==='rotate120'||s.mode==='rotate'||s.mode==='mixX'||s.shape==='triangle'){
+  mark='<circle cx="'+fmt(Q[0])+'" cy="'+fmt(Q[1])+'" r="6" fill="#ee914b" stroke="white" stroke-width="2"/>';
+ }
+ return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 '+W+' '+H+'" width="'+W+'" height="'+H+'"><rect width="100%" height="100%" fill="'+(print?'white':'#fbfeff')+'"/>'+
+  '<path d="'+path(base)+'" fill="'+(print?'white':palette[0])+'" stroke="#376480" stroke-width="2.2"/>'+
+  '<path d="'+path(moved)+'" fill="'+(print?'white':palette[1])+'" fill-opacity=".78" stroke="#be6a31" stroke-width="2.4"/>'+mark+
+  '<text x="23" y="36" fill="#2c6484" font-family="sans-serif" font-size="17" font-weight="bold">元件移動進度：'+Math.round(progress*100)+'%</text></svg>';
+}
 function tilesSVG(W,H,unit,stage=3,print=false){
+ if(stage===1)return movementSVG(W,H,unit,s.stepProgress,print);
  const v=templates[s.shape],origin=s.shape==='hexagon'?[W/2,H/2]:
   [W*.46-(v[0][0]+v[1][0])*unit*.46,H*.45-(v[0][1]+v[1][1])*unit*.46];
  let paths='',count=0;const poly=tile(),line=s.outline?'#426e83':'none';
@@ -245,6 +269,8 @@ function drawPreview(){
  const box=$('previewScene');if(!box)return;
  const W=840,H=560,unit=s.shape==='triangle'?180:s.shape==='hexagon'?122:150;
  box.innerHTML=tilesSVG(W,H,unit,s.stage);
+ const progress=$('stepProgress'),progressLabel=$('progressValue');if(progress){progress.disabled=s.stage!==1;progress.value=Math.round(s.stepProgress*100)}
+ if(progressLabel)progressLabel.textContent=s.stage===1?Math.round(s.stepProgress*100)+'%':'請選「② 第一步」操作';
  $('stepText').textContent=stepsLabel(s.stage)+'｜'+modeText();
  document.querySelectorAll('[data-step]').forEach(b=>b.classList.toggle('selected',Number(b.dataset.step)===s.stage));
  $('modeLabel').textContent=names[s.mode];
@@ -301,6 +327,7 @@ function attachEvents(){
  $('outline').addEventListener('change',e=>{s.outline=e.target.checked;drawPreview()});
  $('multicolor').addEventListener('change',e=>{s.multicolor=e.target.checked;drawPreview()});
  document.querySelectorAll('[data-step]').forEach(b=>b.addEventListener('click',()=>{s.stage=Number(b.dataset.step);drawPreview()}));
+ const progress=$('stepProgress');if(progress)progress.addEventListener('input',e=>{s.stepProgress=Number(e.target.value)/100;drawPreview()});
  $('undo').addEventListener('click',()=>{if(s.history.length)restore(s.history.pop());else setStatus('目前沒有上一步。')});
  $('reset').addEventListener('click',()=>{undoSave();s.trans=[defaultProfile('t'),defaultProfile('t')];s.rot=Array.from({length:4},()=>defaultProfile('r'));s.quarter={p:[.13,.32,.5,.68,.87],v:[0,0,0,0,0]};s.hex=Array.from({length:3},()=>({p:[.18,.36,.57,.78],v:[0,0,0,0]}));s.preset='blank';$('preset').value='blank';s.stage=3;render()});
  $('addPoint').addEventListener('click',()=>{
