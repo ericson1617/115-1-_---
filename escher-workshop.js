@@ -349,7 +349,11 @@ function drawTranslationEditor(){
  svg+='<path d="'+path(tile().map(toPx))+'" fill="'+esc(s.color)+'" fill-opacity=".77" stroke="#2c617d" stroke-width="2.4"/>';
  svg+='<path class="selected-edge" d="'+path(edge(e).map(toPx))+'" fill="none" stroke="#e98b3d" stroke-width="5" stroke-linecap="round"/>';
  svg+='<path d="'+path(edge((e+2)%4).map(toPx))+'" fill="none" stroke="#329d90" stroke-width="4" stroke-dasharray="6 5"/>';
- for(const p of bases()[e]){const q=toPx(p);svg+='<circle cx="'+fmt(q[0])+'" cy="'+fmt(q[1])+'" r="5.2" fill="#fff" stroke="#326781" stroke-width="2"/>'}
+ for(const [j,p] of [pointOnSelected(0,0,e),pointOnSelected(1,0,e)].entries()){
+  const q=toPx(p);
+  svg+='<circle cx="'+fmt(q[0])+'" cy="'+fmt(q[1])+'" r="7.5" fill="#fff" stroke="#1f9679" stroke-width="3"/>';
+  svg+='<text x="'+fmt(q[0]+9)+'" y="'+fmt(q[1]-11)+'" font-size="12" fill="#287b66" font-weight="bold">'+(j===0?'固定起點':'固定終點')+'</text>';
+ }
  let count=0;
  if(s.drawTool==='points'){
   const ink=Array.isArray(pr.sketch)&&pr.sketch.length>2;
@@ -368,8 +372,10 @@ function drawTranslationEditor(){
  $('selectedEdge').value=String(e);
  document.querySelectorAll('[data-edge-select]').forEach(b=>b.classList.toggle('selected',Number(b.dataset.edgeSelect)===e));
  document.querySelectorAll('[data-draw-tool]').forEach(b=>b.classList.toggle('selected',b.dataset.drawTool===s.drawTool));
- $('drawHint').textContent='已選擇「'+edgeLabel(e)+'」；'+(s.drawTool==='pen'?'自由畫線時，請由這條邊的一端畫向另一端。':'拖曳橘點修改線條，綠色虛線是自動配對的對邊。');
+ $('drawHint').textContent='已選擇「'+edgeLabel(e)+'」；'+(s.drawTool==='pen'?'綠色圓圈是固定的起點與終點，按住畫出中間的線條即可，不必從圓圈開始或在圓圈結束。':'拖曳橘點修改線條，綠色虛線是自動配對的對邊。');
  $('penTip').style.display=s.drawTool==='pen'?'block':'none';
+ $('lineStyleField').style.display=s.drawTool==='points'?'block':'none';
+ document.querySelectorAll('[data-line-style]').forEach(b=>b.classList.toggle('selected',b.dataset.lineStyle===(pr.angular?'line':'curve')));
  $('addPoint').disabled=s.drawTool==='pen'||Boolean(pr.sketch);
  $('editorScene').classList.toggle('penActive',s.drawTool==='pen');
 }
@@ -410,35 +416,56 @@ function sampleFreehand(pos){
  const pts=s.sketching.points,last=pts[pts.length-1];
  if(norm(sub(last,pos))>.008&&pts.length<175)pts.push(pos);
  const line=$('editorScene').querySelector('#penStroke');
- if(line)line.setAttribute('d',path(pts.map(p=>add([128,93],mul(p,226)))));
+ if(line){
+  const e=s.sketching.edge;
+  const shaped=[pointOnSelected(0,0,e),...pts,pointOnSelected(1,0,e)];
+  line.setAttribute('d',path(shaped.map(p=>add([128,93],mul(p,226)))));
+ }
+}
+function anchoredSketch(points,e){
+ // Convert a gesture between arbitrary positions into a curve with fixed tile vertices.
+ // Parameterize by arc length to ensure steadily increasing edge coordinates even
+ // when a pen wiggles backward. Remove the line joining the gesture endpoints,
+ // retaining only the intended bumps/indentations.
+ const track=points.map(p=>projectOnSelected(p,e));
+ if(track.length<2)return null;
+ if(track[0][0]>track.at(-1)[0]+.05)track.reverse();
+ const cum=[0];for(let i=1;i<track.length;i++)cum.push(cum.at(-1)+norm(sub(track[i],track[i-1])));
+ const length=cum.at(-1);if(length<.025)return null;
+ const N=Math.min(70,Math.max(24,Math.ceil(length/.025))),a=track[0][1],b=track.at(-1)[1],data=[[0,0]];
+ let index=1;
+ for(let i=1;i<N;i++){
+  const t=i/N,at=t*length;
+  while(index<cum.length-1&&cum[index]<at)index++;
+  const den=cum[index]-cum[index-1]||1,w=(at-cum[index-1])/den;
+  const d=track[index-1][1]*(1-w)+track[index][1]*w;
+  const raw=d-(a*(1-t)+b*t);
+  const limit=.34*minBaseSide();
+  // Keep the transformed edge safely inside the surrounding tile.
+  data.push([+t.toFixed(5),+bound(raw,-limit,limit).toFixed(5)]);
+ }
+ data.push([1,0]);return data;
 }
 function endFreehand(cancelled=false){
  const active=s.sketching;s.sketching=null;
  if(!active)return;
  if(cancelled){render();return}
- const e=active.edge,src=sourceForSide(e),pr=s.trans[src];
- if(active.points.length<6){setStatus('線段太短，請沿整條邊畫出較完整的輪廓。');render();return}
- let points=active.points.map(p=>projectOnSelected(p,e));
- if(points[0][0]>points[points.length-1][0])points.reverse();
- if(points.at(-1)[0]-points[0][0]<.48){setStatus('請由這條邊的一端畫向另一端，讓筆畫跨過至少半條邊。');render();return}
- const limit=.56*minBaseSide(),simplified=[[0,0]];
- for(const [t,d] of points){
-  if(t<-.18||t>1.18||Math.abs(d)>limit){setStatus('筆畫太遠，請在淡色標示的半邊附近畫出輪廓。');render();return}
-  // Endpoints are added once and only once; duplicate vertices mimic a false intersection.
-  if(t>=0&&t<.006||t<=1&&t>.994)continue;
-  const last=simplified.at(-1);
-  if(Math.hypot(t-last[0],d-last[1])>.016)simplified.push([+t.toFixed(4),+d.toFixed(4)]);
+ const e=active.edge,src=sourceForSide(e),pr=s.trans[src],sketch=anchoredSketch(active.points,e);
+ if(!sketch){setStatus('請按住後畫出一小段線條，再放開；兩端由程式固定。');render();return}
+ const prior=snapshot(),old=pr.sketch;pr.sketch=sketch;
+ // Adaptive amplitude adjustment allows very large drawings to remain useful,
+ // rather than rejecting them for missing endpoints or self-intersections.
+ let factor=1,iterations=0;
+ while(!valid()&&iterations++<18){
+  factor*=.78;
+  pr.sketch=sketch.map(([t,d])=>[t,+(d*factor).toFixed(5)]);
  }
- simplified.push([1,0]);
- let sketch=simplified;
- if(sketch.length>80){const step=Math.ceil((sketch.length-2)/76),thin=[sketch[0]];for(let k=1;k<sketch.length-1;k+=step)thin.push(sketch[k]);thin.push([1,0]);sketch=thin}
- const old=pr.sketch,prior=snapshot();
- pr.sketch=sketch;
- if(!valid()){pr.sketch=old;render();setStatus('這個輪廓會與元件其他邊相交，已保留原來的輪廓。請改畫較小的凹凸。');return}
+ if(!valid()){pr.sketch=old;setStatus('目前兩組邊線太接近，請先調整另一條邊。');render();return}
  s.history.push(prior);if(s.history.length>45)s.history.shift();
  s.stage=3;s.preset='blank';render();
- setStatus('已完成「'+edgeLabel(e)+'」的自由畫線，對邊已自動平移配對！');
+ setStatus(factor<.999?'兩端已自動固定！為避免圖形交叉，系統也稍微縮小了筆畫幅度。':'自由畫線成功！兩端已固定，對邊已自動平移配對。');
 }
+
 function onMove(evt){
  if(page==='translation'&&s.sketching){sampleFreehand(localFromPointer(evt));return}
  if(!s.drag)return;
@@ -471,6 +498,24 @@ function attachEvents(){
   document.querySelectorAll('[data-edge-select]').forEach(b=>b.addEventListener('click',()=>edgeChange(b.dataset.edgeSelect)));
   document.querySelectorAll('[data-draw-tool]').forEach(b=>b.addEventListener('click',()=>{
    s.drawTool=b.dataset.drawTool;render();setStatus(s.drawTool==='pen'?'自由畫線：用滑鼠或觸控筆，沿著淡色半邊畫出輪廓。':'控制點模式：拖曳選定邊的橘色控制點。');
+  }));
+  document.querySelectorAll('[data-line-style]').forEach(b=>b.addEventListener('click',()=>{
+   const pr=s.trans[sourceForSide(s.selectedEdge)],style=b.dataset.lineStyle;
+   if(pr.angular===(style==='line')&&!pr.sketch)return;
+   undoSave();
+   // A completed pen stroke can be simplified into draggable controls.
+   if(Array.isArray(pr.sketch)&&pr.sketch.length>2){
+    pr.p=[.12,.28,.44,.60,.76,.90];
+    pr.v=pr.p.map(t=>{
+     const list=pr.sketch;let k=1;
+     while(k<list.length-1&&list[k][0]<t)k++;
+     const [ta,da]=list[k-1],[tb,db]=list[k],alpha=(t-ta)/(tb-ta||1);
+     return +(da+(db-da)*alpha).toFixed(5);
+    });
+    delete pr.sketch;
+   }
+   pr.angular=style==='line';
+   render();setStatus(style==='line'?'已切換成直線連接：適合尖角與稜角輪廓。':'已切換成曲線連接：適合柔和的波浪輪廓。');
   }));
  }
  $('mode').addEventListener('change',e=>{undoSave();s.mode=e.target.value;s.stage=3;render()});
