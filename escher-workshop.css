@@ -24,3 +24,8 @@
 .inspireThumb{display:block;width:100%;height:96px;background:#f9fcfe;border-radius:8px;overflow:hidden}
 .inspireThumb svg{display:block;width:100%;height:100%}
 @media(max-width:520px){.inspireGrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* Quiet view-count badge; unlike the old textual footer, this is only one subtle counter. */
+.viewCounter{display:flex;justify-content:center;align-items:center;margin:17px 0 0;padding:6px 0 0;opacity:.65;filter:saturate(.72)}
+.viewCounter img{height:19px;width:auto;max-width:100%;display:block}
+@media print{.viewCounter{display:none!important}}
