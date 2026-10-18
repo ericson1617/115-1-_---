@@ -161,7 +161,7 @@ function tilesSVG(W,H,unit,stage=3,print=false){
  }else{
   for(let j=-9;j<=9;j++)for(let i=-10;i<=10;i++){
    if(stage===0&&(i||j))continue;
-   if(stage===1&&!((i===0&&j===0)||(s.mode==='mixX'?(i===0&&j===1):(i===1&&j===0))))continue;
+   if(stage===1&&!((i===0&&j===0)||(i===0&&j===-1)))continue;
    if(stage===2&&(Math.abs(i)>1||Math.abs(j)>1))continue;
    const cell=add(origin,add(mul(v[0],i*unit),mul(v[1],j*unit))),turned=
     s.mode==='rotate'?(Math.abs(i+j)%2===1):s.mode==='mixX'?(Math.abs(j)%2===1):s.mode==='mixY'?(Math.abs(i)%2===1):false;
