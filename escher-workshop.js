@@ -233,7 +233,7 @@ function movementSVG(W,H,unit,progress,print=false){
  let drawings='<path d="'+path(shape0)+'" fill="none" stroke="#859db2" stroke-width="2.4" stroke-dasharray="7 7"/>';
  drawings+='<path d="'+path(shape1)+'" fill="'+fill+'" fill-opacity=".80" stroke="#316481" stroke-width="2.6"/>';
  // Cut-and-paste demonstration: colored altered edge and its original straight-edge ghost.
- const shapeEdges=bases(),roles=editRoles();
+ const shapeEdges=bases(),roles=page==='translation'?[['t',sourceForSide(s.selectedEdge),s.selectedEdge]]:editRoles();
  const hues=['#df6e63','#56a37a','#e0a241','#9b7bb9'];
  for(let k=0;k<Math.min(roles.length,4);k++){
   const e=roles[k][2],edited=edge(e).map(toPx);
@@ -287,8 +287,9 @@ function tilesSVG(W,H,unit,stage=3,print=false){
   }else for(let j=-9;j<=9;j++)for(let i=-10;i<=10;i++){
    if(stage===0&&(i||j))continue;
    if(stage===2){
+    const picked=s.mode==='translate'?[ [0,-1],[1,0],[0,1],[-1,0] ][s.selectedEdge]:[0,-1];
     const pair=s.mode==='rotate90'?([[0,0],[1,0],[1,1],[0,1]].some(([x,y])=>x===i&&y===j)):
-       ((i===0&&j===0)||(i===0&&j===-1));
+       ((i===0&&j===0)||(i===picked[0]&&j===picked[1]));
     if(!pair)continue;
    }
    const cell=add(origin,add(mul(v[0],i*unit),mul(v[1],j*unit)));
@@ -576,6 +577,6 @@ async function png(svg,suffix){
  const link=URL.createObjectURL(b),a=document.createElement('a');a.href=link;a.download=filename(suffix);a.click();setTimeout(()=>URL.revokeObjectURL(link),1000);
  setStatus('已準備下載：'+a.download);
 }
-window.EscherWorkshopDebug={state:s,valid,tile,edge,tilesSVG,triangleInstances,printSVG,snapshot,restore,presetValues};
+window.EscherWorkshopDebug={state:s,valid,tile,edge,tilesSVG,triangleInstances,printSVG,snapshot,restore,presetValues,sourceForSide,pointOnSelected,projectOnSelected,endFreehand,movementSVG};
 attachEvents();render();
 })();
