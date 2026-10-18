@@ -161,9 +161,9 @@ function modeText(){
  return '上下兩邊維持平移配對；左右兩邊各自滿足 180° 旋轉配對。左右相鄰的圖塊半周旋轉，上下相鄰的圖塊平移。';
 }
 function stepsLabel(n){
- const x=page==='translation'?['① 原形與當前輪廓','② 拖動元件並接合','③ 局部密鋪','④ 大面積密鋪']:
- page==='rotation'?['① 原形與當前輪廓','② 旋轉元件並接合','③ 局部密鋪','④ 旋轉密鋪']:
- ['① 原形與當前輪廓','② 拖移並接合元件','③ 局部密鋪','④ 完整密鋪'];
+ const x=page==='translation'?['① 初始圖形','② 剪貼位置與平移方向','③ 兩片元件接合','④ 完整密鋪']:
+ page==='rotation'?['① 初始圖形','② 剪貼區與旋轉角度','③ 旋轉一圈的元件','④ 完整密鋪']:
+ ['① 初始圖形','② 剪貼與移動路徑','③ 一組元件接合','④ 完整密鋪'];
  return x[n];
 }
 function transform(points,off,unit,turn=false){
@@ -180,7 +180,7 @@ function triangleInstances(W,H,unit,origin,stage){
   if(seen.has(key))continue;seen.add(key);
   const X=origin[0]+ct[0]*unit,Y=origin[1]+ct[1]*unit;
   if(X<-170||X>W+170||Y<-170||Y>H+170)continue;
-  items.push(a);if(stage===0||stage===1&&items.length>=2||stage===2&&items.length>=14)break;
+  items.push(a);if(stage===0||stage===1&&items.length>=2||stage===2&&items.length>=2)break;
   for(const m of corners)queue.push({sign:-a.sign,o:add(a.o,mul(m,2*a.sign))});
  }
  return items;
@@ -193,7 +193,7 @@ function hexInstances(W,H,unit,origin,stage){
   const X=origin[0]+a.c[0]*unit,Y=origin[1]+a.c[1]*unit;
   if(X<-200||X>W+200||Y<-200||Y>H+200)continue;
   items.push(a);
-  if(stage===0||stage===1&&items.length>=2||stage===2&&items.length>=10)break;
+  if(stage===0||stage===1&&items.length>=2||stage===2&&items.length>=3)break;
   for(const index of [0,2,4]){
    const pivot=add(a.c,rotate(V[index],a.k*2*Math.PI/3));
    for(const dir of [-1,1]){
@@ -206,26 +206,51 @@ function hexInstances(W,H,unit,origin,stage){
 }
 // One real, editable tile is moved by the exact classroom transformation.
 // At 100% it lands on its actual neighbouring cell; at 0% it overlaps the original.
+
+function arrowMark(a,b,color='#b16b34'){
+ const dx=b[0]-a[0],dy=b[1]-a[1],L=Math.hypot(dx,dy);
+ if(L<9)return '';const x=dx/L,y=dy/L,head=[b[0]-x*15+y*7,b[1]-y*15-x*7],tail=[b[0]-x*15-y*7,b[1]-y*15+x*7];
+ return '<path d="M'+fmt(a[0])+','+fmt(a[1])+' L'+fmt(b[0])+','+fmt(b[1])+' M'+fmt(head[0])+','+fmt(head[1])+' L'+fmt(b[0])+','+fmt(b[1])+' L'+fmt(tail[0])+','+fmt(tail[1])+'" fill="none" stroke="'+color+'" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>';
+}
+function visualLabel(txt,x,y,color='#346583'){return'<text x="'+fmt(x)+'" y="'+fmt(y)+'" font-size="18" font-family="sans-serif" fill="'+color+'" font-weight="bold">'+txt+'</text>'}
 function movementSVG(W,H,unit,progress,print=false){
- const v=templates[s.shape],O=s.shape==='hexagon'?[W/2,H/2]:
- [W*.46-(v[0][0]+v[1][0])*unit*.46,H*.45-(v[0][1]+v[1][1])*unit*.46];
- const P=tile(),move=p=>{
-  if(s.mode==='translate'||s.mode==='mixY')return add(p,mul(v[1],-progress));
-  if(s.mode==='rotate90')return rotate(p,progress*Math.PI/2,[1,0]);
-  if(s.mode==='rotate120')return rotate(p,-progress*2*Math.PI/3,hexVerts()[0]);
-  return rotate(p,progress*Math.PI,mul(add(bases()[0][0],bases()[0][1]),.5));
- };
- const base=P.map(p=>add(O,mul(p,unit))),moved=P.map(p=>add(O,mul(move(p),unit)));
- const pivot=s.mode==='rotate90'?[1,0]:s.mode==='rotate120'?hexVerts()[0]:mul(add(bases()[0][0],bases()[0][1]),.5);
- const Q=add(O,mul(pivot,unit));
- let mark='';
- if(s.mode==='rotate90'||s.mode==='rotate120'||s.mode==='rotate'||s.mode==='mixX'||s.shape==='triangle'){
-  mark='<circle cx="'+fmt(Q[0])+'" cy="'+fmt(Q[1])+'" r="6" fill="#ee914b" stroke="white" stroke-width="2"/>';
+ const V=verts(),P=tile(),ctr=s.shape==='hexagon'?[0,0]:[.5,.5],O=s.shape==='hexagon'?[W*.45,H*.53]:[W*.33,H*.36];
+ let angle=0,pivot=[0,0],move=p=>p;
+ if(s.mode==='translate'||s.mode==='mixY'){
+  const v=templates[s.shape][1];move=p=>add(p,mul(v,progress));
+ }else{
+  angle=s.mode==='rotate90'?-Math.PI/2*progress:s.mode==='rotate120'?-2*Math.PI/3*progress:Math.PI*progress;
+  pivot=s.mode==='rotate90'?[1,0]:s.mode==='rotate120'?hexVerts()[0]:mul(add(bases()[0][0],bases()[0][1]),.5);
+  move=p=>rotate(p,angle,pivot);
  }
- return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 '+W+' '+H+'" width="'+W+'" height="'+H+'"><rect width="100%" height="100%" fill="'+(print?'white':'#fbfeff')+'"/>'+
-  '<path d="'+path(base)+'" fill="'+(print?'white':palette[0])+'" stroke="#376480" stroke-width="2.2"/>'+
-  '<path d="'+path(moved)+'" fill="'+(print?'white':palette[1])+'" fill-opacity=".78" stroke="#be6a31" stroke-width="2.4"/>'+mark+
-  '<text x="23" y="36" fill="#2c6484" font-family="sans-serif" font-size="17" font-weight="bold">元件移動進度：'+Math.round(progress*100)+'%</text></svg>';
+ const toPx=p=>add(O,mul(p,unit));
+ const shape0=V.map(toPx),shape1=P.map(toPx),moved=P.map(p=>toPx(move(p)));
+ const fill=print?'#fff':'#a9d9e6';
+ let drawings='<path d="'+path(shape0)+'" fill="none" stroke="#859db2" stroke-width="2.4" stroke-dasharray="7 7"/>';
+ drawings+='<path d="'+path(shape1)+'" fill="'+fill+'" fill-opacity=".80" stroke="#316481" stroke-width="2.6"/>';
+ // Cut-and-paste demonstration: colored altered edge and its original straight-edge ghost.
+ const shapeEdges=bases(),roles=editRoles();
+ const hues=['#df6e63','#56a37a','#e0a241','#9b7bb9'];
+ for(let k=0;k<Math.min(roles.length,4);k++){
+  const e=roles[k][2],edited=edge(e).map(toPx);
+  const [A,B]=shapeEdges[e],mid=toPx(mul(add(A,B),.5));
+  drawings+='<path d="'+path(edited)+'" fill="none" stroke="'+hues[k]+'" stroke-width="5" stroke-linecap="round"/>';
+  if(k<2)drawings+='<circle cx="'+fmt(mid[0])+'" cy="'+fmt(mid[1])+'" r="5" fill="'+hues[k]+'"/>';
+ }
+ drawings+='<path d="'+path(moved)+'" fill="'+(print?'white':'#f3c39d')+'" fill-opacity=".72" stroke="#c3773c" stroke-width="2.6"/>';
+ drawings+=visualLabel('原始位置（虛線）',32,40,'#547b93')+visualLabel('彩色線段＝修改的邊界',32,69,'#b26a32');
+ if(s.mode==='translate'||s.mode==='mixY'){
+  const center=P.reduce((sum,p)=>add(sum,p),[0,0]).map(v=>v/P.length),a=toPx(add(center,[0,-.55])),b=toPx(add(move(center),[0,-.55]));
+  drawings+=arrowMark(a,b)+visualLabel('平移方向 →',b[0]+16,b[1]-13,'#a46c39');
+ }else{
+  const Q=toPx(pivot),radius=63,start=-Math.PI*.43,end=start+angle;
+  const pathArc='M'+fmt(Q[0]+radius*Math.cos(start))+','+fmt(Q[1]+radius*Math.sin(start))+' A'+radius+','+radius+' 0 '+(Math.abs(angle)>Math.PI?'1':'0')+' '+(angle>=0?'1':'0')+' '+fmt(Q[0]+radius*Math.cos(end))+','+fmt(Q[1]+radius*Math.sin(end));
+  const e=[Q[0]+radius*Math.cos(end),Q[1]+radius*Math.sin(end)],before=[Q[0]+radius*Math.cos(end-Math.sign(angle)*.19),Q[1]+radius*Math.sin(end-Math.sign(angle)*.19)];
+  drawings+='<circle cx="'+fmt(Q[0])+'" cy="'+fmt(Q[1])+'" r="7" fill="#e78048" stroke="white" stroke-width="2"/><path d="'+pathArc+'" fill="none" stroke="#c46c3b" stroke-width="3.6"/>'+arrowMark(before,e);
+  const degree=Math.abs(angle*180/Math.PI);
+  drawings+=visualLabel('已旋轉 '+Math.round(degree)+'°',Q[0]+70,Q[1]-60,'#ae672e');
+ }
+ return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 '+W+' '+H+'" width="'+W+'" height="'+H+'"><rect width="100%" height="100%" fill="'+(print?'white':'#fbfeff')+'"/>'+drawings+'</svg>';
 }
 function tilesSVG(W,H,unit,stage=3,print=false){
  if(stage===1)return movementSVG(W,H,unit,s.stepProgress,print);
@@ -248,8 +273,11 @@ function tilesSVG(W,H,unit,stage=3,print=false){
   const center=[.5,.5];
   for(let j=-9;j<=9;j++)for(let i=-10;i<=10;i++){
    if(stage===0&&(i||j))continue;
-   if(stage===1&&!((i===0&&j===0)||(i===0&&j===-1)))continue;
-   if(stage===2&&(Math.abs(i)>1||Math.abs(j)>1))continue;
+   if(stage===2){
+    const pair=s.mode==='rotate90'?([[0,0],[1,0],[1,1],[0,1]].some(([x,y])=>x===i&&y===j)):
+       ((i===0&&j===0)||(i===0&&j===-1));
+    if(!pair)continue;
+   }
    const cell=add(origin,add(mul(v[0],i*unit),mul(v[1],j*unit)));
    if(cell[0]<-420||cell[0]>W+420||cell[1]<-420||cell[1]>H+420)continue;
    if(s.mode==='rotate90'){
@@ -262,9 +290,9 @@ function tilesSVG(W,H,unit,stage=3,print=false){
   }
  }
  if(stage===0){
-  const base=verts(),O=s.shape==='hexagon'?origin:origin;
-  const shape=base.map(p=>add(O,mul(p,unit)));
-  paths+='<path d="'+path(shape)+'" fill="none" stroke="#d6773c" stroke-width="2.4" stroke-dasharray="7 5"/>';
+  // Stage one is only the unmodified starting polygon; keep the editable tile in the left editor.
+  paths='<path d="'+path(verts().map(p=>add(origin,mul(p,unit))))+'" fill="#b7dce9" stroke="#347397" stroke-width="2.7"/>';
+  paths+=visualLabel('起始圖形（尚未剪貼）',30,44);
  }
  return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 '+W+' '+H+'" width="'+W+'" height="'+H+'"><rect width="100%" height="100%" fill="'+(print?'white':'#fbfeff')+'"/>'+paths+'</svg>';
 }
@@ -273,7 +301,7 @@ function drawPreview(){
  const W=840,H=560,unit=s.shape==='triangle'?180:s.shape==='hexagon'?122:150;
  box.innerHTML=tilesSVG(W,H,unit,s.stage);
  const progress=$('stepProgress'),progressLabel=$('progressValue');if(progress){progress.disabled=s.stage!==1;progress.value=Math.round(s.stepProgress*100)}
- if(progressLabel)progressLabel.textContent=s.stage===1?Math.round(s.stepProgress*100)+'%':'請選「② 第一步」操作';
+ if(progressLabel)progressLabel.textContent=s.stage===1?Math.round(s.stepProgress*100)+'%':'請選「步驟二」操作';
  $('stepText').textContent=stepsLabel(s.stage)+'｜'+modeText();
  document.querySelectorAll('[data-step]').forEach(b=>b.classList.toggle('selected',Number(b.dataset.step)===s.stage));
  $('modeLabel').textContent=names[s.mode];
