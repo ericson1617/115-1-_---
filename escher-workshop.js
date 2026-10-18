@@ -116,6 +116,8 @@ function ensureShape(){
  const tr=shape.querySelector('option[value="triangle"]'),hx=shape.querySelector('option[value="hexagon"]');
  if(tr)tr.disabled=s.mode!=='rotate';
  if(hx)hx.disabled=s.mode!=='rotate120';
+ const arrow=$('preset').querySelector('option[value="arrow"]');if(arrow)arrow.disabled=s.mode!=='translate';
+ if(s.mode!=='translate'&&$('preset').value==='arrow')$('preset').value='blank';
  if(s.mode==='rotate90'&&s.shape!=='square')s.shape='square';
  else if(s.mode==='rotate120'&&s.shape!=='hexagon')s.shape='hexagon';
  else if(s.mode!=='rotate120'&&s.shape==='hexagon')s.shape='square';
@@ -123,6 +125,7 @@ function ensureShape(){
  shape.value=s.shape;
 }
 function presetValues(name){
+ if(name==='arrow'&&s.mode!=='translate'){setStatus('箭頭剪貼預設僅適用「平移」；請先切換為平移模式。');$('preset').value='blank';return}
  if(name==='arrow'&&s.mode==='translate'){
   s.trans[0]={p:[.12,.26,.47,.68,.86],v:[0,-.11,.18,-.11,0],angular:true};
   s.trans[1]={p:[.14,.28,.5,.72,.86],v:[0,-.08,-.43,-.08,0],angular:true};
@@ -158,9 +161,9 @@ function modeText(){
  return '上下兩邊維持平移配對；左右兩邊各自滿足 180° 旋轉配對。左右相鄰的圖塊半周旋轉，上下相鄰的圖塊平移。';
 }
 function stepsLabel(n){
- const x=page==='translation'?['① 原始多邊形','② 一組邊線平移','③ 兩組邊線變形','④ 大面積密鋪']:
- page==='rotation'?['① 原始多邊形','② 半周旋轉第一邊','③ 配對其他邊線','④ 旋轉密鋪']:
- ['① 觀察原始元件','② 先處理一組邊','③ 合併兩種配對','④ 完整密鋪'];
+ const x=page==='translation'?['① 原形與當前輪廓','② 拖動元件並接合','③ 局部密鋪','④ 大面積密鋪']:
+ page==='rotation'?['① 原形與當前輪廓','② 旋轉元件並接合','③ 局部密鋪','④ 旋轉密鋪']:
+ ['① 原形與當前輪廓','② 拖移並接合元件','③ 局部密鋪','④ 完整密鋪'];
  return x[n];
 }
 function transform(points,off,unit,turn=false){
