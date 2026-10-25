@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#f7f8f4">
-<meta name="description" content="尺規做圖工作坊：可操作實體直尺、三角板、量角器與圓規的互動數位教室。支援手繪、沿尺畫線、圓規畫弧、格點和特殊線作圖引導。">
-<title>尺規做圖工作坊</title>
+<meta name="description" content="尺規作圖工作坊：可操作實體直尺、三角板、量角器與圓規的互動數位教室。支援手繪、沿尺畫線、圓規畫弧、格點和特殊線作圖引導。">
+<title>尺規作圖工作坊</title>
 <link rel="canonical" href="https://ericson1617.github.io/115-1-_---/ruler-compass-workshop.html">
 <script>(function(){try{const u=new URL(location.href);let changed=false;for(const key of Array.from(u.searchParams.keys())){if(/^utm_/i.test(key)||/^(fbclid|gclid|msclkid|mc_cid|mc_eid|igshid)$/i.test(key)){u.searchParams.delete(key);changed=true}}if(changed)history.replaceState(history.state,'',u.pathname+u.search+u.hash)}catch(_){}})();</script>
 <style>
@@ -98,7 +98,7 @@
    <circle cx="41" cy="8" r="3.1" fill="#c6e0d5"/><circle cx="105" cy="42" r="2.2" fill="#9fcde3"/>
   </svg>
   <span class="workshopPortraitRing"><img src="author-avatar.svg" alt="徐丙忠老師頭像"></span>
- </div><div class="titles"><span class="kicker">RULER &amp; COMPASS WORKSHOP</span><strong>尺規做圖工作坊</strong></div></div><div class="headBtns"><span class="saveIndicator" id="saveStatus" aria-live="polite">已自動儲存</span><button class="soft icon" id="undo" title="復原 (Ctrl+Z)">↶</button><button class="soft icon" id="redo" title="重做 (Ctrl+Y)">↷</button><button class="soft" id="clear">清空</button><button class="soft primary" id="save">匯出圖片</button><button class="soft recordHead" id="recordToggle" type="button" title="開始錄影作畫">⏺ <span class="recordLabel">錄影</span></button><button class="soft personalizeBtn" id="personalizeToggle" type="button" title="個人化設定" aria-label="個人化設定" aria-expanded="false"><span aria-hidden="true">◐</span> <span class="buttonText">個人化</span></button><button class="soft icon" id="settingsToggle" title="畫布設定" aria-label="畫布設定" aria-expanded="false">☰</button></div></header>
+ </div><div class="titles"><span class="kicker">RULER &amp; COMPASS WORKSHOP</span><strong>尺規作圖工作坊</strong></div></div><div class="headBtns"><span class="saveIndicator" id="saveStatus" aria-live="polite">已自動儲存</span><button class="soft icon" id="undo" title="復原 (Ctrl+Z)">↶</button><button class="soft icon" id="redo" title="重做 (Ctrl+Y)">↷</button><button class="soft" id="clear">清空</button><button class="soft primary" id="save">匯出圖片</button><button class="soft recordHead" id="recordToggle" type="button" title="開始錄影作畫">⏺ <span class="recordLabel">錄影</span></button><button class="soft personalizeBtn" id="personalizeToggle" type="button" title="個人化設定" aria-label="個人化設定" aria-expanded="false"><span aria-hidden="true">◐</span> <span class="buttonText">個人化</span></button><button class="soft icon" id="settingsToggle" title="畫布設定" aria-label="畫布設定" aria-expanded="false">☰</button></div></header>
 <main class="stageWrap selectMode" id="stage"><canvas id="ink" aria-label="尺規作圖畫布"></canvas><svg id="tools" role="img" aria-label="可拖曳與旋轉的尺規工具"></svg><button id="focusExit" class="soft focusExit" title="結束專注模式">← 返回一般模式</button><div class="recordBadge" id="recordBadge" hidden><span class="redDot" aria-hidden="true"></span><span id="recordTimer">00:00</span><button type="button" id="recordStop" title="停止並下載錄影">停止錄影</button></div><div class="stageRight"><button type="button" class="soft" id="allToolsToggle" aria-pressed="false" title="收起畫布上的所有實體尺規">收起工具</button><select class="drop" id="gridSelect" title="畫布格點選項"><option value="none">空白畫布</option><option value="dots">格點</option><option value="lines">方格</option></select><button class="soft icon" id="guideToggle" title="特殊線作圖引導">?</button></div><div class="guideLine" id="guideLine"></div><div class="help" id="hint" role="status" aria-live="polite" hidden></div><div class="zoom" role="group" aria-label="畫布縮放">
  <button type="button" id="zoomOut" aria-label="縮小畫布" title="縮小">−</button>
  <button type="button" id="zoomReset" aria-label="重設畫布視野" title="回到 100% 並置中視野">100%</button>
@@ -298,7 +298,7 @@ function updateQuick(){quick.replaceChildren();let cs=document.createElement('di
 let toastTimer;function showToast(t){const hint=$('hint');hint.textContent=t;hint.hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>{hint.hidden=true;hint.textContent=''},4200)}
 // Physical transparent drafting instruments; all local units are pixels, including the graduation marks.
 function ruler(t){const g=$svg('g',{transform:`translate(${t.x} ${t.y}) rotate(${t.a*180/Math.PI})`,class:'instrument toolShadow','data-tool':'ruler','data-action':'move'});$svg('rect',{x:0,y:0,width:t.len,height:t.height,rx:2,class:'rulerShape','data-tool':'ruler','data-action':'move'},g);for(let i=0;i<=36;i++){const x=8+i*10;$svg('line',{x1:x,y1:7,x2:x,y2:7+(i%5===0?19:i%2===0?13:8),class:'ticks'},g);if(i%5===0&&i<36){const txt=$svg('text',{x:x+2,y:37,class:'rulerText'},g);txt.textContent=i/2}}
-const lab=$svg('text',{x:t.len-115,y:t.height-10,class:'rulerText'},g);lab.textContent='QINGLING · STRAIGHTEDGE';const x=t.len+21,y=t.height/2;$svg('line',{x1:t.len-5,y1:t.height/2,x2:x,y2:y,stroke:'#87aa9b','stroke-dasharray':'3 3'},g);$svg('circle',{cx:x,cy:y,r:14,class:'handleRing handle','data-tool':'ruler','data-action':'rotate'},g);$svg('circle',{cx:x,cy:y,r:4,class:'handleCore',style:'pointer-events:none'},g)}
+const x=t.len+21,y=t.height/2;$svg('line',{x1:t.len-5,y1:t.height/2,x2:x,y2:y,stroke:'#87aa9b','stroke-dasharray':'3 3'},g);$svg('circle',{cx:x,cy:y,r:14,class:'handleRing handle','data-tool':'ruler','data-action':'rotate'},g);$svg('circle',{cx:x,cy:y,r:4,class:'handleCore',style:'pointer-events:none'},g)}
 function triangle(t){const g=$svg('g',{transform:`translate(${t.x} ${t.y}) rotate(${t.a*180/Math.PI})`,class:'instrument toolShadow','data-tool':'triangle','data-action':'move'});const p=trianglePoints(t);const d=p.map(v=>`${v.x},${v.y}`).join(' ');$svg('polygon',{points:d,class:'paleShape','data-tool':'triangle','data-action':'move'},g);const inner=p.map(v=>({x:v.x*.77+18,y:v.y*.77+12}));$svg('polyline',{points:inner.map(v=>`${v.x},${v.y}`).join(' '),fill:'none',stroke:'#93bba7','stroke-width':'1','pointer-events':'none'},g);p.forEach((v,i)=>{const txt=$svg('text',{x:v.x+(i===0?8:-21),y:v.y+(i===0?-8:(i===1?-9:14)),class:'rulerText'},g);txt.textContent=t.kind===45?['90°','45°','45°'][i]:['90°','60°','30°'][i]});const tp=p[1];const knob={x:tp.x+19,y:tp.y-17};$svg('line',{x1:tp.x,y1:tp.y,x2:knob.x,y2:knob.y,stroke:'#9db9ab','stroke-dasharray':'3 3'},g);$svg('circle',{cx:knob.x,cy:knob.y,r:13,class:'handleRing handle','data-tool':'triangle','data-action':'rotate'},g);$svg('path',{d:`M ${knob.x-4} ${knob.y-2} a5 5 0 1 1 1 7`,stroke:'#699083',fill:'none','stroke-width':1.3,'pointer-events':'none'},g)}
 function trianglePoints(t){return t.kind===45?[{x:0,y:0},{x:240,y:240},{x:0,y:240}]:[{x:0,y:0},{x:250,y:145},{x:0,y:145}]}
 function protractor(t){const g=$svg('g',{transform:`translate(${t.x} ${t.y}) rotate(${t.a*180/Math.PI})`,class:'instrument toolShadow','data-tool':'protractor','data-action':'move'});let r=142;let path=`M ${-r} 0 A ${r} ${r} 0 0 1 ${r} 0 Z`;$svg('path',{d:path,class:'paleShape','data-tool':'protractor','data-action':'move'},g);$svg('path',{d:`M -107 0 A 107 107 0 0 1 107 0`,stroke:'var(--tool-color)',fill:'none','stroke-width':1,'pointer-events':'none'},g);
@@ -473,7 +473,7 @@ function showGuide(open){$('guidePop').classList.toggle('open',open);$('dim').cl
 $('allToolsToggle').addEventListener('click',toggleAllTools);$('guideToggle').addEventListener('click',()=>showGuide(true));$('guideClose').addEventListener('click',()=>showGuide(false));$('dim').addEventListener('click',()=>showGuide(false));$('guideKind').addEventListener('change',e=>{guide=e.target.value;gstep=0;guideUpdate()});$('guidePrev').addEventListener('click',()=>{gstep--;guideUpdate()});$('guideNext').addEventListener('click',()=>{gstep++;guideUpdate()});
 $('gridSelect').addEventListener('change',e=>{grid=e.target.value;draw();updateQuick();persist()});document.querySelectorAll('[data-mode]').forEach(b=>b.addEventListener('click',()=>useMode(b.dataset.mode)));
 $('undo').addEventListener('click',undo);$('redo').addEventListener('click',redo);$('clear').addEventListener('click',()=>{if(!shapes.length)return;if(confirm('確定清除所有筆跡嗎？尺規工具會保留。')){shapes=[];snapshot();draw()}});
-$('save').addEventListener('click',()=>{draw(true);const data=cv.toDataURL('image/png');draw();const a=document.createElement('a');a.href=data;a.download='尺規做圖工作坊.png';document.body.appendChild(a);a.click();a.remove();showToast('作圖已匯出成 PNG（不含尺規工具）。')});
+$('save').addEventListener('click',()=>{draw(true);const data=cv.toDataURL('image/png');draw();const a=document.createElement('a');a.href=data;a.download='尺規作圖工作坊.png';document.body.appendChild(a);a.click();a.remove();showToast('作圖已匯出成 PNG（不含尺規工具）。')});
 
 
 let recordSession=null;
@@ -546,7 +546,7 @@ function startRecording(){
    state.stream.getTracks().forEach(t=>t.stop());
    if(state.chunks.length){const ext=type.startsWith('video/mp4')?'mp4':'webm';
     const board=boards.find(b=>b.id===activeBoardId);
-    const name=(board?.name||'尺規做圖工作坊').replace(/[\\/:*?"<>|]/g,'_').slice(0,45);
+    const name=(board?.name||'尺規作圖工作坊').replace(/[\\/:*?"<>|]/g,'_').slice(0,45);
     downloadBlob(new Blob(state.chunks,{type}),name+'-作畫錄影.'+ext);
     showToast('已下載錄影影片（含畫布筆跡與尺規操作；不含麥克風聲音）。')}
    else showToast('沒有取得錄影片段。');
@@ -659,9 +659,9 @@ document.addEventListener('fullscreenchange',()=>{$('fullscreenBtn').textContent
 $('settingsExport').addEventListener('click',()=>{closeSettings();$('save').click()});
 $('settingsHelp').addEventListener('click',()=>infoPage('操作說明',
  '1. 先從下方工具列選擇直尺、三角板、量角器或圓規。\n2. 選取模式：拖動畫布空白處可平移，滑鼠滾輪或平板雙指可縮放，右下角可調整倍率或重設視野。拖動尺規本體則移動尺規，拉動外側圓點可旋轉。\n3. 選「畫筆」後，沿著尺規的邊緣畫線；選「橡皮擦」移除筆跡。\n4. 圓規預設為「調整圓規」模式：針腳可移動、藍色控制點可調整開口，拖動筆尖可左右旋轉而不畫線；按「開始畫弧」後再拖動筆尖才會留下圓弧，可隨時切回調整模式。\n5. 在畫布設定中啟用吸附，筆跡端點會靠近已畫標記點及交點。\n6.「畫布管理」可建立、複製、重新命名或切換不同課程畫布。\n8.「匯出可編輯檔」儲存全部畫布，之後按「開啟可編輯檔」匯入，或使用「複製目前畫布分享連結」建立課堂連結。\n7. 匯出圖片只包含畫布內容，不包含尺規工具。\n9. 按「錄影」可錄製畫布筆跡與實體尺規移動，按「停止錄影」後會下載影片（不含聲音）。'));
-$('settingsChangelog').addEventListener('click',()=>infoPage('更新日誌','2026/10/25\n・選取模式新增畫布平移、滑鼠滾輪與平板雙指縮放、倍率重設。\n・圓規新增調整／畫弧兩種模式，預設旋轉不留筆跡。\n・新增個人化配色、背景格線深淺與即時預覽。\n・統一網站名稱為「尺規做圖工作坊」。\n・加入側邊畫布設定、教學畫布管理、自動儲存。\n・新增吸附標記點與交點、淡方格、專注模式、全螢幕。\n・保留實體尺規操作、格點、作圖引導與圖片匯出。'));
+$('settingsChangelog').addEventListener('click',()=>infoPage('更新日誌','2026/10/25\n・選取模式新增畫布平移、滑鼠滾輪與平板雙指縮放、倍率重設。\n・圓規新增調整／畫弧兩種模式，預設旋轉不留筆跡。\n・新增個人化配色、背景格線深淺與即時預覽。\n・統一網站名稱為「尺規作圖工作坊」。\n・加入側邊畫布設定、教學畫布管理、自動儲存。\n・新增吸附標記點與交點、淡方格、專注模式、全螢幕。\n・保留實體尺規操作、格點、作圖引導與圖片匯出。'));
 $('settingsLicense').addEventListener('click',()=>infoPage('使用授權與著作權聲明','原始尺規作圖網站由葉威志老師製作，本工作坊參考其互動概念，並由徐丙忠老師與 AI 助理共同編輯擴充。\n本網站用於教學與個人練習。程式碼公開存放於專案 GitHub 儲存庫，不代表已授予任何開源授權；如需重製、散布或商業利用，請先與著作權人確認。'));
-$('settingsPrivacy').addEventListener('click',()=>infoPage('隱私權政策',"1. 網站製作與編輯\n原始尺規作圖網站製作者：葉威志老師。\n本「尺規做圖工作坊」參考原站的實體尺規互動構想，由徐丙忠老師與 AI 助理共同規劃、編輯及擴充。\n網站編輯與教學維護：徐丙忠老師。\n\n2. 使用者資料與作品保存\n本網站不要求登入，畫布內容與尺規設定保存在目前瀏覽器的 localStorage；更換瀏覽器或清除網站資料可能遺失作品。\n匯出圖片與可編輯檔由使用者自行下載，網站不會主動上傳作圖內容。分享連結會包含經編碼的畫布資料，取得連結者可載入對應內容。\n作畫錄影於使用者的瀏覽器內處理，停止後將影片下載到本機；本站不會主動上傳影片，也不會錄製麥克風音訊。\n\n3. 網站託管與瀏覽次數\n本網站由 GitHub Pages 託管，該服務可能依其政策處理一般連線及技術紀錄。\n網站透過 hits.sh 的 SVG 計數圖示記錄頁面請求次數；該服務聲明其計數器不使用 Cookie，亦不保存 IP 位址或使用者代理資訊。所顯示的是累計瀏覽次數，並非不重複訪客人數。"));
+$('settingsPrivacy').addEventListener('click',()=>infoPage('隱私權政策',"1. 網站製作與編輯\n原始尺規作圖網站製作者：葉威志老師。\n本「尺規作圖工作坊」參考原站的實體尺規互動構想，由徐丙忠老師與 AI 助理共同規劃、編輯及擴充。\n網站編輯與教學維護：徐丙忠老師。\n\n2. 使用者資料與作品保存\n本網站不要求登入，畫布內容與尺規設定保存在目前瀏覽器的 localStorage；更換瀏覽器或清除網站資料可能遺失作品。\n匯出圖片與可編輯檔由使用者自行下載，網站不會主動上傳作圖內容。分享連結會包含經編碼的畫布資料，取得連結者可載入對應內容。\n作畫錄影於使用者的瀏覽器內處理，停止後將影片下載到本機；本站不會主動上傳影片，也不會錄製麥克風音訊。\n\n3. 網站託管與瀏覽次數\n本網站由 GitHub Pages 託管，該服務可能依其政策處理一般連線及技術紀錄。\n網站透過 hits.sh 的 SVG 計數圖示記錄頁面請求次數；該服務聲明其計數器不使用 Cookie，亦不保存 IP 位址或使用者代理資訊。所顯示的是累計瀏覽次數，並非不重複訪客人數。"));
 
 
 const projectTag='ruler-compass-workshop';
@@ -678,11 +678,11 @@ function exportProjectObject(all=true){
 }
 function exportProject(){
  const payload=JSON.stringify(exportProjectObject(true),null,2);
- downloadBlob(new Blob([payload],{type:'application/json;charset=utf-8'}),'尺規做圖工作坊-可編輯檔.json');
+ downloadBlob(new Blob([payload],{type:'application/json;charset=utf-8'}),'尺規作圖工作坊-可編輯檔.json');
  showToast('已匯出可編輯檔，包含全部畫布、筆跡、尺規位置和個人化設定。');
 }
 function validateProject(p){
- if(!p||p.app!==projectTag||p.version!==1||!Array.isArray(p.boards)||!p.boards.length||p.boards.length>60)throw Error('檔案不是支援的尺規做圖工作坊專案。');
+ if(!p||p.app!==projectTag||p.version!==1||!Array.isArray(p.boards)||!p.boards.length||p.boards.length>60)throw Error('檔案不是支援的尺規作圖工作坊專案。');
  let points=0;
  for(const b of p.boards){
   if(!b||typeof b.name!=='string'||!b.data||!Array.isArray(b.data.shapes)||b.data.shapes.length>4500)throw Error('專案畫布資料不完整或超出容量。');
@@ -712,7 +712,7 @@ function importProjectObject(p){
  if(p.appearance&&typeof p.appearance==='object'){appearance=normalizeAppearance(p.appearance);
    try{localStorage.setItem(appearanceKey,JSON.stringify(appearance))}catch{}applyAppearance()}
  history=[];historyIndex=-1;snapshot();useMode('select');fit();closeSettings();
- showToast('已匯入 '+p.boards.length+' 張畫布，可接續移動尺規、編輯和做圖。');
+ showToast('已匯入 '+p.boards.length+' 張畫布，可接續移動尺規、編輯和作圖。');
 }
 async function readProjectFile(file){
  if(!file)return;
