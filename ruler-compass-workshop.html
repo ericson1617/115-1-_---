@@ -177,7 +177,7 @@ const legacyAppearanceDefaults={paper:'#fffefa',grid:'#87a79b',opacity:0.75,tool
 const appearanceDefaults={paper:'#ffffff',grid:'#4b82c3',opacity:0.75,tool:'#4a7eaf'};
 const themeMigrationKey='geometry-workshop-blue-defaults-v1';
 let appearance={...appearanceDefaults};let penMigrationComplete=true;
-let W=1000,H=600,mode='select',color=palette[0],lineWidth=2.5,lineStyle='solid',grid='none',snap=false,lightGrid=false,guide='perpbis',gstep=0;
+let W=1000,H=600,mode='select',color=palette[0],lineWidth=2.5,lineStyle='solid',eraserMode='stroke',grid='none',snap=false,lightGrid=false,guide='perpbis',gstep=0;
 let shapes=[],history=[],historyIndex=-1,live=null,gesture=null,compass=null,compassDrawing=false,stowedTools=null,boards=[],activeBoardId=null,focusMode=false,viewport={x:0,y:0,scale:1},tools={
  ruler:{visible:false,x:100,y:230,a:0,len:370,height:57},
  triangle:{visible:false,x:500,y:135,a:0,kind:45},
@@ -247,10 +247,10 @@ function undo(){if(historyIndex<=0)return;historyIndex--;shapes=JSON.parse(histo
 function redo(){if(historyIndex>=history.length-1)return;historyIndex++;shapes=JSON.parse(history[historyIndex]);draw();updateButtons();persist()}
 function updateButtons(){$('undo').disabled=historyIndex<=0;$('redo').disabled=historyIndex>=history.length-1}
 const boardStoreKey='ruler-compass-workshop-boards-v2';
-function currentBoardData(){return {shapes:JSON.parse(JSON.stringify(shapes)),grid,tools:JSON.parse(JSON.stringify(tools)),color,lineWidth,lineStyle,stowedTools:stowedTools?{...stowedTools}:null,snap,lightGrid,viewport:{...viewport}}}
+function currentBoardData(){return {shapes:JSON.parse(JSON.stringify(shapes)),grid,tools:JSON.parse(JSON.stringify(tools)),color,lineWidth,lineStyle,eraserMode,stowedTools:stowedTools?{...stowedTools}:null,snap,lightGrid,viewport:{...viewport}}}
 function applyBoardData(d){shapes=Array.isArray(d.shapes)?JSON.parse(JSON.stringify(d.shapes)):[];grid=['none','dots','lines'].includes(d.grid)?d.grid:'none';$('gridSelect').value=grid;
  for(const k of Object.keys(tools)){if(d.tools&&d.tools[k])Object.assign(tools[k],d.tools[k]);else tools[k].visible=false}
- color=isHexColor(d.color)?(d.color.toLowerCase()==='#223b3a'&&!penMigrationComplete?'#000000':d.color):palette[0];lineWidth=d.lineWidth||2.5;lineStyle=['solid','dashed','dotted'].includes(d.lineStyle)?d.lineStyle:'solid';stowedTools=d.stowedTools&&typeof d.stowedTools==='object'?{...d.stowedTools}:null;
+ color=isHexColor(d.color)?(d.color.toLowerCase()==='#223b3a'&&!penMigrationComplete?'#000000':d.color):palette[0];lineWidth=d.lineWidth||2.5;lineStyle=['solid','dashed','dotted'].includes(d.lineStyle)?d.lineStyle:'solid';eraserMode=d.eraserMode==='precise'?'precise':'stroke';stowedTools=d.stowedTools&&typeof d.stowedTools==='object'?{...d.stowedTools}:null;
  snap=!!d.snap;lightGrid=!!d.lightGrid;const v=d.viewport||{};viewport={x:Number.isFinite(v.x)?v.x:0,y:Number.isFinite(v.y)?v.y:0,scale:Number.isFinite(v.scale)?Math.max(.4,Math.min(4,v.scale)):1};syncAppearanceControls();}
 function persist(){
  try{
@@ -290,14 +290,40 @@ function setCompassDrawing(on){
  showToast(compassDrawing?'圓規畫弧已開啟：拖動筆尖開始畫弧；完成後可切回「調整圓規」。':'圓規調整模式：拖動筆尖可左右旋轉，不會留下線條。');
 }
 function button(label,click,on=false){const b=document.createElement('button');b.className='chip'+(on?' on':'');b.textContent=label;b.addEventListener('click',click);quick.appendChild(b);return b}
-function updateQuick(){quick.replaceChildren();let cs=document.createElement('div');cs.className='colors';for(const c of (palette.includes(color)?palette:[...palette,color])){const d=document.createElement('button');d.type='button';d.className='dot'+(c===color?' on':'');d.style.background=c;d.title='畫筆顏色';d.addEventListener('click',()=>{color=c;updateQuick();persist()});cs.appendChild(d)}quick.appendChild(cs);const div=document.createElement('span');div.className='divider';if(mode!=='select')quick.appendChild(div);
- if(mode==='pen'){button('細',()=>{lineWidth=1.5;updateQuick();persist()},lineWidth===1.5);button('中',()=>{lineWidth=2.5;updateQuick();persist()},lineWidth===2.5);button('粗',()=>{lineWidth=4.5;updateQuick();persist()},lineWidth===4.5);for(const [name,key] of [['實線','solid'],['虛線','dashed'],['點線','dotted']])button(name,()=>{lineStyle=key;updateQuick();persist()},lineStyle===key);button('沿尺邊畫直線',()=>showToast('畫筆碰到尺邊，會自動貼齊邊緣畫出直線。'))}
- else if(mode==='ruler'){button(tools.ruler.visible?'收起直尺':'顯示直尺',()=>{toggleTool('ruler');updateQuick()},tools.ruler.visible);button('旋轉控制：右側圓點',()=>showToast('拖曳直尺右方的圓點，即可自由旋轉。'))}
- else if(mode==='triangle'){button('45° 三角板',()=>{tools.triangle.kind=45;drawTools();updateQuick();persist()},tools.triangle.kind===45);button('30°–60° 三角板',()=>{tools.triangle.kind=30;drawTools();updateQuick();persist()},tools.triangle.kind===30);button(tools.triangle.visible?'收起三角板':'顯示三角板',()=>{toggleTool('triangle');updateQuick()},tools.triangle.visible)}
- else if(mode==='protractor'){button(tools.protractor.visible?'收起量角器':'顯示量角器',()=>{toggleTool('protractor');updateQuick()},tools.protractor.visible);button('轉動右側控制點',()=>showToast('對齊量角器底邊與待測角的其中一邊。'))}
- else if(mode==='compass'){button('調整圓規',()=>setCompassDrawing(false),!compassDrawing);button(compassDrawing?'● 停止畫弧':'開始畫弧',()=>setCompassDrawing(!compassDrawing),compassDrawing);button('畫一整圈',()=>{const c=tools.compass;shapes.push({type:'arc',cx:c.x,cy:c.y,r:c.r,a1:0,a2:Math.PI*2,color,width:lineWidth,dash:lineStyle});snapshot();draw()},false);button(tools.compass.visible?'收起圓規':'顯示圓規',()=>{toggleTool('compass');updateQuick()},tools.compass.visible);button('操作提示',()=>showToast('拖動針腳移動、藍點調整開口。先在「調整圓規」模式轉好角度，再按「開始畫弧」拖動筆尖畫弧。'))}
- else if(mode==='eraser'){button('點擊筆跡即可擦除',()=>showToast('用橡皮擦點擊或掃過筆跡，即可刪除那一筆。'))}
- else if(mode==='select'){/* Palette only: grid selector and guided drawing remain elsewhere. */}
+function quickDivider(){
+ const sep=document.createElement('span');sep.className='divider';sep.setAttribute('aria-hidden','true');quick.appendChild(sep);
+}
+function updateQuick(){
+ quick.replaceChildren();
+ const cs=document.createElement('div');cs.className='colors';
+ for(const c of (palette.includes(color)?palette:[...palette,color])){
+  const d=document.createElement('button');d.type='button';d.className='dot'+(c===color?' on':'');
+  d.style.background=c;d.title='畫筆顏色';d.addEventListener('click',()=>{color=c;updateQuick();persist()});cs.appendChild(d);
+ }
+ quick.appendChild(cs);
+ if(mode!=='select')quickDivider();
+ if(mode==='pen'){
+  for(const [name,width] of [['細',1.5],['中',2.5],['粗',4.5]])
+   button(name,()=>{lineWidth=width;updateQuick();persist()},lineWidth===width);
+  quickDivider();
+  for(const [name,key] of [['實線','solid'],['虛線','dashed'],['點線','dotted']])
+   button(name,()=>{lineStyle=key;updateQuick();persist()},lineStyle===key);
+ }else if(mode==='ruler'){
+  button(tools.ruler.visible?'收起直尺':'顯示直尺',()=>{toggleTool('ruler');updateQuick()},tools.ruler.visible);
+ }else if(mode==='triangle'){
+  button('45° 三角板',()=>{tools.triangle.kind=45;drawTools();updateQuick();persist()},tools.triangle.kind===45);
+  button('30°–60° 三角板',()=>{tools.triangle.kind=30;drawTools();updateQuick();persist()},tools.triangle.kind===30);
+  quickDivider();
+  button(tools.triangle.visible?'收起三角板':'顯示三角板',()=>{toggleTool('triangle');updateQuick()},tools.triangle.visible);
+ }else if(mode==='protractor'){
+  button(tools.protractor.visible?'收起量角器':'顯示量角器',()=>{toggleTool('protractor');updateQuick()},tools.protractor.visible);
+ }else if(mode==='compass'){
+  button(compassDrawing?'● 停止畫弧':'開始畫弧',()=>setCompassDrawing(!compassDrawing),compassDrawing);
+  button(tools.compass.visible?'收起圓規':'顯示圓規',()=>{toggleTool('compass');updateQuick()},tools.compass.visible);
+ }else if(mode==='eraser'){
+  button('筆畫擦除',()=>{eraserMode='stroke';updateQuick();persist()},eraserMode==='stroke');
+  button('精準擦除',()=>{eraserMode='precise';updateQuick();persist()},eraserMode==='precise');
+ }
 }
 let toastTimer;function showToast(t){const hint=$('hint');hint.textContent=t;hint.hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>{hint.hidden=true;hint.textContent=''},4200)}
 // Physical transparent drafting instruments; all local units are pixels, including the graduation marks.
@@ -375,7 +401,123 @@ function snapCandidates(){
 function drawSnapMarks(){const pts=snapCandidates();ctx.save();ctx.lineWidth=1.15;ctx.strokeStyle='#73a399';ctx.fillStyle='#fffefa';
  const bounds=visibleWorld();for(const p of pts.slice(0,220)){if(p.x<bounds.left||p.x>bounds.right||p.y<bounds.top||p.y>bounds.bottom)continue;ctx.beginPath();ctx.arc(p.x,p.y,3.3,0,Math.PI*2);ctx.fill();ctx.stroke()}
  ctx.restore()}
-function eraseAt(p){let i=-1,best=18;shapes.forEach((s,j)=>{let d=9999;if(s.type==='stroke'){for(let k=1;k<s.points.length;k++)d=Math.min(d,near(p,s.points[k-1],s.points[k]).d);if(s.points.length===1)d=dist(p,s.points[0])}else if(s.type==='line')d=near(p,s.a,s.b).d;else if(s.type==='dot')d=dist(p,s);else if(s.type==='arc')d=Math.abs(dist(p,{x:s.cx,y:s.cy})-s.r);if(d<best){i=j;best=d}});if(i>=0){shapes.splice(i,1);draw();snapshot()}}
+// Two real eraser modes: whole-stroke deletion, or geometric clipping by a small circular brush.
+const lerpPoint=(a,b,t)=>({x:a.x+(b.x-a.x)*t,y:a.y+(b.y-a.y)*t});
+const mod2pi=x=>(x%(Math.PI*2)+Math.PI*2)%(Math.PI*2);
+function clipSegmentOutside(a,b,center,radius){
+ const v={x:b.x-a.x,y:b.y-a.y},d={x:a.x-center.x,y:a.y-center.y};
+ const A=v.x*v.x+v.y*v.y;
+ if(A<1e-12)return dist(a,center)>radius?[[a,b]]:[];
+ const B=2*(d.x*v.x+d.y*v.y),C=d.x*d.x+d.y*d.y-radius*radius,disc=B*B-4*A*C;
+ const stops=[0,1];
+ if(disc>1e-10){
+  const q=Math.sqrt(disc);
+  for(const t of [(-B-q)/(2*A),(-B+q)/(2*A)])if(t>1e-7&&t<1-1e-7)stops.push(t);
+ }
+ stops.sort((x,y)=>x-y);
+ const pieces=[];
+ for(let i=1;i<stops.length;i++){
+  const u=stops[i-1],v=stops[i];if(v-u<1e-7)continue;
+  if(dist(lerpPoint(a,b,(u+v)/2),center)>radius+1e-7)
+   pieces.push([lerpPoint(a,b,u),lerpPoint(a,b,v)]);
+ }
+ return pieces;
+}
+function clipStrokeOutside(shape,p,radius){
+ if(shape.points.length===1)
+  return dist(shape.points[0],p)>radius?[shape]:[];
+ const chains=[],pts=shape.points;
+ let chain=null,changed=false;
+ const flush=()=>{if(chain?.length)chains.push({...shape,points:chain});chain=null};
+ for(let i=1;i<pts.length;i++){
+  const parts=clipSegmentOutside(pts[i-1],pts[i],p,radius);
+  if(parts.length!==1||dist(parts[0]?.[0]||pts[i-1],pts[i-1])>1e-6||dist(parts[0]?.[1]||pts[i],pts[i])>1e-6)
+   changed=true;
+  for(const [a,b] of parts){
+   if(!chain)chain=[a,b];
+   else if(dist(chain[chain.length-1],a)<1e-5)chain.push(b);
+   else{flush();chain=[a,b]}
+  }
+  if(!parts.length)flush();
+ }
+ flush();
+ return changed?chains:[shape];
+}
+function clipArcOutside(shape,p,radius){
+ const R=shape.r,r=radius,d=Math.hypot(p.x-shape.cx,p.y-shape.cy);
+ if(!(R>0))return [shape];
+ const span=shape.a2-shape.a1,extent=Math.abs(span);
+ if(extent<1e-8)return [shape];
+ const dir=span>=0?1:-1;
+ const limits=[0,extent];
+ if(d>1e-9&&d<R+r&&d>Math.abs(R-r)){
+  const a=(R*R-r*r+d*d)/(2*d),h2=R*R-a*a;
+  if(h2>=0){
+   const h=Math.sqrt(h2),ux=(p.x-shape.cx)/d,uy=(p.y-shape.cy)/d;
+   for(const sign of [-1,1]){
+    const x=shape.cx+ux*a-sign*uy*h,y=shape.cy+uy*a+sign*ux*h;
+    const angle=Math.atan2(y-shape.cy,x-shape.cx);
+    const along=mod2pi(dir*(angle-shape.a1));
+    if(along>1e-7&&along<extent-1e-7)limits.push(along);
+   }
+  }
+ }
+ limits.sort((a,b)=>a-b);
+ const out=[];
+ for(let i=1;i<limits.length;i++){
+  const begin=limits[i-1],end=limits[i];if(end-begin<1e-7)continue;
+  const mid=shape.a1+dir*(begin+end)/2;
+  const sample={x:shape.cx+R*Math.cos(mid),y:shape.cy+R*Math.sin(mid)};
+  if(dist(sample,p)>radius){
+   out.push({...shape,a1:shape.a1+dir*begin,a2:shape.a1+dir*end,ccw:dir<0});
+  }
+ }
+ if(out.length===1&&Math.abs(out[0].a1-shape.a1)<1e-7&&Math.abs(out[0].a2-shape.a2)<1e-7)return [shape];
+ return out;
+}
+function distanceToShape(shape,p){
+ if(shape.type==='dot')return dist(p,shape);
+ if(shape.type==='line')return near(p,shape.a,shape.b).d;
+ if(shape.type==='stroke'){
+  if(shape.points.length===1)return dist(p,shape.points[0]);
+  let best=Infinity;
+  for(let i=1;i<shape.points.length;i++)best=Math.min(best,near(p,shape.points[i-1],shape.points[i]).d);
+  return best;
+ }
+ if(shape.type==='arc'){
+  const theta=Math.atan2(p.y-shape.cy,p.x-shape.cx),span=shape.a2-shape.a1;
+  if(Math.abs(span)>=2*Math.PI-1e-5||mod2pi((span>=0?1:-1)*(theta-shape.a1))<=Math.abs(span)+1e-6)
+   return Math.abs(dist(p,{x:shape.cx,y:shape.cy})-shape.r);
+  const start={x:shape.cx+shape.r*Math.cos(shape.a1),y:shape.cy+shape.r*Math.sin(shape.a1)};
+  const end={x:shape.cx+shape.r*Math.cos(shape.a2),y:shape.cy+shape.r*Math.sin(shape.a2)};
+  return Math.min(dist(p,start),dist(p,end));
+ }
+ return Infinity;
+}
+function eraseAt(p){
+ if(eraserMode==='stroke'){
+  let best=18/viewport.scale,index=-1;
+  shapes.forEach((shape,i)=>{const d=distanceToShape(shape,p);
+   if(d<best){best=d;index=i}});
+  if(index<0)return false;
+  shapes.splice(index,1);draw();return true;
+ }
+ const result=[];let changed=false;
+ for(const shape of shapes){
+  const radius=10/viewport.scale+(shape.width||2.5)/2;
+  if(distanceToShape(shape,p)>radius){result.push(shape);continue}
+  let clipped;
+  if(shape.type==='line')clipped=clipSegmentOutside(shape.a,shape.b,p,radius).map(([a,b])=>({...shape,a,b}));
+  else if(shape.type==='stroke')clipped=clipStrokeOutside(shape,p,radius);
+  else if(shape.type==='arc')clipped=clipArcOutside(shape,p,radius);
+  else if(shape.type==='dot')clipped=dist(shape,p)>radius?[shape]:[];
+  else clipped=[shape];
+  if(clipped.length!==1||clipped[0]!==shape)changed=true;
+  result.push(...clipped);
+ }
+ if(changed){shapes=result;draw()}
+ return changed;
+}
 // Pointer gestures are intentionally separate: moving a physical instrument never creates ink.
 svg.addEventListener('pointerdown',e=>{if(mode==='pen'||mode==='eraser'||pinchGesture)return;const target=e.target.closest('[data-tool]');if(!target)return;const name=target.getAttribute('data-tool'),kind=target.getAttribute('data-action')||'move',action=name==='compass'&&kind==='arc'&&!compassDrawing?'turn':kind,t=tools[name];if(!t?.visible)return;e.preventDefault();e.stopPropagation();const p=position(e);gesture={kind,name,start:p,from:{...t},startAngle:Math.atan2(p.y-t.y,p.x-t.x),startRadiusDistance:dist(p,{x:t.x,y:t.y}),arcPrev:Math.atan2(p.y-t.y,p.x-t.x),arcStart:t.a,arcDelta:0,arcColor:color,arcDash:lineStyle};try{svg.setPointerCapture(e.pointerId)}catch{}
  if(kind==='arc'){gesture.arcStart=t.a;gesture.arcPrev=t.a;gesture.arcDelta=0;live={type:'arc',cx:t.x,cy:t.y,r:t.r,a1:t.a,a2:t.a,color,width:lineWidth,dash:lineStyle}}
@@ -428,7 +570,8 @@ stage.addEventListener('pointerdown',e=>{
   else live={type:'stroke',points:[snapPoint(p)],color,width:lineWidth,dash:lineStyle};
   try{stage.setPointerCapture(e.pointerId)}catch{}draw()
  }else if(mode==='eraser'){
-  e.preventDefault();eraseAt(position(e));drawing={erase:true,pointerId:e.pointerId};
+  e.preventDefault();const p=position(e);
+  drawing={erase:true,pointerId:e.pointerId,last:p,changed:eraseAt(p)};
   try{stage.setPointerCapture(e.pointerId)}catch{}
  }
 });
@@ -442,7 +585,11 @@ stage.addEventListener('pointermove',e=>{
  }
  if(!drawing||drawing.pointerId!==e.pointerId)return;
  const p=position(e);
- if(drawing.erase){eraseAt(p);return}
+ if(drawing.erase){
+  const prev=drawing.last,spacing=6/viewport.scale,steps=Math.min(120,Math.max(1,Math.ceil(dist(prev,p)/spacing)));
+  for(let i=1;i<=steps;i++)drawing.changed=eraseAt(lerpPoint(prev,p,i/steps))||drawing.changed;
+  drawing.last=p;return;
+ }
  if(live?.type==='line')live.b=corrected(p,drawing.edge);
  else if(live?.type==='stroke'){
   const last=live.points.at(-1),q=snapPoint(p);
@@ -453,12 +600,12 @@ stage.addEventListener('pointermove',e=>{
 stage.addEventListener('pointerup',e=>{
  if(panGesture&&panGesture.pointerId===e.pointerId){panGesture=null;stage.classList.remove('draggingCanvas');persist();return}
  if(!drawing||drawing.pointerId!==e.pointerId)return;
- if(!drawing.erase&&live){shapes.push(live);snapshot()}
+ if(drawing.erase){if(drawing.changed)snapshot()}else if(live){shapes.push(live);snapshot()}
  drawing=null;live=null;draw()
 });
 stage.addEventListener('pointercancel',e=>{
  if(panGesture?.pointerId===e.pointerId){panGesture=null;stage.classList.remove('draggingCanvas');persist()}
- if(drawing?.pointerId===e.pointerId){drawing=null;live=null;draw()}
+ if(drawing?.pointerId===e.pointerId){if(drawing.erase&&drawing.changed)snapshot();drawing=null;live=null;draw()}
 });
 let wheelSaveTimer=null;
 stage.addEventListener('wheel',e=>{
@@ -678,8 +825,8 @@ $('fullscreenBtn').addEventListener('click',async()=>{try{if(document.fullscreen
 document.addEventListener('fullscreenchange',()=>{$('fullscreenBtn').textContent=document.fullscreenElement?'離開原生全螢幕':'原生全螢幕'});
 $('settingsExport').addEventListener('click',()=>{closeSettings();$('save').click()});
 $('settingsHelp').addEventListener('click',()=>infoPage('操作說明',
- '1. 先從下方工具列選擇直尺、三角板、量角器或圓規。\n2. 選取模式：拖動畫布空白處可平移，滑鼠滾輪或平板雙指可縮放，右下角可調整倍率或重設視野。拖動尺規本體則移動尺規，拉動外側圓點可旋轉。\n3. 選「畫筆」後，沿著尺規的邊緣畫線；選「橡皮擦」移除筆跡。\n4. 圓規預設為「調整圓規」模式：針腳可移動、藍色控制點可調整開口，拖動筆尖可左右旋轉而不畫線；按「開始畫弧」後再拖動筆尖才會留下圓弧，可隨時切回調整模式。\n5. 在畫布設定中啟用吸附，筆跡端點會靠近已畫標記點及交點。\n6.「畫布管理」可建立、複製、重新命名或切換不同課程畫布。\n8.「匯出可編輯檔」儲存全部畫布，之後按「開啟可編輯檔」匯入，或使用「複製目前畫布分享連結」建立課堂連結。\n7. 匯出圖片只包含畫布內容，不包含尺規工具。\n9. 按「錄影」可錄製畫布筆跡與實體尺規移動，按「停止錄影」後會下載影片（不含聲音）。'));
-$('settingsChangelog').addEventListener('click',()=>infoPage('更新日誌','2026/10/25\n・選取模式新增畫布平移、滑鼠滾輪與平板雙指縮放、倍率重設。\n・圓規新增調整／畫弧兩種模式，預設旋轉不留筆跡。\n・新增個人化配色、背景格線深淺與即時預覽。\n・統一網站名稱為「尺規作圖工作坊」。\n・加入側邊畫布設定、教學畫布管理、自動儲存。\n・新增吸附標記點與交點、淡方格、專注模式、全螢幕。\n・保留實體尺規操作、格點、作圖引導與圖片匯出。'));
+ '1. 先從下方工具列選擇直尺、三角板、量角器或圓規。\n2. 選取模式：拖動畫布空白處可平移，滑鼠滾輪或平板雙指可縮放，右下角可調整倍率或重設視野。拖動尺規本體則移動尺規，拉動外側圓點可旋轉。\n3. 畫筆可選粗細與實線／虛線／點線；沿尺邊畫筆跡會自動貼齊。橡皮擦的「筆畫擦除」一次刪除整筆，「精準擦除」只擦除掃過的局部線條（包含直線和圓弧）。\n4. 圓規預設可自由旋轉筆尖而不畫線；按「開始畫弧」後拖動筆尖才會留下圓弧，再按「停止畫弧」回到調整模式。\n5. 在畫布設定中啟用吸附，筆跡端點會靠近已畫標記點及交點。\n6.「畫布管理」可建立、複製、重新命名或切換不同課程畫布。\n8.「匯出可編輯檔」儲存全部畫布，之後按「開啟可編輯檔」匯入，或使用「複製目前畫布分享連結」建立課堂連結。\n7. 匯出圖片只包含畫布內容，不包含尺規工具。\n9. 按「錄影」可錄製畫布筆跡與實體尺規移動，按「停止錄影」後會下載影片（不含聲音）。'));
+$('settingsChangelog').addEventListener('click',()=>infoPage('更新日誌','2026/10/25\n・精簡尺規工具列；加入線型分隔與「筆畫擦除／精準擦除」兩種橡皮擦。\n・選取模式新增畫布平移、滑鼠滾輪與平板雙指縮放、倍率重設。\n・圓規新增調整／畫弧兩種模式，預設旋轉不留筆跡。\n・新增個人化配色、背景格線深淺與即時預覽。\n・統一網站名稱為「尺規作圖工作坊」。\n・加入側邊畫布設定、教學畫布管理、自動儲存。\n・新增吸附標記點與交點、淡方格、專注模式、全螢幕。\n・保留實體尺規操作、格點、作圖引導與圖片匯出。'));
 $('settingsLicense').addEventListener('click',()=>infoPage('使用授權與著作權聲明','原始尺規作圖網站由葉威志老師製作，本工作坊參考其互動概念，並由徐丙忠老師與 AI 助理共同編輯擴充。\n本網站用於教學與個人練習。程式碼公開存放於專案 GitHub 儲存庫，不代表已授予任何開源授權；如需重製、散布或商業利用，請先與著作權人確認。'));
 $('settingsPrivacy').addEventListener('click',()=>infoPage('隱私權政策',"1. 網站製作與編輯\n原始尺規作圖網站製作者：葉威志老師。\n本「尺規作圖工作坊」參考原站的實體尺規互動構想，由徐丙忠老師與 AI 助理共同規劃、編輯及擴充。\n網站編輯與教學維護：徐丙忠老師。\n\n2. 使用者資料與作品保存\n本網站不要求登入，畫布內容與尺規設定保存在目前瀏覽器的 localStorage；更換瀏覽器或清除網站資料可能遺失作品。\n匯出圖片與可編輯檔由使用者自行下載，網站不會主動上傳作圖內容。分享連結會包含經編碼的畫布資料，取得連結者可載入對應內容。\n作畫錄影於使用者的瀏覽器內處理，停止後將影片下載到本機；本站不會主動上傳影片，也不會錄製麥克風音訊。\n\n3. 網站託管與瀏覽次數\n本網站由 GitHub Pages 託管，該服務可能依其政策處理一般連線及技術紀錄。\n網站透過 hits.sh 的 SVG 計數圖示記錄頁面請求次數；該服務聲明其計數器不使用 Cookie，亦不保存 IP 位址或使用者代理資訊。所顯示的是累計瀏覽次數，並非不重複訪客人數。"));
 
