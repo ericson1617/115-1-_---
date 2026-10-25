@@ -7,3 +7,6 @@ binding = "DB"
 database_name = "ruler-workshop-feedback"
 database_id = "REPLACE_WITH_YOUR_D1_DATABASE_ID"
 migrations_dir = "migrations"
+
+[triggers]
+crons = [ "0 18 * * *" ]
