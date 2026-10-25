@@ -1,0 +1,19 @@
+CREATE TABLE IF NOT EXISTS comments (
+ id INTEGER PRIMARY KEY AUTOINCREMENT,
+ name TEXT NOT NULL,
+ message TEXT NOT NULL,
+ created_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS comments_created_at ON comments(id DESC);
+CREATE TABLE IF NOT EXISTS replies (
+ id INTEGER PRIMARY KEY AUTOINCREMENT,
+ comment_id INTEGER NOT NULL REFERENCES comments(id) ON DELETE CASCADE,
+ message TEXT NOT NULL,
+ created_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS replies_comment_id ON replies(comment_id);
+CREATE TABLE IF NOT EXISTS rate_limits (
+ bucket TEXT PRIMARY KEY,
+ hits INTEGER NOT NULL,
+ expires_at INTEGER NOT NULL
+);
