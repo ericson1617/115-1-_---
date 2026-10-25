@@ -86,15 +86,13 @@
   <div class="settingsHeader"><strong id="settingsHeading">畫布設定</strong><button class="soft icon" id="settingsClose" aria-label="關閉設定">✕</button></div>
   <div id="settingsHome" class="settingsSection">
     <button class="settingsAction" id="focusModeBtn">進入專注模式</button>
-    <button class="settingsAction" id="manageBoardsBtn">管理教學畫布</button>
-    <button class="settingsAction" id="settingsPersonalize">◐ 個人化設定 · 顏色與格線</button>
+    <button class="settingsAction" id="manageBoardsBtn">畫布管理</button>
     <label class="settingsSwitch"><span>淡方格背景</span><input id="lightGridToggle" type="checkbox"></label>
     <label class="settingsSwitch"><span>吸附標記點與交點</span><input id="snapToggle" type="checkbox"></label>
     <button class="settingsAction" id="fullscreenBtn">原生全螢幕</button>
     <button class="settingsAction" id="settingsExport">匯出圖片</button>
-    <button class="settingsAction" id="settingsRecord">開始／停止作畫錄影</button>
-    <button class="settingsAction" id="projectExport">下載備課專案檔（.json）</button>
-    <button class="settingsAction" id="projectImport">開啟備課專案檔</button>
+    <button class="settingsAction" id="projectExport">匯出可編輯檔（.json）</button>
+    <button class="settingsAction" id="projectImport">開啟可編輯檔</button>
     <button class="settingsAction" id="projectShare">複製目前畫布分享連結</button>
     <input type="file" id="projectFileInput" accept=".json,application/json" hidden>
     <button class="settingsAction" id="settingsHelp">操作說明</button>
@@ -124,7 +122,7 @@
     <div id="boardsList"></div>
     <button class="settingsAction emph" id="boardCreate">＋ 新增空白畫布</button>
     <button class="settingsAction" id="boardDuplicate">複製目前畫布</button>
-    <button class="settingsAction" id="boardDownload">下載全部畫布專案檔</button>
+    <button class="settingsAction" id="boardDownload">匯出全部畫布可編輯檔</button>
   </section>
   <section id="infoView" class="settingsSection" hidden>
     <button class="settingsBack" id="infoBack">← 返回畫布設定</button>
@@ -323,7 +321,6 @@ function setRecordingUi(on){
  $('recordBadge').hidden=!on;
  $('recordToggle').textContent=on?'■ 停止':'⏺ 錄影';
  $('recordToggle').title=on?'停止並下載作畫錄影':'開始錄影作畫';
- $('settingsRecord').textContent=on?'停止並下載作畫錄影':'開始作畫錄影';
 }
 function renderRecordingFrame(){
  const r=recordSession;if(!r||r.ending)return;
@@ -407,7 +404,6 @@ function stopRecording(){
 }
 function toggleRecording(){recordSession?stopRecording():startRecording()}
 $('recordToggle').addEventListener('click',toggleRecording);
-$('settingsRecord').addEventListener('click',()=>{closeSettings();toggleRecording()});
 $('recordStop').addEventListener('click',stopRecording);
 
 function isHexColor(s){return typeof s==='string'&&/^#[0-9a-f]{6}$/i.test(s)}
@@ -454,7 +450,7 @@ $('resetAppearance').addEventListener('click',()=>{
 });
 
 function closeSettings(){const panel=$('settingsPanel');panel.hidden=true;$('settingsScrim').hidden=true;$('settingsToggle').setAttribute('aria-expanded','false');$('personalizeToggle').setAttribute('aria-expanded','false')}
-function setSettingsView(view){$('settingsHome').hidden=view!=='home';$('boardsView').hidden=view!=='boards';$('infoView').hidden=view!=='info';$('personalizeView').hidden=view!=='personalize';$('settingsHeading').textContent=view==='personalize'?'個人化設定':view==='boards'?'管理教學畫布':view==='info'?'資訊說明':'畫布設定'}
+function setSettingsView(view){$('settingsHome').hidden=view!=='home';$('boardsView').hidden=view!=='boards';$('infoView').hidden=view!=='info';$('personalizeView').hidden=view!=='personalize';$('settingsHeading').textContent=view==='personalize'?'個人化設定':view==='boards'?'畫布管理':view==='info'?'資訊說明':'畫布設定'}
 function openSettings(view='home'){setSettingsView(view);$('settingsPanel').hidden=false;$('settingsScrim').hidden=false;$('settingsToggle').setAttribute('aria-expanded','true');if(view==='boards')renderBoards();if(view==='personalize'){syncAppearanceControls();$('personalizeToggle').setAttribute('aria-expanded','true')}}
 function infoPage(title,body){$('infoTitle').textContent=title;$('infoBody').textContent=body;openSettings('info')}
 function goFocus(on){focusMode=on;document.body.classList.toggle('focusMode',on);$('focusModeBtn').textContent=on?'返回一般模式':'進入專注模式';closeSettings();requestAnimationFrame(fit)}
@@ -489,7 +485,6 @@ function renderBoards(){
 }
 $('settingsToggle').addEventListener('click',()=>{$('settingsPanel').hidden?openSettings():closeSettings()});
 $('personalizeToggle').addEventListener('click',()=>{if(!$('settingsPanel').hidden&&!$('personalizeView').hidden)closeSettings();else openSettings('personalize')});
-$('settingsPersonalize').addEventListener('click',()=>openSettings('personalize'));
 $('personalizeBack').addEventListener('click',()=>openSettings('home'));
 $('settingsClose').addEventListener('click',closeSettings);$('settingsScrim').addEventListener('click',closeSettings);
 $('manageBoardsBtn').addEventListener('click',()=>openSettings('boards'));
@@ -504,7 +499,7 @@ $('fullscreenBtn').addEventListener('click',async()=>{try{if(document.fullscreen
 document.addEventListener('fullscreenchange',()=>{$('fullscreenBtn').textContent=document.fullscreenElement?'離開原生全螢幕':'原生全螢幕'});
 $('settingsExport').addEventListener('click',()=>{closeSettings();$('save').click()});
 $('settingsHelp').addEventListener('click',()=>infoPage('操作說明',
- '1. 先從下方工具列選擇直尺、三角板、量角器或圓規。\n2. 拖動工具本體可移動；拉動外側圓點可旋轉。\n3. 選「畫筆」後，沿著尺規的邊緣畫線；選「橡皮擦」移除筆跡。\n4. 圓規的針腳可移動、藍色控制點可改變半徑、紅色筆腳可畫弧。\n5. 在畫布設定中啟用吸附，筆跡端點會靠近已畫標記點及交點。\n6.「管理教學畫布」可建立、複製、重新命名或切換不同課程畫布。\n8.「下載備課專案檔」儲存全部畫布，之後按「開啟備課專案檔」匯入，或使用「複製目前畫布分享連結」建立課堂連結。\n7. 匯出圖片只包含畫布內容，不包含尺規工具。\n9. 按「錄影」可錄製畫布筆跡與實體尺規移動，按「停止錄影」後會下載影片（不含聲音）。'));
+ '1. 先從下方工具列選擇直尺、三角板、量角器或圓規。\n2. 拖動工具本體可移動；拉動外側圓點可旋轉。\n3. 選「畫筆」後，沿著尺規的邊緣畫線；選「橡皮擦」移除筆跡。\n4. 圓規的針腳可移動、藍色控制點可改變半徑、紅色筆腳可畫弧。\n5. 在畫布設定中啟用吸附，筆跡端點會靠近已畫標記點及交點。\n6.「畫布管理」可建立、複製、重新命名或切換不同課程畫布。\n8.「匯出可編輯檔」儲存全部畫布，之後按「開啟可編輯檔」匯入，或使用「複製目前畫布分享連結」建立課堂連結。\n7. 匯出圖片只包含畫布內容，不包含尺規工具。\n9. 按「錄影」可錄製畫布筆跡與實體尺規移動，按「停止錄影」後會下載影片（不含聲音）。'));
 $('settingsChangelog').addEventListener('click',()=>infoPage('更新日誌','2026/10/25\n・新增個人化配色、背景格線深淺與即時預覽。\n・統一網站名稱為「尺規做圖工作坊」。\n・加入側邊畫布設定、教學畫布管理、自動儲存。\n・新增吸附標記點與交點、淡方格、專注模式、全螢幕。\n・保留實體尺規操作、格點、作圖引導與圖片匯出。'));
 $('settingsLicense').addEventListener('click',()=>infoPage('使用授權與著作權聲明','原始尺規作圖網站由葉威志製作，本工作坊參考其互動概念，並由徐丙忠老師與 AI 助理共同編輯擴充。\n本網站用於教學與個人練習。程式碼公開存放於專案 GitHub 儲存庫，不代表已授予任何開源授權；如需重製、散布或商業利用，請先與著作權人確認。'));
 $('settingsPrivacy').addEventListener('click',()=>infoPage('隱私權政策','原始尺規作圖網站製作者：葉威志。\n本「尺規做圖工作坊」參考原站的實體尺規互動構想，由徐丙忠老師與 AI 助理共同規劃、編輯及擴充。\n網站編輯與教學維護：徐丙忠老師。\n\n本網站不要求登入，畫布內容與尺規設定保存在您目前瀏覽器的 localStorage；切換瀏覽器或清除網站資料可能遺失作品。\n「匯出圖片」只會產生本機下載檔案，本站不會主動上傳作圖內容。使用者也可自行下載專案檔並於日後重新匯入；若主動複製分享連結，畫布資料會編碼在該連結中，取得連結者可載入相應內容。\n網站託管服務 GitHub Pages 可能依其政策處理一般連線與技術紀錄。\n作畫錄影在使用者的瀏覽器內處理，按停止後會將影片下載到本機，不會主動上傳影片，也不會錄製麥克風音訊。\n本網站另透過 hits.sh 的 SVG 計數圖示記錄頁面請求次數；該服務聲明其計數器不使用 Cookie，亦不保存 IP 位址或使用者代理資訊。這是瀏覽次數，不代表不重複訪客人數。'));
@@ -524,8 +519,8 @@ function exportProjectObject(all=true){
 }
 function exportProject(){
  const payload=JSON.stringify(exportProjectObject(true),null,2);
- downloadBlob(new Blob([payload],{type:'application/json;charset=utf-8'}),'尺規做圖工作坊-備課專案.json');
- showToast('已下載專案檔，包含全部畫布、筆跡、尺規位置和個人化設定。');
+ downloadBlob(new Blob([payload],{type:'application/json;charset=utf-8'}),'尺規做圖工作坊-可編輯檔.json');
+ showToast('已匯出可編輯檔，包含全部畫布、筆跡、尺規位置和個人化設定。');
 }
 function validateProject(p){
  if(!p||p.app!==projectTag||p.version!==1||!Array.isArray(p.boards)||!p.boards.length||p.boards.length>60)throw Error('檔案不是支援的尺規做圖工作坊專案。');
