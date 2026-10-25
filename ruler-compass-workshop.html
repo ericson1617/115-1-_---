@@ -805,10 +805,19 @@ function onDrawingArea(target){
  return target===stage||target===svg||!!target.closest?.('#tools');
 }
 stage.addEventListener('pointerdown',e=>{
- if(mode!=='select'||vertexGesture||!onDrawingArea(e.target)||e.pointerType==='touch')return;
- const hit=nearestEditableEndpoint(position(e));if(!hit)return;
+ if(mode!=='select'||vertexGesture||!onDrawingArea(e.target))return;
+ const hit=nearestEditableEndpoint(position(e));
+ if(!hit){
+  if(selectedMarkerId){selectedMarkerId=null;updateQuick();draw();}
+  return;
+ }
+ const shape=shapes[hit.index];
+ // Touch users tap actual marker dots; ordinary ink endpoints remain mouse-editable.
+ if(e.pointerType==='touch'&&shape?.type!=='dot')return;
  e.preventDefault();e.stopImmediatePropagation();
- vertexGesture={...hit,pointerId:e.pointerId,original:JSON.parse(JSON.stringify(shapes[hit.index])),moved:false};
+ if(shape?.type==='dot')ensureMarkerId(shape);
+ else if(selectedMarkerId){selectedMarkerId=null;updateQuick();}
+ vertexGesture={...hit,pointerId:e.pointerId,original:JSON.parse(JSON.stringify(shape)),moved:false};
  vertexHover={...hit};stage.classList.add('vertexEditing');
  stage.classList.remove('vertexHover');
  try{stage.setPointerCapture(e.pointerId)}catch{}
@@ -821,7 +830,11 @@ stage.addEventListener('pointermove',e=>{
   e.preventDefault();e.stopImmediatePropagation();
   const p=position(e),original=endpointPosition(vertexGesture.original,vertexGesture.key);
   if(original&&dist(original,p)>.8/viewport.scale)vertexGesture.moved=true;
-  moveEndpoint(vertexGesture,p);draw();return;
+  moveEndpoint(vertexGesture,p);
+  if(compassAnchorId&&shapes[vertexGesture.index]?.id===compassAnchorId){
+   syncCompassAnchor();drawTools();
+  }
+  draw();return;
  }
  if(e.pointerType==='touch'||toolPinch||pinchGesture)return;
  const next=onDrawingArea(e.target)?nearestEditableEndpoint(position(e)):null;
@@ -838,11 +851,15 @@ function finishVertexEdit(e,cancel=false){
  stage.classList.remove('vertexHover','vertexEditing');
  if(cancel)shapes[g.index]=g.original;
  else if(g.moved){
-  const p=position(e);
-  moveEndpoint(g,p);
+  moveEndpoint(g,position(e));
   snapshot();
  }
- draw();
+ if(!cancel&&shapes[g.index]?.type==='dot'){
+  selectedMarkerId=ensureMarkerId(shapes[g.index]);
+  persist();
+ }
+ syncCompassAnchor();
+ drawTools();updateQuick();draw();
 }
 stage.addEventListener('pointerup',e=>finishVertexEdit(e),true);
 stage.addEventListener('pointercancel',e=>finishVertexEdit(e,true),true);
@@ -1211,6 +1228,9 @@ function saveAppearance(){
 }
 $('showEndpointsToggle').addEventListener('change',e=>{
  appearance.showEndpoints=e.target.checked;saveAppearance();
+ showToast(appearance.showEndpoints?
+  '現在畫完線條會留下獨立的起終點；用「選取」點一下標記可固定圓規或刪除。':
+  '已停止自動留下起終點；以前畫好的標記點仍保留，可逐一刪除。');
 });
 $('originToggle').addEventListener('click',()=>{
  appearance.showOrigin=!appearance.showOrigin;saveAppearance();
@@ -1276,8 +1296,8 @@ document.addEventListener('fullscreenchange',()=>{$('fullscreenBtn').textContent
 $('settingsFeedback').addEventListener('click',()=>openSettings('feedback'));
 $('feedbackBack').addEventListener('click',()=>openSettings('home'));
 $('settingsHelp').addEventListener('click',()=>infoPage('操作說明',
- '1. 先從下方工具列選擇直尺、三角板、量角器或圓規。\n2. 選取模式：雙指在直尺、三角板、量角器或圓規上向外或向內撥，可改變實體工具大小。拖動畫布空白處可平移，滑鼠滾輪或平板雙指可縮放，右下角可調整倍率或重設視野。拖動尺規本體則移動尺規，拉動外側圓點可旋轉。\n3. 畫筆一按下就能連續自由手繪，不會自動吸附格點或尺邊；切到「選取」可拖曳既有線段或手繪筆跡的端點。畫筆可設定粗細與實線、虛線、點線。橡皮擦的「筆畫擦除」一次刪除整筆，「精準擦除」只擦除掃過的局部線條（包含直線和圓弧）。\n4. 圓規預設可自由旋轉筆尖而不畫線；按「開始畫弧」後拖動筆尖才會留下圓弧，再按「停止畫弧」回到調整模式。\n5. 畫筆預設不使用自動吸附；在「個人化設定」可以選擇是否持續顯示線段端點，預設隱藏。\n6.「畫布管理」可建立、複製、重新命名或切換不同課程畫布。\n8.「匯出可編輯檔」儲存全部畫布，之後按「開啟可編輯檔」匯入，或使用「複製目前畫布分享連結」建立課堂連結。\n7. 匯出圖片只包含畫布內容，不包含尺規工具。\n9. 按「錄影」可錄製畫布筆跡與實體尺規移動，停止後能預覽、下載，或透過 iPad 系統分享選單選擇「儲存影片」（不含聲音）。'));
-$('settingsChangelog').addEventListener('click',()=>infoPage('更新日誌','2026/10/25\n・新增藍色中心原點 O 與「顯示／隱藏原點」開關，平移縮放時會隨畫布移動。\n・修正畫筆自動貼齊問題，新增可拖曳端點，量角器支援雙指伸縮。\n・加入公開回饋評論介面及管理者回覆功能（連線後啟用）。\n・個人化設定新增線段端點顯示開關，預設關閉。\n・精簡尺規工具列；加入線型分隔與「筆畫擦除／精準擦除」兩種橡皮擦。\n・選取模式新增畫布平移、滑鼠滾輪與平板雙指縮放、倍率重設。\n・圓規新增調整／畫弧兩種模式，預設旋轉不留筆跡。\n・新增個人化配色、背景格線深淺與即時預覽。\n・統一網站名稱為「尺規作圖工作坊」。\n・加入側邊畫布設定、教學畫布管理、自動儲存。\n・新增吸附標記點與交點、淡方格、專注模式、全螢幕。\n・保留實體尺規操作、格點、作圖引導與圖片匯出。'));
+ '1. 先從下方工具列選擇直尺、三角板、量角器或圓規。\n2. 選取模式：雙指在直尺、三角板、量角器或圓規上向外或向內撥，可改變實體工具大小。拖動畫布空白處可平移，滑鼠滾輪或平板雙指可縮放，右下角可調整倍率或重設視野。拖動尺規本體則移動尺規，拉動外側圓點可旋轉。\n3. 畫筆一按下就能連續自由手繪，不會自動吸附格點或尺邊；個人化設定中的「畫線時保留起點與終點」可在完成畫線時留下獨立的標記點。切到「選取」點選標記點可刪除，或固定圓規針腳；原有線條不會因此刪除。畫筆可設定粗細與實線、虛線、點線。橡皮擦的「筆畫擦除」一次刪除整筆，「精準擦除」只擦除掃過的局部線條（包含直線和圓弧）。\n4. 圓規預設可自由旋轉筆尖而不畫線；按「開始畫弧」後拖動筆尖才會留下圓弧，再按「停止畫弧」回到調整模式。\n5. 畫筆預設不使用自動吸附；「畫線時保留起點與終點」預設關閉。開啟後產生的標記點會獨立保存，關掉開關後仍保留，可在「選取」模式選擇刪除或將圓規針腳固定在點上。\n6.「畫布管理」可建立、複製、重新命名或切換不同課程畫布。\n8.「匯出可編輯檔」儲存全部畫布，之後按「開啟可編輯檔」匯入，或使用「複製目前畫布分享連結」建立課堂連結。\n7. 匯出圖片只包含畫布內容，不包含尺規工具。\n9. 按「錄影」可錄製畫布筆跡與實體尺規移動，停止後能預覽、下載，或透過 iPad 系統分享選單選擇「儲存影片」（不含聲音）。'));
+$('settingsChangelog').addEventListener('click',()=>infoPage('更新日誌','2026/10/25\n・起終點設定改為新增可選取、可刪除的獨立標記點，並支援將圓規針腳固定在指定點。\n・新增藍色中心原點 O 與「顯示／隱藏原點」開關，平移縮放時會隨畫布移動。\n・修正畫筆自動貼齊問題，新增可拖曳端點，量角器支援雙指伸縮。\n・加入公開回饋評論介面及管理者回覆功能（連線後啟用）。\n・個人化設定新增線段端點顯示開關，預設關閉。\n・精簡尺規工具列；加入線型分隔與「筆畫擦除／精準擦除」兩種橡皮擦。\n・選取模式新增畫布平移、滑鼠滾輪與平板雙指縮放、倍率重設。\n・圓規新增調整／畫弧兩種模式，預設旋轉不留筆跡。\n・新增個人化配色、背景格線深淺與即時預覽。\n・統一網站名稱為「尺規作圖工作坊」。\n・加入側邊畫布設定、教學畫布管理、自動儲存。\n・新增吸附標記點與交點、淡方格、專注模式、全螢幕。\n・保留實體尺規操作、格點、作圖引導與圖片匯出。'));
 $('settingsPrivacy').addEventListener('click',()=>infoPage('隱私權政策',"1. 網站製作與編輯\n原始尺規作圖網站製作者：葉威志老師。\n本「尺規作圖工作坊」參考原站的實體尺規互動構想，由徐丙忠老師與 AI 助理共同規劃、編輯及擴充。\n網站編輯與教學維護：徐丙忠老師。\n\n2. 使用者資料與作品保存\n訪客留言不需登入；管理者登入僅用於回覆。畫布內容與尺規設定保存在目前瀏覽器的 localStorage；更換瀏覽器或清除網站資料可能遺失作品。\n匯出圖片與可編輯檔由使用者自行下載，網站不會主動上傳作圖內容。分享連結會包含經編碼的畫布資料，取得連結者可載入對應內容。\n作畫錄影於瀏覽器內處理，完成後可自行下載或透過系統分享選單儲存影片；本站不會主動上傳影片，也不會錄製麥克風音訊。\n\n3. 網站託管與瀏覽次數\n本網站由 GitHub Pages 託管，該服務可能依其政策處理一般連線及技術紀錄。\n網站透過 hits.sh 的 SVG 計數圖示記錄頁面請求次數；該服務聲明其計數器不使用 Cookie，亦不保存 IP 位址或使用者代理資訊。所顯示的是累計瀏覽次數，並非不重複訪客人數。\n\n4. 回饋評論（啟用後）\n留言者提供的名字或暱稱、意見、發布日期及管理者回覆皆會公開顯示。留言與回覆存於 Cloudflare D1；伺服器會使用短期雜湊化連線識別資料限制濫用，管理者登入憑證只短暫保存在瀏覽器。請勿公開任何個人敏感資訊。"));
 
 
