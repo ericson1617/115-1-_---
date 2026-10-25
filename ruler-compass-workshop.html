@@ -16,7 +16,7 @@
 .workshopPortraitRing{position:absolute;left:16.3%;top:12.3%;width:68.2%;height:74%;padding:2px;border-radius:50%;background:conic-gradient(from -24deg,#bee7f2 0%,#fff1c7 25%,#a8d6cc 52%,#c7c9ee 74%,#bee7f2 100%);box-shadow:0 2px 8px #345c8132,0 0 0 1px #fff;z-index:1}
 .workshopPortraitRing img{display:block;width:100%;height:100%;border-radius:50%;border:2px solid #fff;background:white;object-fit:cover}.titles{display:grid;gap:0;white-space:nowrap;min-width:0}.kicker{font-size:9px;letter-spacing:.22em;color:#718bab}.titles strong{font-weight:650;font-size:18px;letter-spacing:.06em}.headBtns,.dock,.quick,.colors,.segment{display:flex;align-items:center;gap:7px}.headBtns{flex-wrap:wrap;justify-content:flex-end;margin-left:auto;min-width:0}.soft{border:1px solid var(--border);background:#fffefa;border-radius:11px;padding:8px 11px;color:var(--ink2);min-height:35px;font-size:12px}.soft:hover{background:#f1f7f2;color:var(--teal)}.soft:disabled{opacity:.35;cursor:default}.soft.icon{min-width:35px;padding:7px 8px;font-size:17px}.soft.primary{color:white;background:var(--teal);border-color:var(--teal)}
 .stageWrap{position:relative;min-height:0;flex:1;touch-action:none;overscroll-behavior:contain;background:var(--paper);border:1px solid #e0e7df;border-radius:17px;overflow:hidden;box-shadow:0 7px 18px #3554480a}
-#ink,#tools{position:absolute;inset:0;width:100%;height:100%;touch-action:none;user-select:none}#tools{overflow:visible}#ink{pointer-events:none}.stageWrap.pencilMode{cursor:crosshair}.stageWrap.eraseMode{cursor:cell}.stageWrap.selectMode{cursor:grab}.stageWrap.selectMode.draggingCanvas{cursor:grabbing}.stageRight{position:absolute;right:13px;top:12px;z-index:4;display:flex;align-items:center;gap:6px}.stageRight.guideDialogOpen{z-index:10}.stageRight #hideGuideBtn[hidden],.stageRight #allToolsToggle[hidden]{display:none}.drop{font-size:12px;padding:7px 10px;background:#ffffffed;border:1px solid var(--border);border-radius:9px;color:#557a9d;min-height:34px}.help{position:absolute;left:15px;bottom:13px;font-size:11px;color:#4678aa;z-index:5;pointer-events:none;max-width:75%;background:#fffefaec;padding:6px 10px;border:1px solid #e3ece4;border-radius:9px;box-shadow:0 4px 12px #3554480c}.help[hidden]{display:none}.zoom{position:absolute;right:14px;bottom:12px;background:#fffefdf3;padding:3px;gap:2px;display:none;align-items:center;border:1px solid #dce7dd;border-radius:10px;color:#557a9e;font-size:11px;z-index:6;box-shadow:0 3px 12px #1e483310}.stageWrap.selectMode .zoom{display:flex}
+#ink,#tools{position:absolute;inset:0;width:100%;height:100%;touch-action:none;user-select:none}#tools{overflow:visible}#ink{pointer-events:none}.stageWrap.pencilMode{cursor:crosshair}.stageWrap.eraseMode{cursor:cell}.stageWrap.selectMode{cursor:grab}.stageWrap.selectMode.draggingCanvas{cursor:grabbing}.stageWrap.selectMode.vertexHover{cursor:crosshair}.stageWrap.selectMode.vertexEditing{cursor:grabbing}.stageRight{position:absolute;right:13px;top:12px;z-index:4;display:flex;align-items:center;gap:6px}.stageRight.guideDialogOpen{z-index:10}.stageRight #hideGuideBtn[hidden],.stageRight #allToolsToggle[hidden]{display:none}.drop{font-size:12px;padding:7px 10px;background:#ffffffed;border:1px solid var(--border);border-radius:9px;color:#557a9d;min-height:34px}.help{position:absolute;left:15px;bottom:13px;font-size:11px;color:#4678aa;z-index:5;pointer-events:none;max-width:75%;background:#fffefaec;padding:6px 10px;border:1px solid #e3ece4;border-radius:9px;box-shadow:0 4px 12px #3554480c}.help[hidden]{display:none}.zoom{position:absolute;right:14px;bottom:12px;background:#fffefdf3;padding:3px;gap:2px;display:none;align-items:center;border:1px solid #dce7dd;border-radius:10px;color:#557a9e;font-size:11px;z-index:6;box-shadow:0 3px 12px #1e483310}.stageWrap.selectMode .zoom{display:flex}
 .zoom button{appearance:none;border:0;background:transparent;color:inherit;font:inherit;min-width:28px;height:28px;border-radius:7px;cursor:pointer}
 .zoom button:hover{background:#e8f2fe}.zoom #zoomReset{min-width:50px;font-variant-numeric:tabular-nums;font-weight:600}
 .footer{display:grid;justify-items:center;gap:8px}.quick{flex-wrap:wrap;justify-content:center;min-height:25px;max-width:100%;font-size:12px;color:#627e9f}.quick:empty{display:none}.quick .chip{padding:6px 10px;border-radius:9px;border:1px solid #dde8df;color:#446f9e;background:#fffefa;min-height:30px;font-size:11px}.quick .chip.on{background:#e5f0fc;color:#2a62a2;border-color:#c9ddf0}.quick .divider{width:1px;height:19px;background:#dbe4dc;margin:0 3px}.dot{display:inline-block;height:17px;width:17px;border:2px solid #fbfdf9;border-radius:50%;box-shadow:0 0 0 1px #cbd6ce;cursor:pointer}.dot.on{box-shadow:0 0 0 2px var(--teal),0 0 0 4px #f4f7f3}
@@ -243,7 +243,7 @@ const appearanceDefaults={paper:'#ffffff',grid:'#4b82c3',opacity:0.75,tool:'#4a7
 const themeMigrationKey='geometry-workshop-blue-defaults-v1';
 let appearance={...appearanceDefaults};let penMigrationComplete=true;
 let W=1000,H=600,mode='select',color=palette[0],lineWidth=2.5,lineStyle='solid',eraserMode='stroke',grid='none',snap=false,lightGrid=false,guide='perpbis',gstep=0;
-let shapes=[],history=[],historyIndex=-1,live=null,gesture=null,compass=null,compassDrawing=false,stowedTools=null,boards=[],activeBoardId=null,focusMode=false,viewport={x:0,y:0,scale:1},tools={
+let shapes=[],history=[],historyIndex=-1,live=null,gesture=null,vertexHover=null,vertexGesture=null,compass=null,compassDrawing=false,stowedTools=null,boards=[],activeBoardId=null,focusMode=false,viewport={x:0,y:0,scale:1},tools={
  ruler:{visible:false,x:100,y:230,a:0,len:370,height:57,scale:1},
  triangle:{visible:false,x:500,y:135,a:0,kind:45,scale:1},
  protractor:{visible:false,x:400,y:425,a:0,scale:1},
@@ -314,6 +314,19 @@ function draw(exportClean=false){
   }
   ctx.restore();
  }
+
+ // In select mode, offer a temporary editable handle on hover/drag without
+ // showing permanent vertices on the default canvas.
+ const vertex=vertexGesture||vertexHover;
+ if(!exportClean&&mode==='select'&&vertex){
+  const p=endpointPosition(shapes[vertex.index],vertex.key);
+  if(p){
+   ctx.save();ctx.lineWidth=1.8/viewport.scale;
+   ctx.fillStyle='#ffffff';ctx.strokeStyle='#326faf';
+   ctx.beginPath();ctx.arc(p.x,p.y,6/viewport.scale,0,Math.PI*2);
+   ctx.fill();ctx.stroke();ctx.restore();
+  }
+ }
  // Automatic snapping and its persistent guide dots are disabled for freehand drawing.
  ctx.restore();
 }
@@ -350,7 +363,7 @@ function load(){try{
  if(legacy)applyBoardData(legacy);
  localStorage.setItem('geometry-workshop-black-ink-v1','1');penMigrationComplete=true;
  }catch(err){console.warn('讀取本機畫布失敗',err)}}
-function useMode(next){if(next==='guide'){showGuide(true);return}if(next!=='compass')compassDrawing=false;panGesture=null;pinchGesture=null;toolPinch=null;toolTouchPointers.clear();activeTouches.clear();stage.classList.remove('draggingCanvas');mode=next;if(tools[next]){stowedTools=null;tools[next].visible=true;}stage.classList.toggle('pencilMode',mode==='pen');stage.classList.toggle('eraseMode',mode==='eraser');stage.classList.toggle('selectMode',mode==='select');document.querySelectorAll('.toolbtn').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.mode===mode)));updateQuick();drawTools();persist();}
+function useMode(next){if(next==='guide'){showGuide(true);return}if(next!=='compass')compassDrawing=false;panGesture=null;pinchGesture=null;toolPinch=null;vertexGesture=null;vertexHover=null;toolTouchPointers.clear();activeTouches.clear();stage.classList.remove('draggingCanvas','vertexHover','vertexEditing');mode=next;if(tools[next]){stowedTools=null;tools[next].visible=true;}stage.classList.toggle('pencilMode',mode==='pen');stage.classList.toggle('eraseMode',mode==='eraser');stage.classList.toggle('selectMode',mode==='select');document.querySelectorAll('.toolbtn').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.mode===mode)));updateQuick();drawTools();persist();}
 const toggleTool=k=>{stowedTools=null;tools[k].visible=!tools[k].visible;if(k==='compass'&&!tools[k].visible)compassDrawing=false;drawTools();persist()};
 function updateAllToolsButton(){
  const b=$('allToolsToggle'),closed=stowedTools!==null,anyVisible=Object.values(tools).some(t=>t.visible);
@@ -601,6 +614,101 @@ function eraseAt(p){
  if(changed){shapes=result;draw()}
  return changed;
 }
+// Desktop vertex editing: endpoints of straight segments, hand-drawn strokes,
+// arc ends and dot markers can be repositioned in "選取" mode.
+function editableKeys(shape){
+ if(!shape)return [];
+ if(shape.type==='line'&&shape.a&&shape.b)return ['a','b'];
+ if(shape.type==='stroke'&&Array.isArray(shape.points)&&shape.points.length)
+  return shape.points.length===1?['start']:['start','end'];
+ if(shape.type==='arc'&&Number.isFinite(shape.r)&&Math.abs(shape.a2-shape.a1)<Math.PI*2-.00001)
+  return ['start','end'];
+ if(shape.type==='dot')return ['dot'];
+ return [];
+}
+function endpointPosition(shape,key){
+ if(!shape)return null;
+ if(shape.type==='line')return key==='a'?shape.a:key==='b'?shape.b:null;
+ if(shape.type==='stroke'&&shape.points?.length)return key==='start'?shape.points[0]:key==='end'?shape.points[shape.points.length-1]:null;
+ if(shape.type==='arc'&&(key==='start'||key==='end')){
+  const angle=key==='start'?shape.a1:shape.a2;
+  return {x:shape.cx+shape.r*Math.cos(angle),y:shape.cy+shape.r*Math.sin(angle)};
+ }
+ if(shape.type==='dot'&&key==='dot')return shape;
+ return null;
+}
+function nearestEditableEndpoint(p){
+ let best=null,min=14/viewport.scale;
+ for(let i=shapes.length-1;i>=0;i--){
+  for(const key of editableKeys(shapes[i])){
+   const v=endpointPosition(shapes[i],key),d=v?dist(p,v):Infinity;
+   if(d<min){min=d;best={index:i,key}}
+  }
+ }
+ return best;
+}
+function moveEndpoint(hit,p){
+ const shape=shapes[hit.index];if(!shape)return;
+ if(shape.type==='line'){shape[hit.key]={x:p.x,y:p.y};return}
+ if(shape.type==='stroke'){
+  const i=hit.key==='start'?0:shape.points.length-1;
+  shape.points[i]={x:p.x,y:p.y};return;
+ }
+ if(shape.type==='dot'){shape.x=p.x;shape.y=p.y;return}
+ if(shape.type==='arc'){
+  const prop=hit.key==='start'?'a1':'a2',previous=shape[prop];
+  const angle=Math.atan2(p.y-shape.cy,p.x-shape.cx);
+  shape[prop]=previous+norm(angle-previous);
+  shape.ccw=shape.a2<shape.a1;
+ }
+}
+function onDrawingArea(target){
+ return target===stage||target===svg||!!target.closest?.('#tools');
+}
+stage.addEventListener('pointerdown',e=>{
+ if(mode!=='select'||vertexGesture||!onDrawingArea(e.target)||e.pointerType==='touch')return;
+ const hit=nearestEditableEndpoint(position(e));if(!hit)return;
+ e.preventDefault();e.stopImmediatePropagation();
+ vertexGesture={...hit,pointerId:e.pointerId,original:JSON.parse(JSON.stringify(shapes[hit.index])),moved:false};
+ vertexHover={...hit};stage.classList.add('vertexEditing');
+ stage.classList.remove('vertexHover');
+ try{stage.setPointerCapture(e.pointerId)}catch{}
+ draw();
+},true);
+stage.addEventListener('pointermove',e=>{
+ if(mode!=='select')return;
+ if(vertexGesture){
+  if(vertexGesture.pointerId!==e.pointerId)return;
+  e.preventDefault();e.stopImmediatePropagation();
+  const p=position(e),original=endpointPosition(vertexGesture.original,vertexGesture.key);
+  if(original&&dist(original,p)>.8/viewport.scale)vertexGesture.moved=true;
+  moveEndpoint(vertexGesture,p);draw();return;
+ }
+ if(e.pointerType==='touch'||toolPinch||pinchGesture)return;
+ const next=onDrawingArea(e.target)?nearestEditableEndpoint(position(e)):null;
+ if((next?.index??-1)!==(vertexHover?.index??-1)||next?.key!==vertexHover?.key){
+  vertexHover=next;
+  stage.classList.toggle('vertexHover',!!next);
+  draw();
+ }
+},true);
+function finishVertexEdit(e,cancel=false){
+ if(!vertexGesture||vertexGesture.pointerId!==e.pointerId)return;
+ e.preventDefault();e.stopImmediatePropagation();
+ const g=vertexGesture;vertexGesture=null;vertexHover=null;
+ stage.classList.remove('vertexHover','vertexEditing');
+ if(cancel)shapes[g.index]=g.original;
+ else if(g.moved){
+  const p=position(e);
+  moveEndpoint(g,p);
+  snapshot();
+ }
+ draw();
+}
+stage.addEventListener('pointerup',e=>finishVertexEdit(e),true);
+stage.addEventListener('pointercancel',e=>finishVertexEdit(e,true),true);
+stage.addEventListener('pointerleave',()=>{if(vertexHover&&!vertexGesture){vertexHover=null;stage.classList.remove('vertexHover');draw()}});
+
 // Pointer gestures are intentionally separate: moving a physical instrument never creates ink.
 svg.addEventListener('pointerdown',e=>{if(mode==='pen'||mode==='eraser'||pinchGesture||toolPinch)return;const target=e.target.closest('[data-tool]');if(!target)return;const name=target.getAttribute('data-tool'),kind=target.getAttribute('data-action')||'move',action=name==='compass'&&kind==='arc'&&!compassDrawing?'turn':kind,t=tools[name];if(!t?.visible)return;e.preventDefault();e.stopPropagation();const p=position(e);gesture={kind,name,start:p,from:{...t},startAngle:Math.atan2(p.y-t.y,p.x-t.x),startRadiusDistance:dist(p,{x:t.x,y:t.y}),arcPrev:Math.atan2(p.y-t.y,p.x-t.x),arcStart:t.a,arcDelta:0,arcColor:color,arcDash:lineStyle};try{svg.setPointerCapture(e.pointerId)}catch{}
  if(kind==='arc'){gesture.arcStart=t.a;gesture.arcPrev=t.a;gesture.arcDelta=0;live={type:'arc',cx:t.x,cy:t.y,r:t.r,a1:t.a,a2:t.a,color,width:lineWidth,dash:lineStyle}}
@@ -608,7 +716,7 @@ svg.addEventListener('pointerdown',e=>{if(mode==='pen'||mode==='eraser'||pinchGe
 });
 svg.addEventListener('pointermove',e=>{if(!gesture||pinchGesture||toolPinch)return;const p=position(e),g=gesture,t=tools[g.name];if(g.action==='move'){t.x=g.from.x+p.x-g.start.x;t.y=g.from.y+p.y-g.start.y}else if(g.action==='rotate'){const a=Math.atan2(p.y-t.y,p.x-t.x);t.a=g.from.a+norm(a-g.startAngle);}else if(g.action==='radius'){t.r=Math.max(35,Math.min(390,g.from.r+dist(p,{x:t.x,y:t.y})-g.startRadiusDistance));}else if(g.action==='arc'||g.action==='turn'){const a=Math.atan2(p.y-t.y,p.x-t.x);const delta=norm(a-g.arcPrev);g.arcDelta+=delta;g.arcPrev=a;t.a=g.arcStart+g.arcDelta;if(g.action==='arc')live={type:'arc',cx:t.x,cy:t.y,r:t.r,a1:g.arcStart,a2:t.a,ccw:g.arcDelta<0,color:g.arcColor,width:lineWidth,dash:g.arcDash}}
  drawTools();if(g.action==='arc')draw();});
-function endGesture(commit=true){if(!gesture)return;if(commit&&gesture.action==='arc'&&Math.abs(gesture.arcDelta)>.03){shapes.push({...live});snapshot()}if(gesture.name==='compass'&&gesture.action==='move'&&false){const q=snapPoint({x:tools.compass.x,y:tools.compass.y});tools.compass.x=q.x;tools.compass.y=q.y}gesture=null;live=null;draw();drawTools();persist()}
+function endGesture(commit=true){if(!gesture)return;if(commit&&gesture.action==='arc'&&Math.abs(gesture.arcDelta)>.03){shapes.push({...live});snapshot()}gesture=null;live=null;draw();drawTools();persist()}
 svg.addEventListener('pointerup',()=>endGesture(true));svg.addEventListener('pointercancel',()=>endGesture(false));
 // Two-finger pinch changes the physical instrument, not the canvas.
 const toolTouchPointers=new Map();
@@ -739,7 +847,13 @@ stage.addEventListener('pointermove',e=>{
 stage.addEventListener('pointerup',e=>{
  if(panGesture&&panGesture.pointerId===e.pointerId){panGesture=null;stage.classList.remove('draggingCanvas');persist();return}
  if(!drawing||drawing.pointerId!==e.pointerId)return;
- if(drawing.erase){if(drawing.changed)snapshot()}else if(live){shapes.push(live);snapshot()}
+ if(drawing.erase){if(drawing.changed)snapshot()}else if(live){
+  if(live.type==='stroke'){
+   const last=live.points.at(-1),p=position(e);
+   if(dist(last,p)>.5/viewport.scale)live.points.push(p);
+  }
+  shapes.push(live);snapshot();
+ }
  drawing=null;live=null;draw()
 });
 stage.addEventListener('pointercancel',e=>{
