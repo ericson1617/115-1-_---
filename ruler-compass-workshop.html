@@ -150,7 +150,7 @@ const appearanceKey='geometry-workshop-appearance-v1';
 const appearanceDefaults={paper:'#fffefa',grid:'#87a79b',opacity:0.75,tool:'#568e7e'};
 let appearance={...appearanceDefaults};
 let W=1000,H=600,mode='select',color=palette[0],lineWidth=2.5,lineStyle='solid',grid='none',snap=false,lightGrid=false,guide='perpbis',gstep=0;
-let shapes=[],history=[],historyIndex=-1,live=null,gesture=null,compass=null,stowedTools=null,boards=[],activeBoardId=null,focusMode=false,tools={
+let shapes=[],history=[],historyIndex=-1,live=null,gesture=null,compass=null,compassDrawing=false,stowedTools=null,boards=[],activeBoardId=null,focusMode=false,tools={
  ruler:{visible:false,x:100,y:230,a:0,len:370,height:57},
  triangle:{visible:false,x:500,y:135,a:0,kind:45},
  protractor:{visible:false,x:400,y:425,a:0},
@@ -200,14 +200,20 @@ function load(){try{
  const legacy=JSON.parse(localStorage.getItem('geometry-physical-v1')||'null');
  if(legacy)applyBoardData(legacy);
  }catch(err){console.warn('讀取本機畫布失敗',err)}}
-function useMode(next){if(next==='guide'){showGuide(true);return}mode=next;if(tools[next]){stowedTools=null;tools[next].visible=true;}stage.classList.toggle('pencilMode',mode==='pen');stage.classList.toggle('eraseMode',mode==='eraser');stage.classList.toggle('selectMode',!['pen','eraser'].includes(mode));document.querySelectorAll('.toolbtn').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.mode===mode)));updateQuick();drawTools();persist();}
-const toggleTool=k=>{stowedTools=null;tools[k].visible=!tools[k].visible;drawTools();persist()};
+function useMode(next){if(next==='guide'){showGuide(true);return}if(next!=='compass')compassDrawing=false;mode=next;if(tools[next]){stowedTools=null;tools[next].visible=true;}stage.classList.toggle('pencilMode',mode==='pen');stage.classList.toggle('eraseMode',mode==='eraser');stage.classList.toggle('selectMode',!['pen','eraser'].includes(mode));document.querySelectorAll('.toolbtn').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.mode===mode)));updateQuick();drawTools();persist();}
+const toggleTool=k=>{stowedTools=null;tools[k].visible=!tools[k].visible;if(k==='compass'&&!tools[k].visible)compassDrawing=false;drawTools();persist()};
 function updateAllToolsButton(){const b=$('allToolsToggle'),closed=stowedTools!==null;b.textContent=closed?'還原工具':'收起工具';b.title=closed?'還原上次收起的實體尺規':'收起畫布上的所有實體尺規';b.setAttribute('aria-pressed',String(closed))}
 function toggleAllTools(){
  if(stowedTools!==null){for(const k of Object.keys(tools))tools[k].visible=!!stowedTools[k];stowedTools=null}
  else{if(!Object.values(tools).some(t=>t.visible)){showToast('畫布上目前沒有展開的尺規工具。');return}
- stowedTools=Object.fromEntries(Object.entries(tools).map(([k,t])=>[k,t.visible]));for(const t of Object.values(tools))t.visible=false}
+ stowedTools=Object.fromEntries(Object.entries(tools).map(([k,t])=>[k,t.visible]));for(const t of Object.values(tools))t.visible=false;compassDrawing=false}
  updateQuick();drawTools();persist();
+}
+function setCompassDrawing(on){
+ compassDrawing=!!on;
+ updateQuick();
+ drawTools();
+ showToast(compassDrawing?'圓規畫弧已開啟：拖動筆尖開始畫弧；完成後可切回「調整圓規」。':'圓規調整模式：拖動筆尖可左右旋轉，不會留下線條。');
 }
 function button(label,click,on=false){const b=document.createElement('button');b.className='chip'+(on?' on':'');b.textContent=label;b.addEventListener('click',click);quick.appendChild(b);return b}
 function updateQuick(){quick.replaceChildren();let cs=document.createElement('div');cs.className='colors';for(const c of (palette.includes(color)?palette:[...palette,color])){const d=document.createElement('button');d.type='button';d.className='dot'+(c===color?' on':'');d.style.background=c;d.title='畫筆顏色';d.addEventListener('click',()=>{color=c;updateQuick();persist()});cs.appendChild(d)}quick.appendChild(cs);const div=document.createElement('span');div.className='divider';quick.appendChild(div);
@@ -215,7 +221,7 @@ function updateQuick(){quick.replaceChildren();let cs=document.createElement('di
  else if(mode==='ruler'){button(tools.ruler.visible?'收起直尺':'顯示直尺',()=>{toggleTool('ruler');updateQuick()},tools.ruler.visible);button('旋轉控制：右側圓點',()=>showToast('拖曳直尺右方的圓點，即可自由旋轉。'))}
  else if(mode==='triangle'){button('45° 三角板',()=>{tools.triangle.kind=45;drawTools();updateQuick();persist()},tools.triangle.kind===45);button('30°–60° 三角板',()=>{tools.triangle.kind=30;drawTools();updateQuick();persist()},tools.triangle.kind===30);button(tools.triangle.visible?'收起三角板':'顯示三角板',()=>{toggleTool('triangle');updateQuick()},tools.triangle.visible)}
  else if(mode==='protractor'){button(tools.protractor.visible?'收起量角器':'顯示量角器',()=>{toggleTool('protractor');updateQuick()},tools.protractor.visible);button('轉動右側控制點',()=>showToast('對齊量角器底邊與待測角的其中一邊。'))}
- else if(mode==='compass'){button('畫一整圈',()=>{const c=tools.compass;shapes.push({type:'arc',cx:c.x,cy:c.y,r:c.r,a1:0,a2:Math.PI*2,color,width:lineWidth,dash:lineStyle});snapshot();draw()},false);button(tools.compass.visible?'收起圓規':'顯示圓規',()=>{toggleTool('compass');updateQuick()},tools.compass.visible);button('針腳定位 · 筆腳畫弧',()=>showToast('拖動圓規針腳可移動位置；拖動筆腳可畫弧；藍色小點可調整開口。'))}
+ else if(mode==='compass'){button('調整圓規',()=>setCompassDrawing(false),!compassDrawing);button(compassDrawing?'● 畫弧已開啟':'開始畫弧',()=>setCompassDrawing(!compassDrawing),compassDrawing);button('畫一整圈',()=>{const c=tools.compass;shapes.push({type:'arc',cx:c.x,cy:c.y,r:c.r,a1:0,a2:Math.PI*2,color,width:lineWidth,dash:lineStyle});snapshot();draw()},false);button(tools.compass.visible?'收起圓規':'顯示圓規',()=>{toggleTool('compass');updateQuick()},tools.compass.visible);button('操作提示',()=>showToast('拖動針腳移動、藍點調整開口。先在「調整圓規」模式轉好角度，再按「開始畫弧」拖動筆尖畫弧。'))}
  else if(mode==='eraser'){button('點擊筆跡即可擦除',()=>showToast('用橡皮擦點擊或掃過筆跡，即可刪除那一筆。'))}
  else {button('格點',()=>{grid=grid==='dots'?'none':'dots';$('gridSelect').value=grid;draw();updateQuick();persist()},grid==='dots');button('方格',()=>{grid=grid==='lines'?'none':'lines';$('gridSelect').value=grid;draw();updateQuick();persist()},grid==='lines');button('作圖引導',()=>showGuide(true))}
 }
@@ -238,8 +244,8 @@ function compassSvg(t){const g=$svg('g',{class:'instrument toolShadow','data-too
  $svg('circle',{cx:apex.x,cy:apex.y,r:4,fill:'#6c9c89','pointer-events':'none'},g);
  const adjust={x:(apex.x+foot.x)/2,y:(apex.y+foot.y)/2};$svg('circle',{cx:adjust.x,cy:adjust.y,r:12,class:'handleRing handle','data-tool':'compass','data-action':'radius'},g);$svg('circle',{cx:adjust.x,cy:adjust.y,r:4,fill:'#5282ab','pointer-events':'none'},g);
  $svg('circle',{cx:t.x,cy:t.y,r:13,class:'handleRing handle','data-tool':'compass','data-action':'move'},g);$svg('path',{d:`M ${t.x-5} ${t.y} h10 M ${t.x} ${t.y-5} v10`,stroke:'#698d7b','stroke-width':1.2,'pointer-events':'none'},g);
- $svg('circle',{cx:foot.x,cy:foot.y,r:14,class:'handleRing handle','data-tool':'compass','data-action':'arc'},g);$svg('circle',{cx:foot.x,cy:foot.y,r:4,fill:color,'pointer-events':'none'},g);
- const hint=$svg('text',{x:foot.x+19,y:foot.y-15,class:'rulerText','pointer-events':'none'},g);hint.textContent='畫弧';}
+ $svg('circle',{cx:foot.x,cy:foot.y,r:14,class:'handleRing handle',style:compassDrawing?'stroke:#c7574f':'stroke:#789c90','data-tool':'compass','data-action':'arc'},g);$svg('circle',{cx:foot.x,cy:foot.y,r:4,fill:compassDrawing?color:'#6d988a','pointer-events':'none'},g);
+ const hint=$svg('text',{x:foot.x+19,y:foot.y-15,class:'rulerText','pointer-events':'none'},g);hint.textContent=compassDrawing?'畫弧中':'自由旋轉';}
 function drawTools(){svg.replaceChildren();const activeOrder=['ruler','triangle','protractor','compass'];for(const k of activeOrder)if(tools[k].visible)({ruler,triangle,protractor:protractor,compass:compassSvg})[k](tools[k]);svg.style.pointerEvents=(mode==='pen'||mode==='eraser')?'none':'auto';updateAllToolsButton();if(recordSession)scheduleRecordingSvg()}
 function getEdges(){let out=[];const r=tools.ruler;if(r.visible){const p=[{x:0,y:0},{x:r.len,y:0},{x:0,y:r.height},{x:r.len,y:r.height}].map(v=>global(v,r));out.push([p[0],p[1]],[p[2],p[3]])}const t=tools.triangle;if(t.visible){let p=trianglePoints(t).map(v=>global(v,t));for(let i=0;i<3;i++)out.push([p[i],p[(i+1)%3]])}return out}
 function findEdge(p){let best=null;for(const [a,b]of getEdges()){const n=near(p,a,b);if(n.d<21&&(!best||n.d<best.d))best={...n,a,b}}return best}
@@ -297,14 +303,14 @@ function drawSnapMarks(){const pts=snapCandidates();ctx.save();ctx.lineWidth=1.1
  ctx.restore()}
 function eraseAt(p){let i=-1,best=18;shapes.forEach((s,j)=>{let d=9999;if(s.type==='stroke'){for(let k=1;k<s.points.length;k++)d=Math.min(d,near(p,s.points[k-1],s.points[k]).d);if(s.points.length===1)d=dist(p,s.points[0])}else if(s.type==='line')d=near(p,s.a,s.b).d;else if(s.type==='dot')d=dist(p,s);else if(s.type==='arc')d=Math.abs(dist(p,{x:s.cx,y:s.cy})-s.r);if(d<best){i=j;best=d}});if(i>=0){shapes.splice(i,1);draw();snapshot()}}
 // Pointer gestures are intentionally separate: moving a physical instrument never creates ink.
-svg.addEventListener('pointerdown',e=>{if(mode==='pen'||mode==='eraser')return;const target=e.target.closest('[data-tool]');if(!target)return;const name=target.getAttribute('data-tool'),kind=target.getAttribute('data-action')||'move',t=tools[name];if(!t?.visible)return;e.preventDefault();e.stopPropagation();const p=position(e);gesture={kind,name,start:p,from:{...t},startAngle:Math.atan2(p.y-t.y,p.x-t.x),startRadiusDistance:dist(p,{x:t.x,y:t.y}),arcPrev:t.a,arcStart:t.a,arcDelta:0,arcColor:color};try{svg.setPointerCapture(e.pointerId)}catch{}
+svg.addEventListener('pointerdown',e=>{if(mode==='pen'||mode==='eraser')return;const target=e.target.closest('[data-tool]');if(!target)return;const name=target.getAttribute('data-tool'),kind=target.getAttribute('data-action')||'move',action=name==='compass'&&kind==='arc'&&!compassDrawing?'turn':kind,t=tools[name];if(!t?.visible)return;e.preventDefault();e.stopPropagation();const p=position(e);gesture={kind,name,start:p,from:{...t},startAngle:Math.atan2(p.y-t.y,p.x-t.x),startRadiusDistance:dist(p,{x:t.x,y:t.y}),arcPrev:Math.atan2(p.y-t.y,p.x-t.x),arcStart:t.a,arcDelta:0,arcColor:color,arcDash:lineStyle};try{svg.setPointerCapture(e.pointerId)}catch{}
  if(kind==='arc'){gesture.arcStart=t.a;gesture.arcPrev=t.a;gesture.arcDelta=0;live={type:'arc',cx:t.x,cy:t.y,r:t.r,a1:t.a,a2:t.a,color,width:lineWidth,dash:lineStyle}}
- gesture.action=kind;
+ gesture.action=action;
 });
-svg.addEventListener('pointermove',e=>{if(!gesture)return;const p=position(e),g=gesture,t=tools[g.name];if(g.action==='move'){t.x=g.from.x+p.x-g.start.x;t.y=g.from.y+p.y-g.start.y}else if(g.action==='rotate'){const a=Math.atan2(p.y-t.y,p.x-t.x);t.a=g.from.a+norm(a-g.startAngle);}else if(g.action==='radius'){t.r=Math.max(35,Math.min(390,g.from.r+dist(p,{x:t.x,y:t.y})-g.startRadiusDistance));}else if(g.action==='arc'){const a=Math.atan2(p.y-t.y,p.x-t.x);const delta=norm(a-g.arcPrev);g.arcDelta+=delta;g.arcPrev=a;t.a=a;live={type:'arc',cx:t.x,cy:t.y,r:t.r,a1:g.arcStart,a2:g.arcStart+g.arcDelta,ccw:g.arcDelta<0,color:g.arcColor,width:lineWidth,dash:lineStyle}}
+svg.addEventListener('pointermove',e=>{if(!gesture)return;const p=position(e),g=gesture,t=tools[g.name];if(g.action==='move'){t.x=g.from.x+p.x-g.start.x;t.y=g.from.y+p.y-g.start.y}else if(g.action==='rotate'){const a=Math.atan2(p.y-t.y,p.x-t.x);t.a=g.from.a+norm(a-g.startAngle);}else if(g.action==='radius'){t.r=Math.max(35,Math.min(390,g.from.r+dist(p,{x:t.x,y:t.y})-g.startRadiusDistance));}else if(g.action==='arc'||g.action==='turn'){const a=Math.atan2(p.y-t.y,p.x-t.x);const delta=norm(a-g.arcPrev);g.arcDelta+=delta;g.arcPrev=a;t.a=g.arcStart+g.arcDelta;if(g.action==='arc')live={type:'arc',cx:t.x,cy:t.y,r:t.r,a1:g.arcStart,a2:t.a,ccw:g.arcDelta<0,color:g.arcColor,width:lineWidth,dash:g.arcDash}}
  drawTools();if(g.action==='arc')draw();});
-function endGesture(){if(!gesture)return;if(gesture.action==='arc'&&Math.abs(gesture.arcDelta)>.03){shapes.push({...live});snapshot()}if(gesture.name==='compass'&&gesture.action==='move'&&snap){const q=snapPoint({x:tools.compass.x,y:tools.compass.y});tools.compass.x=q.x;tools.compass.y=q.y}gesture=null;live=null;draw();drawTools();persist()}
-svg.addEventListener('pointerup',endGesture);svg.addEventListener('pointercancel',endGesture);
+function endGesture(commit=true){if(!gesture)return;if(commit&&gesture.action==='arc'&&Math.abs(gesture.arcDelta)>.03){shapes.push({...live});snapshot()}if(gesture.name==='compass'&&gesture.action==='move'&&snap){const q=snapPoint({x:tools.compass.x,y:tools.compass.y});tools.compass.x=q.x;tools.compass.y=q.y}gesture=null;live=null;draw();drawTools();persist()}
+svg.addEventListener('pointerup',()=>endGesture(true));svg.addEventListener('pointercancel',()=>endGesture(false));
 let drawing=null;
 stage.addEventListener('pointerdown',e=>{if(e.target!==stage&&e.target!==cv&&e.target!==svg)return;if(mode==='pen'){e.preventDefault();const p=position(e),edge=findEdge(p);drawing={edge,pointerId:e.pointerId};if(edge){const start=corrected(p,edge);live={type:'line',a:start,b:start,color,width:lineWidth,dash:lineStyle}}else{live={type:'stroke',points:[snapPoint(p)],color,width:lineWidth,dash:lineStyle}}try{stage.setPointerCapture(e.pointerId)}catch{}draw()}
  else if(mode==='eraser'){e.preventDefault();eraseAt(position(e));drawing={erase:true,pointerId:e.pointerId};try{stage.setPointerCapture(e.pointerId)}catch{}}
@@ -501,8 +507,8 @@ $('fullscreenBtn').addEventListener('click',async()=>{try{if(document.fullscreen
 document.addEventListener('fullscreenchange',()=>{$('fullscreenBtn').textContent=document.fullscreenElement?'離開原生全螢幕':'原生全螢幕'});
 $('settingsExport').addEventListener('click',()=>{closeSettings();$('save').click()});
 $('settingsHelp').addEventListener('click',()=>infoPage('操作說明',
- '1. 先從下方工具列選擇直尺、三角板、量角器或圓規。\n2. 拖動工具本體可移動；拉動外側圓點可旋轉。\n3. 選「畫筆」後，沿著尺規的邊緣畫線；選「橡皮擦」移除筆跡。\n4. 圓規的針腳可移動、藍色控制點可改變半徑、紅色筆腳可畫弧。\n5. 在畫布設定中啟用吸附，筆跡端點會靠近已畫標記點及交點。\n6.「畫布管理」可建立、複製、重新命名或切換不同課程畫布。\n8.「匯出可編輯檔」儲存全部畫布，之後按「開啟可編輯檔」匯入，或使用「複製目前畫布分享連結」建立課堂連結。\n7. 匯出圖片只包含畫布內容，不包含尺規工具。\n9. 按「錄影」可錄製畫布筆跡與實體尺規移動，按「停止錄影」後會下載影片（不含聲音）。'));
-$('settingsChangelog').addEventListener('click',()=>infoPage('更新日誌','2026/10/25\n・新增個人化配色、背景格線深淺與即時預覽。\n・統一網站名稱為「尺規做圖工作坊」。\n・加入側邊畫布設定、教學畫布管理、自動儲存。\n・新增吸附標記點與交點、淡方格、專注模式、全螢幕。\n・保留實體尺規操作、格點、作圖引導與圖片匯出。'));
+ '1. 先從下方工具列選擇直尺、三角板、量角器或圓規。\n2. 拖動工具本體可移動；拉動外側圓點可旋轉。\n3. 選「畫筆」後，沿著尺規的邊緣畫線；選「橡皮擦」移除筆跡。\n4. 圓規預設為「調整圓規」模式：針腳可移動、藍色控制點可調整開口，拖動筆尖可左右旋轉而不畫線；按「開始畫弧」後再拖動筆尖才會留下圓弧，可隨時切回調整模式。\n5. 在畫布設定中啟用吸附，筆跡端點會靠近已畫標記點及交點。\n6.「畫布管理」可建立、複製、重新命名或切換不同課程畫布。\n8.「匯出可編輯檔」儲存全部畫布，之後按「開啟可編輯檔」匯入，或使用「複製目前畫布分享連結」建立課堂連結。\n7. 匯出圖片只包含畫布內容，不包含尺規工具。\n9. 按「錄影」可錄製畫布筆跡與實體尺規移動，按「停止錄影」後會下載影片（不含聲音）。'));
+$('settingsChangelog').addEventListener('click',()=>infoPage('更新日誌','2026/10/25\n・圓規新增調整／畫弧兩種模式，預設旋轉不留筆跡。\n・新增個人化配色、背景格線深淺與即時預覽。\n・統一網站名稱為「尺規做圖工作坊」。\n・加入側邊畫布設定、教學畫布管理、自動儲存。\n・新增吸附標記點與交點、淡方格、專注模式、全螢幕。\n・保留實體尺規操作、格點、作圖引導與圖片匯出。'));
 $('settingsLicense').addEventListener('click',()=>infoPage('使用授權與著作權聲明','原始尺規作圖網站由葉威志老師製作，本工作坊參考其互動概念，並由徐丙忠老師與 AI 助理共同編輯擴充。\n本網站用於教學與個人練習。程式碼公開存放於專案 GitHub 儲存庫，不代表已授予任何開源授權；如需重製、散布或商業利用，請先與著作權人確認。'));
 $('settingsPrivacy').addEventListener('click',()=>infoPage('隱私權政策',"1. 網站製作與編輯\n原始尺規作圖網站製作者：葉威志老師。\n本「尺規做圖工作坊」參考原站的實體尺規互動構想，由徐丙忠老師與 AI 助理共同規劃、編輯及擴充。\n網站編輯與教學維護：徐丙忠老師。\n\n2. 使用者資料與作品保存\n本網站不要求登入，畫布內容與尺規設定保存在目前瀏覽器的 localStorage；更換瀏覽器或清除網站資料可能遺失作品。\n匯出圖片與可編輯檔由使用者自行下載，網站不會主動上傳作圖內容。分享連結會包含經編碼的畫布資料，取得連結者可載入對應內容。\n作畫錄影於使用者的瀏覽器內處理，停止後將影片下載到本機；本站不會主動上傳影片，也不會錄製麥克風音訊。\n\n3. 網站託管與瀏覽次數\n本網站由 GitHub Pages 託管，該服務可能依其政策處理一般連線及技術紀錄。\n網站透過 hits.sh 的 SVG 計數圖示記錄頁面請求次數；該服務聲明其計數器不使用 Cookie，亦不保存 IP 位址或使用者代理資訊。所顯示的是累計瀏覽次數，並非不重複訪客人數。"));
 
