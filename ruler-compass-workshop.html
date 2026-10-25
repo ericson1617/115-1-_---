@@ -128,7 +128,7 @@
   <span class="workshopPortraitRing"><img src="author-avatar.svg" alt="徐丙忠老師頭像"></span>
  </div><div class="titles"><span class="kicker">RULER &amp; COMPASS WORKSHOP</span><strong>尺規作圖工作坊</strong></div></div><a class="visitCounter" href="https://hits.sh/ericson1617.github.io/115-1-_---/ruler-compass-workshop.html/" target="_blank" rel="noopener noreferrer" title="網頁累計瀏覽次數（非不重複訪客）">
 <img alt="網站累計瀏覽次數" src="https://hits.sh/ericson1617.github.io/115-1-_---/ruler-compass-workshop.html.svg?view=total&amp;label=%E7%B4%AF%E8%A8%88%E7%80%8F%E8%A6%BD&amp;color=407b70&amp;labelColor=879c92" referrerpolicy="no-referrer"></a><div class="headBtns"><span class="saveIndicator" id="saveStatus" aria-live="polite">已自動儲存</span><button class="soft icon" id="undo" title="復原 (Ctrl+Z)">↶</button><button class="soft icon" id="redo" title="重做 (Ctrl+Y)">↷</button><button class="soft" id="clear">清空</button><button class="soft primary" id="save">匯出圖片</button><button class="soft recordHead" id="recordToggle" type="button" title="開始錄影作畫">⏺ <span class="recordLabel">錄影</span></button><button class="soft personalizeBtn" id="personalizeToggle" type="button" title="個人化設定" aria-label="個人化設定" aria-expanded="false"><span aria-hidden="true">◐</span> <span class="buttonText">個人化</span></button><button class="soft icon" id="settingsToggle" title="畫布設定" aria-label="畫布設定" aria-expanded="false">☰</button></div></header>
-<main class="stageWrap selectMode" id="stage"><canvas id="ink" aria-label="尺規作圖畫布"></canvas><svg id="tools" role="img" aria-label="可拖曳與旋轉的尺規工具"></svg><button id="focusExit" class="soft focusExit" title="結束專注模式">← 返回一般模式</button><div class="recordBadge" id="recordBadge" hidden><span class="redDot" aria-hidden="true"></span><span id="recordTimer">00:00</span><button type="button" id="recordStop" title="停止並下載錄影">停止錄影</button></div><div class="stageRight"><button type="button" class="soft" id="allToolsToggle" aria-pressed="false" title="收起畫布上的所有實體尺規" hidden>收起工具</button><button type="button" class="soft" id="hideGuideBtn" title="隱藏目前作圖引導與步驟提示" hidden>收起引導</button><select class="drop" id="gridSelect" title="畫布格點選項"><option value="none">空白畫布</option><option value="dots">格點</option><option value="lines">方格</option></select><button class="soft icon" id="guideToggle" title="特殊線作圖引導">?</button></div><div class="guideLine" id="guideLine"></div><div class="help" id="hint" role="status" aria-live="polite" hidden></div><div class="zoom" role="group" aria-label="畫布縮放">
+<main class="stageWrap selectMode" id="stage"><canvas id="ink" aria-label="尺規作圖畫布"></canvas><svg id="tools" role="img" aria-label="可拖曳與旋轉的尺規工具"></svg><button id="focusExit" class="soft focusExit" title="結束專注模式">← 返回一般模式</button><div class="recordBadge" id="recordBadge" hidden><span class="redDot" aria-hidden="true"></span><span id="recordTimer">00:00</span><button type="button" id="recordStop" title="停止並下載錄影">停止錄影</button></div><div class="stageRight"><button type="button" class="soft" id="allToolsToggle" aria-pressed="false" title="收起畫布上的所有實體尺規" hidden>收起工具</button><button type="button" class="soft" id="hideGuideBtn" title="隱藏目前作圖引導與步驟提示" hidden>收起引導</button><button type="button" class="soft" id="originToggle" aria-pressed="true" title="隱藏畫布中心原點">隱藏原點</button><select class="drop" id="gridSelect" title="畫布格點選項"><option value="none">空白畫布</option><option value="dots">格點</option><option value="lines">方格</option></select><button class="soft icon" id="guideToggle" title="特殊線作圖引導">?</button></div><div class="guideLine" id="guideLine"></div><div class="help" id="hint" role="status" aria-live="polite" hidden></div><div class="zoom" role="group" aria-label="畫布縮放">
  <button type="button" id="zoomOut" aria-label="縮小畫布" title="縮小">−</button>
  <button type="button" id="zoomReset" aria-label="重設畫布視野" title="回到 100% 並置中視野">100%</button>
  <button type="button" id="zoomIn" aria-label="放大畫布" title="放大">＋</button>
@@ -239,11 +239,11 @@ const tutorials={
 };
 const appearanceKey='geometry-workshop-appearance-v1';
 const legacyAppearanceDefaults={paper:'#fffefa',grid:'#87a79b',opacity:0.75,tool:'#568e7e'};
-const appearanceDefaults={paper:'#ffffff',grid:'#4b82c3',opacity:0.75,tool:'#4a7eaf',showEndpoints:false};
+const appearanceDefaults={paper:'#ffffff',grid:'#4b82c3',opacity:0.75,tool:'#4a7eaf',showEndpoints:false,showOrigin:true};
 const themeMigrationKey='geometry-workshop-blue-defaults-v1';
 let appearance={...appearanceDefaults};let penMigrationComplete=true;
 let W=1000,H=600,mode='select',color=palette[0],lineWidth=2.5,lineStyle='solid',eraserMode='stroke',grid='none',snap=false,lightGrid=false,guide='perpbis',gstep=0;
-let shapes=[],history=[],historyIndex=-1,live=null,gesture=null,vertexHover=null,vertexGesture=null,compass=null,compassDrawing=false,stowedTools=null,boards=[],activeBoardId=null,focusMode=false,viewport={x:0,y:0,scale:1},tools={
+let shapes=[],history=[],historyIndex=-1,live=null,gesture=null,vertexHover=null,vertexGesture=null,compass=null,compassDrawing=false,stowedTools=null,boards=[],activeBoardId=null,focusMode=false,viewport={x:0,y:0,scale:1},origin=null,tools={
  ruler:{visible:false,x:100,y:230,a:0,len:370,height:57,scale:1},
  triangle:{visible:false,x:500,y:135,a:0,kind:45,scale:1},
  protractor:{visible:false,x:400,y:425,a:0,scale:1},
@@ -279,7 +279,17 @@ const local=(p,t)=>{const q=rot(p.x-t.x,p.y-t.y,-t.a),z=t.scale||1;return{x:q.x/
 const global=(p,t)=>add(rot(p.x*(t.scale||1),p.y*(t.scale||1),t.a),t);
 const near=(p,a,b)=>{const v={x:b.x-a.x,y:b.y-a.y},d=v.x*v.x+v.y*v.y||1,q=Math.max(0,Math.min(1,((p.x-a.x)*v.x+(p.y-a.y)*v.y)/d));return{p:{x:a.x+q*v.x,y:a.y+q*v.y},d:Math.hypot(p.x-(a.x+q*v.x),p.y-(a.y+q*v.y))}};
 const $svg=(tag,attrs={},parent=svg)=>{const el=document.createElementNS(svgNS,tag);for(const[k,v]of Object.entries(attrs))el.setAttribute(k,v);parent.appendChild(el);return el};
-function fit(){const r=stage.getBoundingClientRect();if(!r.width||!r.height)return;W=r.width;H=r.height;let dpr=Math.min(devicePixelRatio||1,3);cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);updateViewport();drawTools()}
+function fit(){
+ const r=stage.getBoundingClientRect();if(!r.width||!r.height)return;
+ W=r.width;H=r.height;
+ // For existing projects, anchor O at the initial visible center once.
+ // Keep that world-space location as the user pans, zooms, and resizes the canvas.
+ if(!origin||!Number.isFinite(origin.x)||!Number.isFinite(origin.y))
+  origin=screenToWorld({x:W/2,y:H/2});
+ const dpr=Math.min(devicePixelRatio||1,3);
+ cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);
+ ctx.setTransform(dpr,0,0,dpr,0,0);updateViewport();drawTools();
+}
 function draw(exportClean=false){
  const dpr=Math.min(devicePixelRatio||1,3);
  ctx.setTransform(dpr,0,0,dpr,0,0);
@@ -301,6 +311,7 @@ function draw(exportClean=false){
   }
   ctx.restore();
  }
+ if(appearance.showOrigin)drawOriginMarker();
  for(const shape of shapes)paint(shape);
  if(live)paint(live);
  if(appearance.showEndpoints){
@@ -330,17 +341,35 @@ function draw(exportClean=false){
  // Automatic snapping and its persistent guide dots are disabled for freehand drawing.
  ctx.restore();
 }
+// The O mark is a view reference, not an editable or automatically-snapped stroke.
+function drawOriginMarker(){
+ if(!origin||!Number.isFinite(origin.x)||!Number.isFinite(origin.y))return;
+ const p=origin,unit=1/viewport.scale;
+ const visible=visibleWorld();
+ if(p.x<visible.left-30*unit||p.x>visible.right+30*unit||
+    p.y<visible.top-30*unit||p.y>visible.bottom+30*unit)return;
+ ctx.save();
+ ctx.strokeStyle='#2455bb';ctx.fillStyle='#2455bb';
+ ctx.lineCap='round';ctx.lineWidth=1.6*unit;
+ ctx.beginPath();
+ ctx.moveTo(p.x-9*unit,p.y);ctx.lineTo(p.x+9*unit,p.y);
+ ctx.moveTo(p.x,p.y-9*unit);ctx.lineTo(p.x,p.y+9*unit);ctx.stroke();
+ ctx.beginPath();ctx.arc(p.x,p.y,2.8*unit,0,2*Math.PI);ctx.fill();
+ ctx.font='600 '+(12*unit)+'px system-ui, sans-serif';
+ ctx.textBaseline='alphabetic';ctx.fillText('O',p.x+13*unit,p.y-11*unit);
+ ctx.restore();
+}
 function paint(s){ctx.save();ctx.strokeStyle=s.color||'#000000';ctx.fillStyle=s.color||'#000000';ctx.lineWidth=s.width||2.5;ctx.lineJoin='round';ctx.lineCap='round';ctx.setLineDash(s.dash==='dashed'?[Math.max(8,ctx.lineWidth*4),Math.max(6,ctx.lineWidth*3)]:s.dash==='dotted'?[Math.max(1,ctx.lineWidth),Math.max(4,ctx.lineWidth*2.5)]:[]);if(s.type==='stroke'&&s.points?.length){ctx.beginPath();s.points.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.stroke();if(s.points.length===1){const p=s.points[0];ctx.beginPath();ctx.arc(p.x,p.y,ctx.lineWidth/2,0,7);ctx.fill()}}else if(s.type==='line'){ctx.beginPath();ctx.moveTo(s.a.x,s.a.y);ctx.lineTo(s.b.x,s.b.y);ctx.stroke()}else if(s.type==='arc'){ctx.beginPath();ctx.arc(s.cx,s.cy,s.r,s.a1,s.a2,s.ccw||false);ctx.stroke()}else if(s.type==='dot'){ctx.beginPath();ctx.arc(s.x,s.y,Math.max(2,s.width),0,7);ctx.fill()}ctx.restore()}
 function snapshot(){history=history.slice(0,historyIndex+1);history.push(JSON.stringify(shapes));if(history.length>75)history.shift();historyIndex=history.length-1;updateButtons();persist()}
 function undo(){if(historyIndex<=0)return;historyIndex--;shapes=JSON.parse(history[historyIndex]);draw();updateButtons();persist()}
 function redo(){if(historyIndex>=history.length-1)return;historyIndex++;shapes=JSON.parse(history[historyIndex]);draw();updateButtons();persist()}
 function updateButtons(){$('undo').disabled=historyIndex<=0;$('redo').disabled=historyIndex>=history.length-1}
 const boardStoreKey='ruler-compass-workshop-boards-v2';
-function currentBoardData(){return {shapes:JSON.parse(JSON.stringify(shapes)),grid,tools:JSON.parse(JSON.stringify(tools)),color,lineWidth,lineStyle,eraserMode,stowedTools:stowedTools?{...stowedTools}:null,snap,lightGrid,viewport:{...viewport}}}
+function currentBoardData(){return {shapes:JSON.parse(JSON.stringify(shapes)),grid,tools:JSON.parse(JSON.stringify(tools)),color,lineWidth,lineStyle,eraserMode,stowedTools:stowedTools?{...stowedTools}:null,snap,lightGrid,viewport:{...viewport},origin:origin?{...origin}:null}}
 function applyBoardData(d){shapes=Array.isArray(d.shapes)?JSON.parse(JSON.stringify(d.shapes)):[];grid=['none','dots','lines'].includes(d.grid)?d.grid:'none';$('gridSelect').value=grid;
  for(const k of Object.keys(tools)){if(d.tools&&d.tools[k])Object.assign(tools[k],d.tools[k]);else tools[k].visible=false}
  color=isHexColor(d.color)?(d.color.toLowerCase()==='#223b3a'&&!penMigrationComplete?'#000000':d.color):palette[0];lineWidth=d.lineWidth||2.5;lineStyle=['solid','dashed','dotted'].includes(d.lineStyle)?d.lineStyle:'solid';eraserMode=d.eraserMode==='precise'?'precise':'stroke';stowedTools=d.stowedTools&&typeof d.stowedTools==='object'?{...d.stowedTools}:null;
- snap=false;lightGrid=!!d.lightGrid;const v=d.viewport||{};viewport={x:Number.isFinite(v.x)?v.x:0,y:Number.isFinite(v.y)?v.y:0,scale:Number.isFinite(v.scale)?Math.max(.4,Math.min(4,v.scale)):1};syncAppearanceControls();}
+ snap=false;lightGrid=!!d.lightGrid;const v=d.viewport||{};viewport={x:Number.isFinite(v.x)?v.x:0,y:Number.isFinite(v.y)?v.y:0,scale:Number.isFinite(v.scale)?Math.max(.4,Math.min(4,v.scale)):1};origin=d.origin&&Number.isFinite(d.origin.x)&&Number.isFinite(d.origin.y)?{x:d.origin.x,y:d.origin.y}:null;syncAppearanceControls();}
 function persist(){
  try{
   const d=currentBoardData();localStorage.setItem('geometry-physical-v1',JSON.stringify(d));
@@ -1054,6 +1083,7 @@ function normalizeAppearance(src){
   for(const key of ['paper','grid','tool'])if(isHexColor(src[key]))a[key]=src[key].toLowerCase();
   if(Number.isFinite(src.opacity))a.opacity=Math.max(.1,Math.min(1,src.opacity));
   a.showEndpoints=src.showEndpoints===true;
+  a.showOrigin=src.showOrigin!==false;
  }return a;
 }
 function loadAppearance(){
@@ -1082,6 +1112,10 @@ function applyAppearance(){
 }
 function syncAppearanceControls(){
  $('showEndpointsToggle').checked=appearance.showEndpoints;
+ const originButton=$('originToggle');
+ originButton.textContent=appearance.showOrigin?'隱藏原點':'顯示原點';
+ originButton.title=appearance.showOrigin?'隱藏畫布中心原點':'顯示畫布中心原點';
+ originButton.setAttribute('aria-pressed',String(appearance.showOrigin));
  const values={customPenColor:color,customPaperColor:appearance.paper,customGridColor:appearance.grid,customToolColor:appearance.tool};
  const outputs={customPenColor:'penColorValue',customPaperColor:'paperColorValue',customGridColor:'gridColorValue',customToolColor:'toolColorValue'};
  for(const [key,val] of Object.entries(values)){const el=$(key);if(!el)return;el.value=val;$(outputs[key]).textContent=val}
@@ -1099,6 +1133,9 @@ function saveAppearance(){
 }
 $('showEndpointsToggle').addEventListener('change',e=>{
  appearance.showEndpoints=e.target.checked;saveAppearance();
+});
+$('originToggle').addEventListener('click',()=>{
+ appearance.showOrigin=!appearance.showOrigin;saveAppearance();
 });
 for(const [id,key] of [['customPaperColor','paper'],['customGridColor','grid'],['customToolColor','tool']]){
  $(id).addEventListener('input',e=>{if(!isHexColor(e.target.value))return;appearance[key]=e.target.value;saveAppearance()});
@@ -1124,7 +1161,7 @@ function selectBoard(id){if(activeBoardId===id){closeSettings();return}
 function createBoard(duplicate=false){
  persist();const old=boards.find(b=>b.id===activeBoardId);
  const data=duplicate?JSON.parse(JSON.stringify(currentBoardData())):currentBoardData();
- if(!duplicate){data.shapes=[];data.stowedTools=null;for(const key of Object.keys(data.tools))data.tools[key].visible=false}
+ if(!duplicate){data.shapes=[];data.origin=null;data.stowedTools=null;for(const key of Object.keys(data.tools))data.tools[key].visible=false}
  const id=newBoardId(),name=duplicate?(old?.name||'教學畫布')+'（副本）':'教學畫布 '+(boards.length+1);
  boards.push({id,name,data});selectBoard(id);openSettings('boards')
 }
@@ -1162,7 +1199,7 @@ $('settingsFeedback').addEventListener('click',()=>openSettings('feedback'));
 $('feedbackBack').addEventListener('click',()=>openSettings('home'));
 $('settingsHelp').addEventListener('click',()=>infoPage('操作說明',
  '1. 先從下方工具列選擇直尺、三角板、量角器或圓規。\n2. 選取模式：雙指在直尺、三角板、量角器或圓規上向外或向內撥，可改變實體工具大小。拖動畫布空白處可平移，滑鼠滾輪或平板雙指可縮放，右下角可調整倍率或重設視野。拖動尺規本體則移動尺規，拉動外側圓點可旋轉。\n3. 畫筆一按下就能連續自由手繪，不會自動吸附格點或尺邊；切到「選取」可拖曳既有線段或手繪筆跡的端點。畫筆可設定粗細與實線、虛線、點線。橡皮擦的「筆畫擦除」一次刪除整筆，「精準擦除」只擦除掃過的局部線條（包含直線和圓弧）。\n4. 圓規預設可自由旋轉筆尖而不畫線；按「開始畫弧」後拖動筆尖才會留下圓弧，再按「停止畫弧」回到調整模式。\n5. 畫筆預設不使用自動吸附；在「個人化設定」可以選擇是否持續顯示線段端點，預設隱藏。\n6.「畫布管理」可建立、複製、重新命名或切換不同課程畫布。\n8.「匯出可編輯檔」儲存全部畫布，之後按「開啟可編輯檔」匯入，或使用「複製目前畫布分享連結」建立課堂連結。\n7. 匯出圖片只包含畫布內容，不包含尺規工具。\n9. 按「錄影」可錄製畫布筆跡與實體尺規移動，停止後能預覽、下載，或透過 iPad 系統分享選單選擇「儲存影片」（不含聲音）。'));
-$('settingsChangelog').addEventListener('click',()=>infoPage('更新日誌','2026/10/25\n・修正畫筆自動貼齊問題，新增可拖曳端點，量角器支援雙指伸縮。\n・加入公開回饋評論介面及管理者回覆功能（連線後啟用）。\n・個人化設定新增線段端點顯示開關，預設關閉。\n・精簡尺規工具列；加入線型分隔與「筆畫擦除／精準擦除」兩種橡皮擦。\n・選取模式新增畫布平移、滑鼠滾輪與平板雙指縮放、倍率重設。\n・圓規新增調整／畫弧兩種模式，預設旋轉不留筆跡。\n・新增個人化配色、背景格線深淺與即時預覽。\n・統一網站名稱為「尺規作圖工作坊」。\n・加入側邊畫布設定、教學畫布管理、自動儲存。\n・新增吸附標記點與交點、淡方格、專注模式、全螢幕。\n・保留實體尺規操作、格點、作圖引導與圖片匯出。'));
+$('settingsChangelog').addEventListener('click',()=>infoPage('更新日誌','2026/10/25\n・新增藍色中心原點 O 與「顯示／隱藏原點」開關，平移縮放時會隨畫布移動。\n・修正畫筆自動貼齊問題，新增可拖曳端點，量角器支援雙指伸縮。\n・加入公開回饋評論介面及管理者回覆功能（連線後啟用）。\n・個人化設定新增線段端點顯示開關，預設關閉。\n・精簡尺規工具列；加入線型分隔與「筆畫擦除／精準擦除」兩種橡皮擦。\n・選取模式新增畫布平移、滑鼠滾輪與平板雙指縮放、倍率重設。\n・圓規新增調整／畫弧兩種模式，預設旋轉不留筆跡。\n・新增個人化配色、背景格線深淺與即時預覽。\n・統一網站名稱為「尺規作圖工作坊」。\n・加入側邊畫布設定、教學畫布管理、自動儲存。\n・新增吸附標記點與交點、淡方格、專注模式、全螢幕。\n・保留實體尺規操作、格點、作圖引導與圖片匯出。'));
 $('settingsPrivacy').addEventListener('click',()=>infoPage('隱私權政策',"1. 網站製作與編輯\n原始尺規作圖網站製作者：葉威志老師。\n本「尺規作圖工作坊」參考原站的實體尺規互動構想，由徐丙忠老師與 AI 助理共同規劃、編輯及擴充。\n網站編輯與教學維護：徐丙忠老師。\n\n2. 使用者資料與作品保存\n訪客留言不需登入；管理者登入僅用於回覆。畫布內容與尺規設定保存在目前瀏覽器的 localStorage；更換瀏覽器或清除網站資料可能遺失作品。\n匯出圖片與可編輯檔由使用者自行下載，網站不會主動上傳作圖內容。分享連結會包含經編碼的畫布資料，取得連結者可載入對應內容。\n作畫錄影於瀏覽器內處理，完成後可自行下載或透過系統分享選單儲存影片；本站不會主動上傳影片，也不會錄製麥克風音訊。\n\n3. 網站託管與瀏覽次數\n本網站由 GitHub Pages 託管，該服務可能依其政策處理一般連線及技術紀錄。\n網站透過 hits.sh 的 SVG 計數圖示記錄頁面請求次數；該服務聲明其計數器不使用 Cookie，亦不保存 IP 位址或使用者代理資訊。所顯示的是累計瀏覽次數，並非不重複訪客人數。\n\n4. 回饋評論（啟用後）\n留言者提供的名字或暱稱、意見、發布日期及管理者回覆皆會公開顯示。留言與回覆存於 Cloudflare D1；伺服器會使用短期雜湊化連線識別資料限制濫用，管理者登入憑證只短暫保存在瀏覽器。請勿公開任何個人敏感資訊。"));
 
 
