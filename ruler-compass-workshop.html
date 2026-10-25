@@ -73,6 +73,27 @@
 .recordResultCard video{width:100%;max-height:46dvh;display:block;background:#101b29;border-radius:10px}
 .recordResultActions{display:flex;gap:10px;flex-wrap:wrap}.recordResultActions button{flex:1;white-space:normal}
 .recordResultInfo,.recordResultNote{font-size:12px;line-height:1.7;color:#557899;margin:0}
+.settingsPanel.feedbackOpen{width:min(560px,calc(100vw - 30px))}
+.feedbackIntro{font-size:12px;line-height:1.75;color:#59758f;margin:0}
+.feedbackStatus{font-size:12px;line-height:1.6;border-radius:9px;padding:10px;background:#edf4fb;color:#2e5c91;margin:0}
+.feedbackStatus:empty{display:none}
+.feedbackForm{display:grid;gap:8px;margin:4px 0 10px}
+.feedbackForm[hidden]{display:none}.feedbackForm label{font-size:12px;color:#2b557e;font-weight:650}
+.feedbackForm input,.feedbackForm textarea,.feedbackReplyInput{box-sizing:border-box;width:100%;background:white;color:#234668;border:1px solid #cddfed;border-radius:9px;font:inherit;font-size:13px;padding:10px;min-height:38px;resize:vertical}
+.feedbackForm textarea{min-height:100px}
+.feedbackHeading{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:10px;font-size:14px}
+.feedbackSmallBtn{border:1px solid #d1e0ef;border-radius:8px;padding:7px 10px;background:#f9fcff;color:#326faf;font-size:12px}
+.feedbackPosts{display:grid;gap:12px}
+.feedbackPost{padding:13px;border:1px solid #d9e5f0;background:#fff;border-radius:12px;display:grid;gap:6px}
+.feedbackPostHead{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
+.feedbackPostAuthor{font-size:13px;font-weight:750;color:#2a5681;overflow-wrap:anywhere}
+.feedbackPostDate{font-size:10px;color:#849cb4;text-align:right;white-space:nowrap}
+.feedbackPostText{font-size:13px;line-height:1.8;white-space:pre-wrap;overflow-wrap:anywhere;color:#334e6a}
+.feedbackReply{background:#edf5fd;border-left:3px solid #6499cc;border-radius:8px;padding:10px;display:grid;gap:5px;margin-top:5px}
+.feedbackAdmin{border-top:1px solid #e2ecf6;padding-top:8px}
+.feedbackReplyForm{display:grid;gap:7px;margin-top:8px}.feedbackReplyForm textarea{min-height:65px}
+.feedbackEmpty{padding:15px 8px;color:#7a90a6;text-align:center;font-size:12px}
+@media(max-width:640px){.settingsPanel.feedbackOpen{width:calc(100vw - 16px)}}
 </style>
 </head>
 <body>
@@ -144,6 +165,7 @@
       <h3 id="otherGroupTitle">其餘資訊</h3>
       <button class="settingsAction" id="settingsHelp">操作說明</button>
       <button class="settingsAction" id="settingsChangelog">更新日誌</button>
+      <button class="settingsAction" id="settingsFeedback">回饋評論</button>
       <div class="settingsLinks">
         <button id="settingsPrivacy">隱私權政策</button>
       </div>
@@ -173,12 +195,36 @@
     <button class="settingsAction" id="boardDuplicate">複製目前畫布</button>
     <button class="settingsAction" id="boardDownload">匯出全部畫布可編輯檔</button>
   </section>
+  <section id="feedbackView" class="settingsSection" hidden aria-label="回饋評論">
+    <button class="settingsBack" id="feedbackBack" type="button">← 返回畫布設定</button>
+    <h3>回饋評論</h3>
+    <p class="feedbackIntro">歡迎留下使用心得、功能建議與改善意見。留言會公開顯示姓名、內容與發布日期，站長可以回覆。</p>
+    <p class="feedbackStatus" id="feedbackStatus" role="status" aria-live="polite"></p>
+    <form id="feedbackForm" class="feedbackForm">
+      <label for="feedbackName">您的名字</label><input id="feedbackName" type="text" maxlength="30" placeholder="請輸入名字或暱稱" autocomplete="name" required>
+      <label for="feedbackMessage">您的意見</label><textarea id="feedbackMessage" maxlength="1000" rows="4" placeholder="分享使用心得或功能建議……" required></textarea>
+      <button class="settingsAction emph" id="feedbackSubmit" type="submit">發布留言</button>
+    </form>
+    <div class="feedbackHeading"><strong>公開留言</strong><button class="feedbackSmallBtn" id="feedbackRefresh" type="button">重新整理</button></div>
+    <div id="feedbackPosts" class="feedbackPosts"></div>
+    <button id="feedbackMore" type="button" class="feedbackSmallBtn" hidden>載入更多留言</button>
+    <div class="feedbackAdmin">
+      <div class="feedbackHeading"><strong>站長專區</strong><button class="feedbackSmallBtn" type="button" id="feedbackLoginToggle">管理者登入</button></div>
+      <form id="feedbackLoginForm" class="feedbackForm" hidden>
+        <label for="feedbackAdminPassword">管理者密碼</label>
+        <input id="feedbackAdminPassword" type="password" autocomplete="current-password" placeholder="僅供站長使用" required>
+        <button id="feedbackLoginSubmit" class="settingsAction" type="submit">登入並回覆</button>
+      </form>
+      <p id="feedbackAdminStatus" class="settingsFine"></p>
+    </div>
+  </section>
   <section id="infoView" class="settingsSection" hidden>
     <button class="settingsBack" id="infoBack">← 返回畫布設定</button>
     <h3 id="infoTitle"></h3><div id="infoBody" class="infoBody"></div>
   </section>
 </aside>
 </div>
+<script src="./feedback-config.js"></script>
 <script>
 (()=>{'use strict';
 const $=x=>document.getElementById(x),stage=$('stage'),cv=$('ink'),ctx=cv.getContext('2d'),svg=$('tools'),quick=$('quick');
@@ -919,9 +965,9 @@ $('resetAppearance').addEventListener('click',()=>{
  appearance={...appearanceDefaults};color=palette[0];lightGrid=false;updateQuick();saveAppearance();
 });
 
-function closeSettings(){const panel=$('settingsPanel');panel.hidden=true;$('settingsScrim').hidden=true;$('settingsToggle').setAttribute('aria-expanded','false');$('personalizeToggle').setAttribute('aria-expanded','false')}
-function setSettingsView(view){$('settingsHome').hidden=view!=='home';$('boardsView').hidden=view!=='boards';$('infoView').hidden=view!=='info';$('personalizeView').hidden=view!=='personalize';$('settingsHeading').textContent=view==='personalize'?'個人化設定':view==='boards'?'畫布管理':view==='info'?'資訊說明':'畫布設定'}
-function openSettings(view='home'){setSettingsView(view);$('settingsPanel').hidden=false;$('settingsScrim').hidden=false;$('settingsToggle').setAttribute('aria-expanded','true');if(view==='boards')renderBoards();if(view==='personalize'){syncAppearanceControls();$('personalizeToggle').setAttribute('aria-expanded','true')}}
+function closeSettings(){const panel=$('settingsPanel');panel.classList.remove('feedbackOpen');panel.hidden=true;$('settingsScrim').hidden=true;$('settingsToggle').setAttribute('aria-expanded','false');$('personalizeToggle').setAttribute('aria-expanded','false')}
+function setSettingsView(view){$('settingsHome').hidden=view!=='home';$('boardsView').hidden=view!=='boards';$('infoView').hidden=view!=='info';$('personalizeView').hidden=view!=='personalize';$('feedbackView').hidden=view!=='feedback';$('settingsPanel').classList.toggle('feedbackOpen',view==='feedback');$('settingsHeading').textContent=view==='feedback'?'回饋評論':view==='personalize'?'個人化設定':view==='boards'?'畫布管理':view==='info'?'資訊說明':'畫布設定'}
+function openSettings(view='home'){setSettingsView(view);$('settingsPanel').hidden=false;$('settingsScrim').hidden=false;$('settingsToggle').setAttribute('aria-expanded','true');if(view==='boards')renderBoards();if(view==='feedback')loadFeedback(true);if(view==='personalize'){syncAppearanceControls();$('personalizeToggle').setAttribute('aria-expanded','true')}}
 function infoPage(title,body){$('infoTitle').textContent=title;$('infoBody').textContent=body;openSettings('info')}
 function goFocus(on){focusMode=on;document.body.classList.toggle('focusMode',on);$('focusModeBtn').textContent=on?'離開專注模式':'專注模式';closeSettings();requestAnimationFrame(fit)}
 function newBoardId(){return 'board-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,8)}
@@ -965,6 +1011,8 @@ $('boardDuplicate').addEventListener('click',()=>createBoard(true));
 $('focusModeBtn').addEventListener('click',()=>goFocus(!focusMode));$('focusExit').addEventListener('click',()=>goFocus(false));
 $('fullscreenBtn').addEventListener('click',async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else await document.documentElement.requestFullscreen();}catch(err){showToast('瀏覽器無法進入全螢幕，請使用 F11 或瀏覽器選單。')}});
 document.addEventListener('fullscreenchange',()=>{$('fullscreenBtn').textContent=document.fullscreenElement?'離開全螢幕模式':'全螢幕模式'});
+$('settingsFeedback').addEventListener('click',()=>openSettings('feedback'));
+$('feedbackBack').addEventListener('click',()=>openSettings('home'));
 $('settingsHelp').addEventListener('click',()=>infoPage('操作說明',
  '1. 先從下方工具列選擇直尺、三角板、量角器或圓規。\n2. 選取模式：雙指在直尺、三角板或圓規上向外或向內撥，可改變實體工具大小。拖動畫布空白處可平移，滑鼠滾輪或平板雙指可縮放，右下角可調整倍率或重設視野。拖動尺規本體則移動尺規，拉動外側圓點可旋轉。\n3. 畫筆觸碰畫布即可開始連續作畫，不必長按；可選粗細與實線／虛線／點線；沿尺邊畫筆跡會自動貼齊。橡皮擦的「筆畫擦除」一次刪除整筆，「精準擦除」只擦除掃過的局部線條（包含直線和圓弧）。\n4. 圓規預設可自由旋轉筆尖而不畫線；按「開始畫弧」後拖動筆尖才會留下圓弧，再按「停止畫弧」回到調整模式。\n5. 在畫布設定中啟用吸附，筆跡端點會靠近已畫標記點及交點。\n6.「畫布管理」可建立、複製、重新命名或切換不同課程畫布。\n8.「匯出可編輯檔」儲存全部畫布，之後按「開啟可編輯檔」匯入，或使用「複製目前畫布分享連結」建立課堂連結。\n7. 匯出圖片只包含畫布內容，不包含尺規工具。\n9. 按「錄影」可錄製畫布筆跡與實體尺規移動，停止後能預覽、下載，或透過 iPad 系統分享選單選擇「儲存影片」（不含聲音）。'));
 $('settingsChangelog').addEventListener('click',()=>infoPage('更新日誌','2026/10/25\n・個人化設定新增線段端點顯示開關，預設關閉。\n・精簡尺規工具列；加入線型分隔與「筆畫擦除／精準擦除」兩種橡皮擦。\n・選取模式新增畫布平移、滑鼠滾輪與平板雙指縮放、倍率重設。\n・圓規新增調整／畫弧兩種模式，預設旋轉不留筆跡。\n・新增個人化配色、背景格線深淺與即時預覽。\n・統一網站名稱為「尺規作圖工作坊」。\n・加入側邊畫布設定、教學畫布管理、自動儲存。\n・新增吸附標記點與交點、淡方格、專注模式、全螢幕。\n・保留實體尺規操作、格點、作圖引導與圖片匯出。'));
