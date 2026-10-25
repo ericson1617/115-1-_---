@@ -16,7 +16,9 @@
 .workshopPortraitRing{position:absolute;left:16.3%;top:12.3%;width:68.2%;height:74%;padding:2px;border-radius:50%;background:conic-gradient(from -24deg,#bee7f2 0%,#fff1c7 25%,#a8d6cc 52%,#c7c9ee 74%,#bee7f2 100%);box-shadow:0 2px 8px #345c8132,0 0 0 1px #fff;z-index:1}
 .workshopPortraitRing img{display:block;width:100%;height:100%;border-radius:50%;border:2px solid #fff;background:white;object-fit:cover}.titles{display:grid;gap:0;white-space:nowrap;min-width:0}.kicker{font-size:9px;letter-spacing:.22em;color:#94a69d}.titles strong{font-weight:650;font-size:18px;letter-spacing:.06em}.headBtns,.dock,.quick,.colors,.segment{display:flex;align-items:center;gap:7px}.headBtns{flex-wrap:wrap;justify-content:flex-end;margin-left:auto;min-width:0}.soft{border:1px solid var(--border);background:#fffefa;border-radius:11px;padding:8px 11px;color:var(--ink2);min-height:35px;font-size:12px}.soft:hover{background:#f1f7f2;color:var(--teal)}.soft:disabled{opacity:.35;cursor:default}.soft.icon{min-width:35px;padding:7px 8px;font-size:17px}.soft.primary{color:white;background:var(--teal);border-color:var(--teal)}
 .stageWrap{position:relative;min-height:0;flex:1;background:var(--paper);border:1px solid #e0e7df;border-radius:17px;overflow:hidden;box-shadow:0 7px 18px #3554480a}
-#ink,#tools{position:absolute;inset:0;width:100%;height:100%;touch-action:none;user-select:none}#tools{overflow:visible}#ink{pointer-events:none}.stageWrap.pencilMode{cursor:crosshair}.stageWrap.eraseMode{cursor:cell}.stageWrap.selectMode{cursor:default}.stageRight{position:absolute;right:13px;top:12px;z-index:4;display:flex;align-items:center;gap:6px}.drop{font-size:12px;padding:7px 10px;background:#ffffffed;border:1px solid var(--border);border-radius:9px;color:#61746a;min-height:34px}.help{position:absolute;left:15px;bottom:13px;font-size:11px;color:#507e71;z-index:5;pointer-events:none;max-width:75%;background:#fffefaec;padding:6px 10px;border:1px solid #e3ece4;border-radius:9px;box-shadow:0 4px 12px #3554480c}.help[hidden]{display:none}.zoom{position:absolute;right:14px;bottom:12px;background:#fffefdeb;padding:5px 9px;border:1px solid #eef0eb;border-radius:10px;color:#91a59b;font-size:11px;z-index:2}
+#ink,#tools{position:absolute;inset:0;width:100%;height:100%;touch-action:none;user-select:none}#tools{overflow:visible}#ink{pointer-events:none}.stageWrap.pencilMode{cursor:crosshair}.stageWrap.eraseMode{cursor:cell}.stageWrap.selectMode{cursor:default}.stageRight{position:absolute;right:13px;top:12px;z-index:4;display:flex;align-items:center;gap:6px}.drop{font-size:12px;padding:7px 10px;background:#ffffffed;border:1px solid var(--border);border-radius:9px;color:#61746a;min-height:34px}.help{position:absolute;left:15px;bottom:13px;font-size:11px;color:#507e71;z-index:5;pointer-events:none;max-width:75%;background:#fffefaec;padding:6px 10px;border:1px solid #e3ece4;border-radius:9px;box-shadow:0 4px 12px #3554480c}.help[hidden]{display:none}.zoom{position:absolute;right:14px;bottom:12px;background:#fffefdf3;padding:3px;gap:2px;display:none;align-items:center;border:1px solid #dce7dd;border-radius:10px;color:#56776b;font-size:11px;z-index:6;box-shadow:0 3px 12px #1e483310}.stageWrap.selectMode .zoom{display:flex}
+.zoom button{appearance:none;border:0;background:transparent;color:inherit;font:inherit;min-width:28px;height:28px;border-radius:7px;cursor:pointer}
+.zoom button:hover{background:#e8f1e8}.zoom #zoomReset{min-width:50px;font-variant-numeric:tabular-nums;font-weight:600}
 .footer{display:grid;justify-items:center;gap:8px}.quick{flex-wrap:wrap;justify-content:center;min-height:25px;max-width:100%;font-size:12px;color:#6e8178}.quick:empty{display:none}.quick .chip{padding:6px 10px;border-radius:9px;border:1px solid #dde8df;color:#58786f;background:#fffefa;min-height:30px;font-size:11px}.quick .chip.on{background:#e5f1e9;color:#2e665a;border-color:#cde4d5}.quick .divider{width:1px;height:19px;background:#dbe4dc;margin:0 3px}.dot{display:inline-block;height:17px;width:17px;border:2px solid #fbfdf9;border-radius:50%;box-shadow:0 0 0 1px #cbd6ce;cursor:pointer}.dot.on{box-shadow:0 0 0 2px var(--teal),0 0 0 4px #f4f7f3}
 .dock{padding:6px 9px;background:#fffefa;border:1px solid #e8ece5;border-radius:14px;box-shadow:0 6px 22px #334b4020;gap:3px;max-width:100%;overflow-x:auto;scrollbar-width:none}.dock::-webkit-scrollbar{display:none}.toolbtn{border:0;background:transparent;border-radius:10px;color:#697d74;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:3px;min-width:64px;min-height:52px;padding:6px 9px;transition:background .13s}.toolbtn:hover{background:#f0f5ef}.toolbtn[aria-pressed=true]{background:#e6f0e4;color:#356e60}.toolbtn svg{height:21px;width:21px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}.toolbtn span{font-size:10px;white-space:nowrap}.dockSep{width:1px;height:29px;background:#e2e7e2;margin:0 4px;flex:none}
 #tools .instrument{cursor:grab}#tools .instrument:active{cursor:grabbing}#tools .handle{cursor:grab;touch-action:none}#tools .handle:hover{filter:brightness(.96)}#tools .paleShape{stroke:var(--tool-color,#568e7e);stroke-width:1.35;fill:#d9ecdf;fill-opacity:.52}#tools .rulerShape{stroke:var(--tool-color,#568e7e);stroke-width:1.5;fill:#d5ead8;fill-opacity:.56}#tools .ticks{stroke:var(--tool-color,#568e7e);stroke-width:1;pointer-events:none}#tools .rulerText{fill:var(--tool-color,#568e7e);font-size:10px;pointer-events:none}#tools .handleRing{fill:#fffefa;stroke:#789c90;stroke-width:1.5}#tools .handleCore{fill:#6c9789}#tools .toolShadow{filter:drop-shadow(0px 2px 4px #2f504022)}#tools .guideDash{stroke:#789a8d;stroke-width:1;stroke-dasharray:4 4;opacity:.52;pointer-events:none}
@@ -97,7 +99,11 @@
   </svg>
   <span class="workshopPortraitRing"><img src="author-avatar.svg" alt="徐丙忠老師頭像"></span>
  </div><div class="titles"><span class="kicker">RULER &amp; COMPASS WORKSHOP</span><strong>尺規做圖工作坊</strong></div></div><div class="headBtns"><span class="saveIndicator" id="saveStatus" aria-live="polite">已自動儲存</span><button class="soft icon" id="undo" title="復原 (Ctrl+Z)">↶</button><button class="soft icon" id="redo" title="重做 (Ctrl+Y)">↷</button><button class="soft" id="clear">清空</button><button class="soft primary" id="save">匯出圖片</button><button class="soft recordHead" id="recordToggle" type="button" title="開始錄影作畫">⏺ <span class="recordLabel">錄影</span></button><button class="soft personalizeBtn" id="personalizeToggle" type="button" title="個人化設定" aria-label="個人化設定" aria-expanded="false"><span aria-hidden="true">◐</span> <span class="buttonText">個人化</span></button><button class="soft icon" id="settingsToggle" title="畫布設定" aria-label="畫布設定" aria-expanded="false">☰</button></div></header>
-<main class="stageWrap selectMode" id="stage"><canvas id="ink" aria-label="尺規作圖畫布"></canvas><svg id="tools" role="img" aria-label="可拖曳與旋轉的尺規工具"></svg><button id="focusExit" class="soft focusExit" title="結束專注模式">← 返回一般模式</button><div class="recordBadge" id="recordBadge" hidden><span class="redDot" aria-hidden="true"></span><span id="recordTimer">00:00</span><button type="button" id="recordStop" title="停止並下載錄影">停止錄影</button></div><div class="stageRight"><button type="button" class="soft" id="allToolsToggle" aria-pressed="false" title="收起畫布上的所有實體尺規">收起工具</button><select class="drop" id="gridSelect" title="畫布格點選項"><option value="none">空白畫布</option><option value="dots">格點</option><option value="lines">方格</option></select><button class="soft icon" id="guideToggle" title="特殊線作圖引導">?</button></div><div class="guideLine" id="guideLine"></div><div class="help" id="hint" role="status" aria-live="polite" hidden></div><div class="zoom">100%</div><div class="dim" id="dim"></div><section class="pop" id="guidePop"><h3>特殊線 · 作圖引導</h3><p>選擇想練習的構造。提示會保留在畫布下方；使用實體尺規工具完成每一步，不會直接替你畫出答案。</p><div class="row"><select id="guideKind" aria-label="選擇作圖主題"><option value="perpbis">線段中垂線</option><option value="perp">過點作垂線</option><option value="parallel">過點作平行線</option><option value="median">三角形中線</option><option value="altitude">三角形高線</option><option value="anglebis">角平分線</option></select><button class="chip" id="guideClose">關閉</button></div><p id="guideDesc" style="margin-top:12px"></p><div class="row"><button class="chip" id="guidePrev">← 上一步</button><span id="guideStep" style="font-size:12px;color:#84988c"></span><button class="chip" id="guideNext">下一步 →</button></div><p style="font-size:11px;margin:10px 0 0">畫筆靠近直尺或三角板的邊緣時，會自動沿尺邊繪製直線。</p></section></main>
+<main class="stageWrap selectMode" id="stage"><canvas id="ink" aria-label="尺規作圖畫布"></canvas><svg id="tools" role="img" aria-label="可拖曳與旋轉的尺規工具"></svg><button id="focusExit" class="soft focusExit" title="結束專注模式">← 返回一般模式</button><div class="recordBadge" id="recordBadge" hidden><span class="redDot" aria-hidden="true"></span><span id="recordTimer">00:00</span><button type="button" id="recordStop" title="停止並下載錄影">停止錄影</button></div><div class="stageRight"><button type="button" class="soft" id="allToolsToggle" aria-pressed="false" title="收起畫布上的所有實體尺規">收起工具</button><select class="drop" id="gridSelect" title="畫布格點選項"><option value="none">空白畫布</option><option value="dots">格點</option><option value="lines">方格</option></select><button class="soft icon" id="guideToggle" title="特殊線作圖引導">?</button></div><div class="guideLine" id="guideLine"></div><div class="help" id="hint" role="status" aria-live="polite" hidden></div><div class="zoom" role="group" aria-label="畫布縮放">
+ <button type="button" id="zoomOut" aria-label="縮小畫布" title="縮小">−</button>
+ <button type="button" id="zoomReset" aria-label="重設畫布視野" title="回到 100% 並置中視野">100%</button>
+ <button type="button" id="zoomIn" aria-label="放大畫布" title="放大">＋</button>
+</div><div class="dim" id="dim"></div><section class="pop" id="guidePop"><h3>特殊線 · 作圖引導</h3><p>選擇想練習的構造。提示會保留在畫布下方；使用實體尺規工具完成每一步，不會直接替你畫出答案。</p><div class="row"><select id="guideKind" aria-label="選擇作圖主題"><option value="perpbis">線段中垂線</option><option value="perp">過點作垂線</option><option value="parallel">過點作平行線</option><option value="median">三角形中線</option><option value="altitude">三角形高線</option><option value="anglebis">角平分線</option></select><button class="chip" id="guideClose">關閉</button></div><p id="guideDesc" style="margin-top:12px"></p><div class="row"><button class="chip" id="guidePrev">← 上一步</button><span id="guideStep" style="font-size:12px;color:#84988c"></span><button class="chip" id="guideNext">下一步 →</button></div><p style="font-size:11px;margin:10px 0 0">畫筆靠近直尺或三角板的邊緣時，會自動沿尺邊繪製直線。</p></section></main>
 <footer class="footer"><div class="quick" id="quick"></div><nav class="dock" aria-label="教學作圖工具"><button class="toolbtn" data-mode="select" aria-pressed="true"><svg><use href="#i-select"/></svg><span>選取</span></button><button class="toolbtn" data-mode="pen" aria-pressed="false"><svg><use href="#i-pen"/></svg><span>畫筆</span></button><button class="toolbtn" data-mode="ruler" aria-pressed="false"><svg><use href="#i-ruler"/></svg><span>直尺</span></button><button class="toolbtn" data-mode="triangle" aria-pressed="false"><svg><use href="#i-triangle"/></svg><span>三角板</span></button><button class="toolbtn" data-mode="protractor" aria-pressed="false"><svg><use href="#i-protractor"/></svg><span>量角器</span></button><button class="toolbtn" data-mode="compass" aria-pressed="false"><svg><use href="#i-compass"/></svg><span>圓規</span></button><span class="dockSep"></span><button class="toolbtn" data-mode="eraser" aria-pressed="false"><svg><use href="#i-eraser"/></svg><span>橡皮擦</span></button><button class="toolbtn" data-mode="guide" aria-pressed="false"><svg><use href="#i-guide"/></svg><span>作圖引導</span></button></nav>
 <a class="visitCounter" href="https://hits.sh/ericson1617.github.io/115-1-_---/ruler-compass-workshop.html/" target="_blank" rel="noopener noreferrer" title="網頁累計瀏覽次數（非不重複訪客）">
 <img alt="網站累計瀏覽次數" src="https://hits.sh/ericson1617.github.io/115-1-_---/ruler-compass-workshop.html.svg?view=total&amp;label=%E7%B4%AF%E8%A8%88%E7%80%8F%E8%A6%BD&amp;color=407b70&amp;labelColor=879c92" referrerpolicy="no-referrer"></a></footer>
@@ -170,7 +176,7 @@ const appearanceKey='geometry-workshop-appearance-v1';
 const appearanceDefaults={paper:'#fffefa',grid:'#87a79b',opacity:0.75,tool:'#568e7e'};
 let appearance={...appearanceDefaults};
 let W=1000,H=600,mode='select',color=palette[0],lineWidth=2.5,lineStyle='solid',grid='none',snap=false,lightGrid=false,guide='perpbis',gstep=0;
-let shapes=[],history=[],historyIndex=-1,live=null,gesture=null,compass=null,compassDrawing=false,stowedTools=null,boards=[],activeBoardId=null,focusMode=false,tools={
+let shapes=[],history=[],historyIndex=-1,live=null,gesture=null,compass=null,compassDrawing=false,stowedTools=null,boards=[],activeBoardId=null,focusMode=false,viewport={x:0,y:0,scale:1},tools={
  ruler:{visible:false,x:100,y:230,a:0,len:370,height:57},
  triangle:{visible:false,x:500,y:135,a:0,kind:45},
  protractor:{visible:false,x:400,y:425,a:0},
@@ -181,25 +187,69 @@ const norm=a=>Math.atan2(Math.sin(a),Math.cos(a));
 const rot=(x,y,a)=>({x:x*Math.cos(a)-y*Math.sin(a),y:x*Math.sin(a)+y*Math.cos(a)});
 const add=(p,q)=>({x:p.x+q.x,y:p.y+q.y});
 const dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
-const position=e=>{const r=stage.getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top}};
+const screenPosition=e=>{const r=stage.getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top}};
+const screenToWorld=p=>({x:(p.x-viewport.x)/viewport.scale,y:(p.y-viewport.y)/viewport.scale});
+const position=e=>screenToWorld(screenPosition(e));
+const visibleWorld=()=>({left:-viewport.x/viewport.scale,top:-viewport.y/viewport.scale,right:(W-viewport.x)/viewport.scale,bottom:(H-viewport.y)/viewport.scale});
+function updateViewport(){
+ const v=viewport;
+ svg.setAttribute('viewBox',`${-v.x/v.scale} ${-v.y/v.scale} ${W/v.scale} ${H/v.scale}`);
+ $('zoomReset').textContent=Math.round(v.scale*100)+'%';
+ draw();
+ if(recordSession)scheduleRecordingSvg();
+}
+function zoomAbout(factor,screen){
+ const anchor=screenToWorld(screen);
+ viewport.scale=Math.max(.4,Math.min(4,viewport.scale*factor));
+ viewport.x=screen.x-anchor.x*viewport.scale;viewport.y=screen.y-anchor.y*viewport.scale;
+ updateViewport();
+}
+function resetZoom(){
+ viewport={x:0,y:0,scale:1};
+ updateViewport();persist();
+}
 const local=(p,t)=>rot(p.x-t.x,p.y-t.y,-t.a);
 const global=(p,t)=>add(rot(p.x,p.y,t.a),t);
 const near=(p,a,b)=>{const v={x:b.x-a.x,y:b.y-a.y},d=v.x*v.x+v.y*v.y||1,q=Math.max(0,Math.min(1,((p.x-a.x)*v.x+(p.y-a.y)*v.y)/d));return{p:{x:a.x+q*v.x,y:a.y+q*v.y},d:Math.hypot(p.x-(a.x+q*v.x),p.y-(a.y+q*v.y))}};
 const $svg=(tag,attrs={},parent=svg)=>{const el=document.createElementNS(svgNS,tag);for(const[k,v]of Object.entries(attrs))el.setAttribute(k,v);parent.appendChild(el);return el};
-function fit(){const r=stage.getBoundingClientRect();if(!r.width||!r.height)return;W=r.width;H=r.height;let dpr=Math.min(devicePixelRatio||1,3);cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);svg.setAttribute('viewBox',`0 0 ${W} ${H}`);draw();drawTools()}
-function draw(exportClean=false){ctx.clearRect(0,0,W,H);ctx.fillStyle=appearance.paper;ctx.fillRect(0,0,W,H);if(grid!=='none'){ctx.save();ctx.globalAlpha=lightGrid?Math.min(appearance.opacity,.23):appearance.opacity;ctx.fillStyle=appearance.grid;ctx.strokeStyle=appearance.grid;let gap=26;if(grid==='dots'){for(let x=gap/2;x<W;x+=gap)for(let y=gap/2;y<H;y+=gap){ctx.beginPath();ctx.arc(x,y,1.8,0,7);ctx.fill()}}else{ctx.lineWidth=1.1;ctx.beginPath();for(let x=gap/2;x<W;x+=gap){ctx.moveTo(x,0);ctx.lineTo(x,H)}for(let y=gap/2;y<H;y+=gap){ctx.moveTo(0,y);ctx.lineTo(W,y)}ctx.stroke()}ctx.restore()}
- for(const s of shapes)paint(s);if(live)paint(live);if(snap&&!exportClean)drawSnapMarks()}
+function fit(){const r=stage.getBoundingClientRect();if(!r.width||!r.height)return;W=r.width;H=r.height;let dpr=Math.min(devicePixelRatio||1,3);cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);updateViewport();drawTools()}
+function draw(exportClean=false){
+ const dpr=Math.min(devicePixelRatio||1,3);
+ ctx.setTransform(dpr,0,0,dpr,0,0);
+ ctx.clearRect(0,0,W,H);ctx.fillStyle=appearance.paper;ctx.fillRect(0,0,W,H);
+ ctx.save();ctx.translate(viewport.x,viewport.y);ctx.scale(viewport.scale,viewport.scale);
+ if(grid!=='none'){
+  ctx.save();ctx.globalAlpha=lightGrid?Math.min(appearance.opacity,.23):appearance.opacity;
+  ctx.fillStyle=appearance.grid;ctx.strokeStyle=appearance.grid;
+  const gap=26,b=visibleWorld(),x0=Math.floor((b.left-13)/gap)*gap+13,y0=Math.floor((b.top-13)/gap)*gap+13;
+  if(grid==='dots'){
+   for(let x=x0;x<=b.right+gap;x+=gap)for(let y=y0;y<=b.bottom+gap;y+=gap){
+    ctx.beginPath();ctx.arc(x,y,1.8,0,Math.PI*2);ctx.fill()
+   }
+  }else{
+   ctx.lineWidth=1.1;ctx.beginPath();
+   for(let x=x0;x<=b.right+gap;x+=gap){ctx.moveTo(x,b.top);ctx.lineTo(x,b.bottom)}
+   for(let y=y0;y<=b.bottom+gap;y+=gap){ctx.moveTo(b.left,y);ctx.lineTo(b.right,y)}
+   ctx.stroke();
+  }
+  ctx.restore();
+ }
+ for(const shape of shapes)paint(shape);
+ if(live)paint(live);
+ if(snap&&!exportClean)drawSnapMarks();
+ ctx.restore();
+}
 function paint(s){ctx.save();ctx.strokeStyle=s.color||'#223b3a';ctx.fillStyle=s.color||'#223b3a';ctx.lineWidth=s.width||2.5;ctx.lineJoin='round';ctx.lineCap='round';ctx.setLineDash(s.dash==='dashed'?[Math.max(8,ctx.lineWidth*4),Math.max(6,ctx.lineWidth*3)]:s.dash==='dotted'?[Math.max(1,ctx.lineWidth),Math.max(4,ctx.lineWidth*2.5)]:[]);if(s.type==='stroke'&&s.points?.length){ctx.beginPath();s.points.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.stroke();if(s.points.length===1){const p=s.points[0];ctx.beginPath();ctx.arc(p.x,p.y,ctx.lineWidth/2,0,7);ctx.fill()}}else if(s.type==='line'){ctx.beginPath();ctx.moveTo(s.a.x,s.a.y);ctx.lineTo(s.b.x,s.b.y);ctx.stroke()}else if(s.type==='arc'){ctx.beginPath();ctx.arc(s.cx,s.cy,s.r,s.a1,s.a2,s.ccw||false);ctx.stroke()}else if(s.type==='dot'){ctx.beginPath();ctx.arc(s.x,s.y,Math.max(2,s.width),0,7);ctx.fill()}ctx.restore()}
 function snapshot(){history=history.slice(0,historyIndex+1);history.push(JSON.stringify(shapes));if(history.length>75)history.shift();historyIndex=history.length-1;updateButtons();persist()}
 function undo(){if(historyIndex<=0)return;historyIndex--;shapes=JSON.parse(history[historyIndex]);draw();updateButtons();persist()}
 function redo(){if(historyIndex>=history.length-1)return;historyIndex++;shapes=JSON.parse(history[historyIndex]);draw();updateButtons();persist()}
 function updateButtons(){$('undo').disabled=historyIndex<=0;$('redo').disabled=historyIndex>=history.length-1}
 const boardStoreKey='ruler-compass-workshop-boards-v2';
-function currentBoardData(){return {shapes:JSON.parse(JSON.stringify(shapes)),grid,tools:JSON.parse(JSON.stringify(tools)),color,lineWidth,lineStyle,stowedTools:stowedTools?{...stowedTools}:null,snap,lightGrid}}
+function currentBoardData(){return {shapes:JSON.parse(JSON.stringify(shapes)),grid,tools:JSON.parse(JSON.stringify(tools)),color,lineWidth,lineStyle,stowedTools:stowedTools?{...stowedTools}:null,snap,lightGrid,viewport:{...viewport}}}
 function applyBoardData(d){shapes=Array.isArray(d.shapes)?JSON.parse(JSON.stringify(d.shapes)):[];grid=['none','dots','lines'].includes(d.grid)?d.grid:'none';$('gridSelect').value=grid;
  for(const k of Object.keys(tools)){if(d.tools&&d.tools[k])Object.assign(tools[k],d.tools[k]);else tools[k].visible=false}
  color=isHexColor(d.color)?d.color:palette[0];lineWidth=d.lineWidth||2.5;lineStyle=['solid','dashed','dotted'].includes(d.lineStyle)?d.lineStyle:'solid';stowedTools=d.stowedTools&&typeof d.stowedTools==='object'?{...d.stowedTools}:null;
- snap=!!d.snap;lightGrid=!!d.lightGrid;syncAppearanceControls();}
+ snap=!!d.snap;lightGrid=!!d.lightGrid;const v=d.viewport||{};viewport={x:Number.isFinite(v.x)?v.x:0,y:Number.isFinite(v.y)?v.y:0,scale:Number.isFinite(v.scale)?Math.max(.4,Math.min(4,v.scale)):1};syncAppearanceControls();}
 function persist(){
  try{
   const d=currentBoardData();localStorage.setItem('geometry-physical-v1',JSON.stringify(d));
@@ -220,7 +270,7 @@ function load(){try{
  const legacy=JSON.parse(localStorage.getItem('geometry-physical-v1')||'null');
  if(legacy)applyBoardData(legacy);
  }catch(err){console.warn('讀取本機畫布失敗',err)}}
-function useMode(next){if(next==='guide'){showGuide(true);return}if(next!=='compass')compassDrawing=false;mode=next;if(tools[next]){stowedTools=null;tools[next].visible=true;}stage.classList.toggle('pencilMode',mode==='pen');stage.classList.toggle('eraseMode',mode==='eraser');stage.classList.toggle('selectMode',!['pen','eraser'].includes(mode));document.querySelectorAll('.toolbtn').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.mode===mode)));updateQuick();drawTools();persist();}
+function useMode(next){if(next==='guide'){showGuide(true);return}if(next!=='compass')compassDrawing=false;panGesture=null;pinchGesture=null;activeTouches.clear();mode=next;if(tools[next]){stowedTools=null;tools[next].visible=true;}stage.classList.toggle('pencilMode',mode==='pen');stage.classList.toggle('eraseMode',mode==='eraser');stage.classList.toggle('selectMode',mode==='select');document.querySelectorAll('.toolbtn').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.mode===mode)));updateQuick();drawTools();persist();}
 const toggleTool=k=>{stowedTools=null;tools[k].visible=!tools[k].visible;if(k==='compass'&&!tools[k].visible)compassDrawing=false;drawTools();persist()};
 function updateAllToolsButton(){const b=$('allToolsToggle'),closed=stowedTools!==null;b.textContent=closed?'還原工具':'收起工具';b.title=closed?'還原上次收起的實體尺規':'收起畫布上的所有實體尺規';b.setAttribute('aria-pressed',String(closed))}
 function toggleAllTools(){
@@ -319,24 +369,105 @@ function snapCandidates(){
  return points.slice(0,600);
 }
 function drawSnapMarks(){const pts=snapCandidates();ctx.save();ctx.lineWidth=1.15;ctx.strokeStyle='#73a399';ctx.fillStyle='#fffefa';
- for(const p of pts.slice(0,220)){if(p.x<0||p.x>W||p.y<0||p.y>H)continue;ctx.beginPath();ctx.arc(p.x,p.y,3.3,0,Math.PI*2);ctx.fill();ctx.stroke()}
+ const bounds=visibleWorld();for(const p of pts.slice(0,220)){if(p.x<bounds.left||p.x>bounds.right||p.y<bounds.top||p.y>bounds.bottom)continue;ctx.beginPath();ctx.arc(p.x,p.y,3.3,0,Math.PI*2);ctx.fill();ctx.stroke()}
  ctx.restore()}
 function eraseAt(p){let i=-1,best=18;shapes.forEach((s,j)=>{let d=9999;if(s.type==='stroke'){for(let k=1;k<s.points.length;k++)d=Math.min(d,near(p,s.points[k-1],s.points[k]).d);if(s.points.length===1)d=dist(p,s.points[0])}else if(s.type==='line')d=near(p,s.a,s.b).d;else if(s.type==='dot')d=dist(p,s);else if(s.type==='arc')d=Math.abs(dist(p,{x:s.cx,y:s.cy})-s.r);if(d<best){i=j;best=d}});if(i>=0){shapes.splice(i,1);draw();snapshot()}}
 // Pointer gestures are intentionally separate: moving a physical instrument never creates ink.
-svg.addEventListener('pointerdown',e=>{if(mode==='pen'||mode==='eraser')return;const target=e.target.closest('[data-tool]');if(!target)return;const name=target.getAttribute('data-tool'),kind=target.getAttribute('data-action')||'move',action=name==='compass'&&kind==='arc'&&!compassDrawing?'turn':kind,t=tools[name];if(!t?.visible)return;e.preventDefault();e.stopPropagation();const p=position(e);gesture={kind,name,start:p,from:{...t},startAngle:Math.atan2(p.y-t.y,p.x-t.x),startRadiusDistance:dist(p,{x:t.x,y:t.y}),arcPrev:Math.atan2(p.y-t.y,p.x-t.x),arcStart:t.a,arcDelta:0,arcColor:color,arcDash:lineStyle};try{svg.setPointerCapture(e.pointerId)}catch{}
+svg.addEventListener('pointerdown',e=>{if(mode==='pen'||mode==='eraser'||pinchGesture)return;const target=e.target.closest('[data-tool]');if(!target)return;const name=target.getAttribute('data-tool'),kind=target.getAttribute('data-action')||'move',action=name==='compass'&&kind==='arc'&&!compassDrawing?'turn':kind,t=tools[name];if(!t?.visible)return;e.preventDefault();e.stopPropagation();const p=position(e);gesture={kind,name,start:p,from:{...t},startAngle:Math.atan2(p.y-t.y,p.x-t.x),startRadiusDistance:dist(p,{x:t.x,y:t.y}),arcPrev:Math.atan2(p.y-t.y,p.x-t.x),arcStart:t.a,arcDelta:0,arcColor:color,arcDash:lineStyle};try{svg.setPointerCapture(e.pointerId)}catch{}
  if(kind==='arc'){gesture.arcStart=t.a;gesture.arcPrev=t.a;gesture.arcDelta=0;live={type:'arc',cx:t.x,cy:t.y,r:t.r,a1:t.a,a2:t.a,color,width:lineWidth,dash:lineStyle}}
  gesture.action=action;
 });
-svg.addEventListener('pointermove',e=>{if(!gesture)return;const p=position(e),g=gesture,t=tools[g.name];if(g.action==='move'){t.x=g.from.x+p.x-g.start.x;t.y=g.from.y+p.y-g.start.y}else if(g.action==='rotate'){const a=Math.atan2(p.y-t.y,p.x-t.x);t.a=g.from.a+norm(a-g.startAngle);}else if(g.action==='radius'){t.r=Math.max(35,Math.min(390,g.from.r+dist(p,{x:t.x,y:t.y})-g.startRadiusDistance));}else if(g.action==='arc'||g.action==='turn'){const a=Math.atan2(p.y-t.y,p.x-t.x);const delta=norm(a-g.arcPrev);g.arcDelta+=delta;g.arcPrev=a;t.a=g.arcStart+g.arcDelta;if(g.action==='arc')live={type:'arc',cx:t.x,cy:t.y,r:t.r,a1:g.arcStart,a2:t.a,ccw:g.arcDelta<0,color:g.arcColor,width:lineWidth,dash:g.arcDash}}
+svg.addEventListener('pointermove',e=>{if(!gesture||pinchGesture)return;const p=position(e),g=gesture,t=tools[g.name];if(g.action==='move'){t.x=g.from.x+p.x-g.start.x;t.y=g.from.y+p.y-g.start.y}else if(g.action==='rotate'){const a=Math.atan2(p.y-t.y,p.x-t.x);t.a=g.from.a+norm(a-g.startAngle);}else if(g.action==='radius'){t.r=Math.max(35,Math.min(390,g.from.r+dist(p,{x:t.x,y:t.y})-g.startRadiusDistance));}else if(g.action==='arc'||g.action==='turn'){const a=Math.atan2(p.y-t.y,p.x-t.x);const delta=norm(a-g.arcPrev);g.arcDelta+=delta;g.arcPrev=a;t.a=g.arcStart+g.arcDelta;if(g.action==='arc')live={type:'arc',cx:t.x,cy:t.y,r:t.r,a1:g.arcStart,a2:t.a,ccw:g.arcDelta<0,color:g.arcColor,width:lineWidth,dash:g.arcDash}}
  drawTools();if(g.action==='arc')draw();});
 function endGesture(commit=true){if(!gesture)return;if(commit&&gesture.action==='arc'&&Math.abs(gesture.arcDelta)>.03){shapes.push({...live});snapshot()}if(gesture.name==='compass'&&gesture.action==='move'&&snap){const q=snapPoint({x:tools.compass.x,y:tools.compass.y});tools.compass.x=q.x;tools.compass.y=q.y}gesture=null;live=null;draw();drawTools();persist()}
 svg.addEventListener('pointerup',()=>endGesture(true));svg.addEventListener('pointercancel',()=>endGesture(false));
-let drawing=null;
-stage.addEventListener('pointerdown',e=>{if(e.target!==stage&&e.target!==cv&&e.target!==svg)return;if(mode==='pen'){e.preventDefault();const p=position(e),edge=findEdge(p);drawing={edge,pointerId:e.pointerId};if(edge){const start=corrected(p,edge);live={type:'line',a:start,b:start,color,width:lineWidth,dash:lineStyle}}else{live={type:'stroke',points:[snapPoint(p)],color,width:lineWidth,dash:lineStyle}}try{stage.setPointerCapture(e.pointerId)}catch{}draw()}
- else if(mode==='eraser'){e.preventDefault();eraseAt(position(e));drawing={erase:true,pointerId:e.pointerId};try{stage.setPointerCapture(e.pointerId)}catch{}}
+let drawing=null,panGesture=null,pinchGesture=null;
+const activeTouches=new Map();
+const pinchMid=(a,b)=>({x:(a.x+b.x)/2,y:(a.y+b.y)/2});
+const pinchGap=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
+stage.addEventListener('pointerdown',e=>{
+ if(mode!=='select'||e.pointerType!=='touch')return;
+ activeTouches.set(e.pointerId,screenPosition(e));
+ if(activeTouches.size===2){
+  const [a,b]=[...activeTouches.values()],center=pinchMid(a,b);
+  pinchGesture={gap:Math.max(1,pinchGap(a,b)),scale:viewport.scale,world:screenToWorld(center)};
+  panGesture=null;gesture=null;drawing=null;live=null;draw();
+ }
+},true);
+stage.addEventListener('pointermove',e=>{
+ if(mode!=='select'||!activeTouches.has(e.pointerId))return;
+ activeTouches.set(e.pointerId,screenPosition(e));
+ if(pinchGesture&&activeTouches.size>=2){
+  const [a,b]=[...activeTouches.values()],center=pinchMid(a,b);
+  viewport.scale=Math.max(.4,Math.min(4,pinchGesture.scale*pinchGap(a,b)/pinchGesture.gap));
+  viewport.x=center.x-pinchGesture.world.x*viewport.scale;
+  viewport.y=center.y-pinchGesture.world.y*viewport.scale;
+  updateViewport();
+ }
+},true);
+function endTouch(e){
+ if(activeTouches.has(e.pointerId))activeTouches.delete(e.pointerId);
+ if(pinchGesture&&activeTouches.size<2){pinchGesture=null;panGesture=null;persist()}
+}
+stage.addEventListener('pointerup',endTouch,true);
+stage.addEventListener('pointercancel',endTouch,true);
+stage.addEventListener('pointerdown',e=>{
+ if(e.target!==stage&&e.target!==cv&&e.target!==svg)return;
+ if(mode==='select'){
+  if(pinchGesture)return;
+  e.preventDefault();panGesture={pointerId:e.pointerId,start:screenPosition(e),x:viewport.x,y:viewport.y};
+  try{stage.setPointerCapture(e.pointerId)}catch{}
+ }else if(mode==='pen'){
+  e.preventDefault();const p=position(e),edge=findEdge(p);
+  drawing={edge,pointerId:e.pointerId};
+  if(edge){const start=corrected(p,edge);live={type:'line',a:start,b:start,color,width:lineWidth,dash:lineStyle}}
+  else live={type:'stroke',points:[snapPoint(p)],color,width:lineWidth,dash:lineStyle};
+  try{stage.setPointerCapture(e.pointerId)}catch{}draw()
+ }else if(mode==='eraser'){
+  e.preventDefault();eraseAt(position(e));drawing={erase:true,pointerId:e.pointerId};
+  try{stage.setPointerCapture(e.pointerId)}catch{}
+ }
 });
-stage.addEventListener('pointermove',e=>{if(!drawing)return;const p=position(e);if(drawing.erase){eraseAt(p);return}if(live?.type==='line')live.b=corrected(p,drawing.edge);else if(live?.type==='stroke'){const last=live.points.at(-1);const q=snapPoint(p);if(dist(last,q)>1)live.points.push(q)}draw()});
-stage.addEventListener('pointerup',()=>{if(!drawing)return;if(!drawing.erase&&live){shapes.push(live);snapshot()}drawing=null;live=null;draw()});stage.addEventListener('pointercancel',()=>{drawing=null;live=null;draw()});
+stage.addEventListener('pointermove',e=>{
+ if(pinchGesture)return;
+ if(panGesture&&panGesture.pointerId===e.pointerId){
+  const p=screenPosition(e);
+  viewport.x=panGesture.x+p.x-panGesture.start.x;
+  viewport.y=panGesture.y+p.y-panGesture.start.y;
+  updateViewport();return;
+ }
+ if(!drawing||drawing.pointerId!==e.pointerId)return;
+ const p=position(e);
+ if(drawing.erase){eraseAt(p);return}
+ if(live?.type==='line')live.b=corrected(p,drawing.edge);
+ else if(live?.type==='stroke'){
+  const last=live.points.at(-1),q=snapPoint(p);
+  if(dist(last,q)>1)live.points.push(q)
+ }
+ draw()
+});
+stage.addEventListener('pointerup',e=>{
+ if(panGesture&&panGesture.pointerId===e.pointerId){panGesture=null;persist();return}
+ if(!drawing||drawing.pointerId!==e.pointerId)return;
+ if(!drawing.erase&&live){shapes.push(live);snapshot()}
+ drawing=null;live=null;draw()
+});
+stage.addEventListener('pointercancel',e=>{
+ if(panGesture?.pointerId===e.pointerId){panGesture=null;persist()}
+ if(drawing?.pointerId===e.pointerId){drawing=null;live=null;draw()}
+});
+let wheelSaveTimer=null;
+stage.addEventListener('wheel',e=>{
+ if(mode!=='select'||!$('settingsPanel').hidden)return;
+ e.preventDefault();
+ zoomAbout(Math.exp(-e.deltaY*(e.ctrlKey? .009:.0015)),screenPosition(e));
+ clearTimeout(wheelSaveTimer);
+ wheelSaveTimer=setTimeout(persist,250);
+},{passive:false});
+const zoomFocus=()=>({x:W/2,y:H/2});
+$('zoomIn').addEventListener('click',()=>{zoomAbout(1.25,zoomFocus());persist()});
+$('zoomOut').addEventListener('click',()=>{zoomAbout(.8,zoomFocus());persist()});
+$('zoomReset').addEventListener('click',resetZoom);
 function guideUpdate(){const x=tutorials[guide],steps=x[1];gstep=Math.max(0,Math.min(steps.length-1,gstep));$('guideDesc').textContent=steps[gstep];$('guideStep').textContent=`${gstep+1} / ${steps.length}`;$('guidePrev').disabled=gstep===0;$('guideNext').disabled=gstep===steps.length-1;$('guideLine').textContent=`${x[0]} · ${gstep+1}/${steps.length}：${steps[gstep]}`;$('guideLine').classList.add('visible')}
 function showGuide(open){$('guidePop').classList.toggle('open',open);$('dim').classList.toggle('open',open);if(open)guideUpdate()}
 $('allToolsToggle').addEventListener('click',toggleAllTools);$('guideToggle').addEventListener('click',()=>showGuide(true));$('guideClose').addEventListener('click',()=>showGuide(false));$('dim').addEventListener('click',()=>showGuide(false));$('guideKind').addEventListener('change',e=>{guide=e.target.value;gstep=0;guideUpdate()});$('guidePrev').addEventListener('click',()=>{gstep--;guideUpdate()});$('guideNext').addEventListener('click',()=>{gstep++;guideUpdate()});
@@ -366,7 +497,7 @@ function renderRecordingFrame(){
 function buildRecordingSvg(){
  const copy=svg.cloneNode(true);copy.setAttribute('xmlns','http://www.w3.org/2000/svg');
  copy.setAttribute('width',String(W));copy.setAttribute('height',String(H));
- copy.setAttribute('viewBox','0 0 '+W+' '+H);
+ copy.setAttribute('viewBox',svg.getAttribute('viewBox'));
  copy.setAttribute('style','--tool-color:'+appearance.tool);
  const stylesheet=document.createElementNS(svgNS,'style');
  stylesheet.textContent=[
@@ -527,8 +658,8 @@ $('fullscreenBtn').addEventListener('click',async()=>{try{if(document.fullscreen
 document.addEventListener('fullscreenchange',()=>{$('fullscreenBtn').textContent=document.fullscreenElement?'離開原生全螢幕':'原生全螢幕'});
 $('settingsExport').addEventListener('click',()=>{closeSettings();$('save').click()});
 $('settingsHelp').addEventListener('click',()=>infoPage('操作說明',
- '1. 先從下方工具列選擇直尺、三角板、量角器或圓規。\n2. 拖動工具本體可移動；拉動外側圓點可旋轉。\n3. 選「畫筆」後，沿著尺規的邊緣畫線；選「橡皮擦」移除筆跡。\n4. 圓規預設為「調整圓規」模式：針腳可移動、藍色控制點可調整開口，拖動筆尖可左右旋轉而不畫線；按「開始畫弧」後再拖動筆尖才會留下圓弧，可隨時切回調整模式。\n5. 在畫布設定中啟用吸附，筆跡端點會靠近已畫標記點及交點。\n6.「畫布管理」可建立、複製、重新命名或切換不同課程畫布。\n8.「匯出可編輯檔」儲存全部畫布，之後按「開啟可編輯檔」匯入，或使用「複製目前畫布分享連結」建立課堂連結。\n7. 匯出圖片只包含畫布內容，不包含尺規工具。\n9. 按「錄影」可錄製畫布筆跡與實體尺規移動，按「停止錄影」後會下載影片（不含聲音）。'));
-$('settingsChangelog').addEventListener('click',()=>infoPage('更新日誌','2026/10/25\n・圓規新增調整／畫弧兩種模式，預設旋轉不留筆跡。\n・新增個人化配色、背景格線深淺與即時預覽。\n・統一網站名稱為「尺規做圖工作坊」。\n・加入側邊畫布設定、教學畫布管理、自動儲存。\n・新增吸附標記點與交點、淡方格、專注模式、全螢幕。\n・保留實體尺規操作、格點、作圖引導與圖片匯出。'));
+ '1. 先從下方工具列選擇直尺、三角板、量角器或圓規。\n2. 選取模式：拖動畫布空白處可平移，滑鼠滾輪或平板雙指可縮放，右下角可調整倍率或重設視野。拖動尺規本體則移動尺規，拉動外側圓點可旋轉。\n3. 選「畫筆」後，沿著尺規的邊緣畫線；選「橡皮擦」移除筆跡。\n4. 圓規預設為「調整圓規」模式：針腳可移動、藍色控制點可調整開口，拖動筆尖可左右旋轉而不畫線；按「開始畫弧」後再拖動筆尖才會留下圓弧，可隨時切回調整模式。\n5. 在畫布設定中啟用吸附，筆跡端點會靠近已畫標記點及交點。\n6.「畫布管理」可建立、複製、重新命名或切換不同課程畫布。\n8.「匯出可編輯檔」儲存全部畫布，之後按「開啟可編輯檔」匯入，或使用「複製目前畫布分享連結」建立課堂連結。\n7. 匯出圖片只包含畫布內容，不包含尺規工具。\n9. 按「錄影」可錄製畫布筆跡與實體尺規移動，按「停止錄影」後會下載影片（不含聲音）。'));
+$('settingsChangelog').addEventListener('click',()=>infoPage('更新日誌','2026/10/25\n・選取模式新增畫布平移、滑鼠滾輪與平板雙指縮放、倍率重設。\n・圓規新增調整／畫弧兩種模式，預設旋轉不留筆跡。\n・新增個人化配色、背景格線深淺與即時預覽。\n・統一網站名稱為「尺規做圖工作坊」。\n・加入側邊畫布設定、教學畫布管理、自動儲存。\n・新增吸附標記點與交點、淡方格、專注模式、全螢幕。\n・保留實體尺規操作、格點、作圖引導與圖片匯出。'));
 $('settingsLicense').addEventListener('click',()=>infoPage('使用授權與著作權聲明','原始尺規作圖網站由葉威志老師製作，本工作坊參考其互動概念，並由徐丙忠老師與 AI 助理共同編輯擴充。\n本網站用於教學與個人練習。程式碼公開存放於專案 GitHub 儲存庫，不代表已授予任何開源授權；如需重製、散布或商業利用，請先與著作權人確認。'));
 $('settingsPrivacy').addEventListener('click',()=>infoPage('隱私權政策',"1. 網站製作與編輯\n原始尺規作圖網站製作者：葉威志老師。\n本「尺規做圖工作坊」參考原站的實體尺規互動構想，由徐丙忠老師與 AI 助理共同規劃、編輯及擴充。\n網站編輯與教學維護：徐丙忠老師。\n\n2. 使用者資料與作品保存\n本網站不要求登入，畫布內容與尺規設定保存在目前瀏覽器的 localStorage；更換瀏覽器或清除網站資料可能遺失作品。\n匯出圖片與可編輯檔由使用者自行下載，網站不會主動上傳作圖內容。分享連結會包含經編碼的畫布資料，取得連結者可載入對應內容。\n作畫錄影於使用者的瀏覽器內處理，停止後將影片下載到本機；本站不會主動上傳影片，也不會錄製麥克風音訊。\n\n3. 網站託管與瀏覽次數\n本網站由 GitHub Pages 託管，該服務可能依其政策處理一般連線及技術紀錄。\n網站透過 hits.sh 的 SVG 計數圖示記錄頁面請求次數；該服務聲明其計數器不使用 Cookie，亦不保存 IP 位址或使用者代理資訊。所顯示的是累計瀏覽次數，並非不重複訪客人數。"));
 
