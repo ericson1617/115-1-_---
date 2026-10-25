@@ -528,8 +528,9 @@ function updateQuick(){
   if(selected){
    quickDivider();
    button('● 已選取標記點',()=>{},true).disabled=true;
-   button(compassAnchorId===selectedMarkerId?'針腳已固定在此':'圓規針腳固定在此',()=>{
-    attachCompassToMarker(selectedMarkerId);
+   button(compassAnchorId===selectedMarkerId?'解除針腳固定':'圓規針腳固定在此',()=>{
+    if(compassAnchorId===selectedMarkerId)detachCompassAnchor();
+    else attachCompassToMarker(selectedMarkerId);
    },compassAnchorId===selectedMarkerId);
    button('刪除標記點',deleteSelectedMarker);
    button('取消選取',()=>{selectedMarkerId=null;updateQuick();draw()});
@@ -857,6 +858,7 @@ function finishVertexEdit(e,cancel=false){
  if(!cancel&&shapes[g.index]?.type==='dot'){
   selectedMarkerId=ensureMarkerId(shapes[g.index]);
   persist();
+  if(!g.moved)showToast('已選取標記點：可固定圓規針腳，或只刪除這個點。');
  }
  syncCompassAnchor();
  drawTools();updateQuick();draw();
