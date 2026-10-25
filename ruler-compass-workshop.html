@@ -15,7 +15,7 @@
 .workshopPortraitArt{position:absolute;inset:0;display:block;width:100%;height:100%;z-index:2;pointer-events:none;overflow:visible;filter:drop-shadow(0 2px 2px #5986a436)}
 .workshopPortraitRing{position:absolute;left:16.3%;top:12.3%;width:68.2%;height:74%;padding:2px;border-radius:50%;background:conic-gradient(from -24deg,#bee7f2 0%,#fff1c7 25%,#a8d6cc 52%,#c7c9ee 74%,#bee7f2 100%);box-shadow:0 2px 8px #345c8132,0 0 0 1px #fff;z-index:1}
 .workshopPortraitRing img{display:block;width:100%;height:100%;border-radius:50%;border:2px solid #fff;background:white;object-fit:cover}.titles{display:grid;gap:0;white-space:nowrap;min-width:0}.kicker{font-size:9px;letter-spacing:.22em;color:#718bab}.titles strong{font-weight:650;font-size:18px;letter-spacing:.06em}.headBtns,.dock,.quick,.colors,.segment{display:flex;align-items:center;gap:7px}.headBtns{flex-wrap:wrap;justify-content:flex-end;margin-left:auto;min-width:0}.soft{border:1px solid var(--border);background:#fffefa;border-radius:11px;padding:8px 11px;color:var(--ink2);min-height:35px;font-size:12px}.soft:hover{background:#f1f7f2;color:var(--teal)}.soft:disabled{opacity:.35;cursor:default}.soft.icon{min-width:35px;padding:7px 8px;font-size:17px}.soft.primary{color:white;background:var(--teal);border-color:var(--teal)}
-.stageWrap{position:relative;min-height:0;flex:1;background:var(--paper);border:1px solid #e0e7df;border-radius:17px;overflow:hidden;box-shadow:0 7px 18px #3554480a}
+.stageWrap{position:relative;min-height:0;flex:1;touch-action:none;overscroll-behavior:contain;background:var(--paper);border:1px solid #e0e7df;border-radius:17px;overflow:hidden;box-shadow:0 7px 18px #3554480a}
 #ink,#tools{position:absolute;inset:0;width:100%;height:100%;touch-action:none;user-select:none}#tools{overflow:visible}#ink{pointer-events:none}.stageWrap.pencilMode{cursor:crosshair}.stageWrap.eraseMode{cursor:cell}.stageWrap.selectMode{cursor:grab}.stageWrap.selectMode.draggingCanvas{cursor:grabbing}.stageRight{position:absolute;right:13px;top:12px;z-index:4;display:flex;align-items:center;gap:6px}.drop{font-size:12px;padding:7px 10px;background:#ffffffed;border:1px solid var(--border);border-radius:9px;color:#557a9d;min-height:34px}.help{position:absolute;left:15px;bottom:13px;font-size:11px;color:#4678aa;z-index:5;pointer-events:none;max-width:75%;background:#fffefaec;padding:6px 10px;border:1px solid #e3ece4;border-radius:9px;box-shadow:0 4px 12px #3554480c}.help[hidden]{display:none}.zoom{position:absolute;right:14px;bottom:12px;background:#fffefdf3;padding:3px;gap:2px;display:none;align-items:center;border:1px solid #dce7dd;border-radius:10px;color:#557a9e;font-size:11px;z-index:6;box-shadow:0 3px 12px #1e483310}.stageWrap.selectMode .zoom{display:flex}
 .zoom button{appearance:none;border:0;background:transparent;color:inherit;font:inherit;min-width:28px;height:28px;border-radius:7px;cursor:pointer}
 .zoom button:hover{background:#e8f2fe}.zoom #zoomReset{min-width:50px;font-variant-numeric:tabular-nums;font-weight:600}
@@ -59,7 +59,7 @@
 .opacityEnds{display:flex;justify-content:space-between;font-size:11px;color:#8199b2}
 .gridPreviewLabel{font-size:11px;color:#6c8aaa;margin-top:6px}.gridPreview{height:86px;border:1px solid #dbe6f2;border-radius:10px;background-color:#ffffff;background-size:24px 24px}
 @media(max-width:640px){.personalizeBtn{min-width:30px;justify-content:center}.personalizeBtn .buttonText{display:none}}
-.visitCounter{display:flex;justify-content:center;align-items:center;min-height:16px;text-decoration:none;opacity:.78}.visitCounter img{height:17px;max-width:100%;display:block}
+.visitCounter{display:flex;align-items:center;flex:0 0 auto;text-decoration:none;opacity:.83;margin-left:auto}.visitCounter img{height:18px;max-width:100%;display:block}.headBtns{margin-left:0}
 @media(max-width:640px){.visitCounter img{height:15px}}
 
 .recordHead{font-size:12px;white-space:nowrap}.recordBadge{position:absolute;left:50%;top:12px;transform:translateX(-50%);z-index:7;background:#fffdf8ed;border:1px solid #e7cbc5;border-radius:999px;display:flex;align-items:center;gap:8px;padding:5px 10px;box-shadow:0 4px 16px #532c271a;color:#a13733;font-weight:650;font-size:12px}
@@ -98,15 +98,15 @@
    <circle cx="41" cy="8" r="3.1" fill="#c6e0d5"/><circle cx="105" cy="42" r="2.2" fill="#9fcde3"/>
   </svg>
   <span class="workshopPortraitRing"><img src="author-avatar.svg" alt="徐丙忠老師頭像"></span>
- </div><div class="titles"><span class="kicker">RULER &amp; COMPASS WORKSHOP</span><strong>尺規作圖工作坊</strong></div></div><div class="headBtns"><span class="saveIndicator" id="saveStatus" aria-live="polite">已自動儲存</span><button class="soft icon" id="undo" title="復原 (Ctrl+Z)">↶</button><button class="soft icon" id="redo" title="重做 (Ctrl+Y)">↷</button><button class="soft" id="clear">清空</button><button class="soft primary" id="save">匯出圖片</button><button class="soft recordHead" id="recordToggle" type="button" title="開始錄影作畫">⏺ <span class="recordLabel">錄影</span></button><button class="soft personalizeBtn" id="personalizeToggle" type="button" title="個人化設定" aria-label="個人化設定" aria-expanded="false"><span aria-hidden="true">◐</span> <span class="buttonText">個人化</span></button><button class="soft icon" id="settingsToggle" title="畫布設定" aria-label="畫布設定" aria-expanded="false">☰</button></div></header>
+ </div><div class="titles"><span class="kicker">RULER &amp; COMPASS WORKSHOP</span><strong>尺規作圖工作坊</strong></div></div><a class="visitCounter" href="https://hits.sh/ericson1617.github.io/115-1-_---/ruler-compass-workshop.html/" target="_blank" rel="noopener noreferrer" title="網頁累計瀏覽次數（非不重複訪客）">
+<img alt="網站累計瀏覽次數" src="https://hits.sh/ericson1617.github.io/115-1-_---/ruler-compass-workshop.html.svg?view=total&amp;label=%E7%B4%AF%E8%A8%88%E7%80%8F%E8%A6%BD&amp;color=407b70&amp;labelColor=879c92" referrerpolicy="no-referrer"></a><div class="headBtns"><span class="saveIndicator" id="saveStatus" aria-live="polite">已自動儲存</span><button class="soft icon" id="undo" title="復原 (Ctrl+Z)">↶</button><button class="soft icon" id="redo" title="重做 (Ctrl+Y)">↷</button><button class="soft" id="clear">清空</button><button class="soft primary" id="save">匯出圖片</button><button class="soft recordHead" id="recordToggle" type="button" title="開始錄影作畫">⏺ <span class="recordLabel">錄影</span></button><button class="soft personalizeBtn" id="personalizeToggle" type="button" title="個人化設定" aria-label="個人化設定" aria-expanded="false"><span aria-hidden="true">◐</span> <span class="buttonText">個人化</span></button><button class="soft icon" id="settingsToggle" title="畫布設定" aria-label="畫布設定" aria-expanded="false">☰</button></div></header>
 <main class="stageWrap selectMode" id="stage"><canvas id="ink" aria-label="尺規作圖畫布"></canvas><svg id="tools" role="img" aria-label="可拖曳與旋轉的尺規工具"></svg><button id="focusExit" class="soft focusExit" title="結束專注模式">← 返回一般模式</button><div class="recordBadge" id="recordBadge" hidden><span class="redDot" aria-hidden="true"></span><span id="recordTimer">00:00</span><button type="button" id="recordStop" title="停止並下載錄影">停止錄影</button></div><div class="stageRight"><button type="button" class="soft" id="allToolsToggle" aria-pressed="false" title="收起畫布上的所有實體尺規">收起工具</button><select class="drop" id="gridSelect" title="畫布格點選項"><option value="none">空白畫布</option><option value="dots">格點</option><option value="lines">方格</option></select><button class="soft icon" id="guideToggle" title="特殊線作圖引導">?</button></div><div class="guideLine" id="guideLine"></div><div class="help" id="hint" role="status" aria-live="polite" hidden></div><div class="zoom" role="group" aria-label="畫布縮放">
  <button type="button" id="zoomOut" aria-label="縮小畫布" title="縮小">−</button>
  <button type="button" id="zoomReset" aria-label="重設畫布視野" title="回到 100% 並置中視野">100%</button>
  <button type="button" id="zoomIn" aria-label="放大畫布" title="放大">＋</button>
 </div><div class="dim" id="dim"></div><section class="pop" id="guidePop"><h3>特殊線 · 作圖引導</h3><p>選擇想練習的構造。提示會保留在畫布下方；使用實體尺規工具完成每一步，不會直接替你畫出答案。</p><div class="row"><select id="guideKind" aria-label="選擇作圖主題"><option value="perpbis">線段中垂線</option><option value="perp">過點作垂線</option><option value="parallel">過點作平行線</option><option value="median">三角形中線</option><option value="altitude">三角形高線</option><option value="anglebis">角平分線</option></select><button class="chip" id="guideClose">關閉</button></div><p id="guideDesc" style="margin-top:12px"></p><div class="row"><button class="chip" id="guidePrev">← 上一步</button><span id="guideStep" style="font-size:12px;color:#84988c"></span><button class="chip" id="guideNext">下一步 →</button></div><p style="font-size:11px;margin:10px 0 0">畫筆靠近直尺或三角板的邊緣時，會自動沿尺邊繪製直線。</p></section></main>
 <footer class="footer"><div class="quick" id="quick"></div><nav class="dock" aria-label="教學作圖工具"><button class="toolbtn" data-mode="select" aria-pressed="true"><svg><use href="#i-select"/></svg><span>選取</span></button><button class="toolbtn" data-mode="pen" aria-pressed="false"><svg><use href="#i-pen"/></svg><span>畫筆</span></button><button class="toolbtn" data-mode="ruler" aria-pressed="false"><svg><use href="#i-ruler"/></svg><span>直尺</span></button><button class="toolbtn" data-mode="triangle" aria-pressed="false"><svg><use href="#i-triangle"/></svg><span>三角板</span></button><button class="toolbtn" data-mode="protractor" aria-pressed="false"><svg><use href="#i-protractor"/></svg><span>量角器</span></button><button class="toolbtn" data-mode="compass" aria-pressed="false"><svg><use href="#i-compass"/></svg><span>圓規</span></button><span class="dockSep"></span><button class="toolbtn" data-mode="eraser" aria-pressed="false"><svg><use href="#i-eraser"/></svg><span>橡皮擦</span></button><button class="toolbtn" data-mode="guide" aria-pressed="false"><svg><use href="#i-guide"/></svg><span>作圖引導</span></button></nav>
-<a class="visitCounter" href="https://hits.sh/ericson1617.github.io/115-1-_---/ruler-compass-workshop.html/" target="_blank" rel="noopener noreferrer" title="網頁累計瀏覽次數（非不重複訪客）">
-<img alt="網站累計瀏覽次數" src="https://hits.sh/ericson1617.github.io/115-1-_---/ruler-compass-workshop.html.svg?view=total&amp;label=%E7%B4%AF%E8%A8%88%E7%80%8F%E8%A6%BD&amp;color=407b70&amp;labelColor=879c92" referrerpolicy="no-referrer"></a></footer>
+</footer>
 <div id="settingsScrim" class="settingsScrim" hidden></div>
 <aside class="settingsPanel" id="settingsPanel" role="dialog" aria-modal="true" aria-label="畫布設定" hidden>
   <div class="settingsHeader"><strong id="settingsHeading">畫布設定</strong><button class="soft icon" id="settingsClose" aria-label="關閉設定">✕</button></div>
@@ -179,8 +179,8 @@ const themeMigrationKey='geometry-workshop-blue-defaults-v1';
 let appearance={...appearanceDefaults};let penMigrationComplete=true;
 let W=1000,H=600,mode='select',color=palette[0],lineWidth=2.5,lineStyle='solid',eraserMode='stroke',grid='none',snap=false,lightGrid=false,guide='perpbis',gstep=0;
 let shapes=[],history=[],historyIndex=-1,live=null,gesture=null,compass=null,compassDrawing=false,stowedTools=null,boards=[],activeBoardId=null,focusMode=false,viewport={x:0,y:0,scale:1},tools={
- ruler:{visible:false,x:100,y:230,a:0,len:370,height:57},
- triangle:{visible:false,x:500,y:135,a:0,kind:45},
+ ruler:{visible:false,x:100,y:230,a:0,len:370,height:57,scale:1},
+ triangle:{visible:false,x:500,y:135,a:0,kind:45,scale:1},
  protractor:{visible:false,x:400,y:425,a:0},
  compass:{visible:false,x:520,y:330,a:-.35,r:130}
 };
@@ -210,8 +210,8 @@ function resetZoom(){
  viewport={x:0,y:0,scale:1};
  updateViewport();persist();
 }
-const local=(p,t)=>rot(p.x-t.x,p.y-t.y,-t.a);
-const global=(p,t)=>add(rot(p.x,p.y,t.a),t);
+const local=(p,t)=>{const q=rot(p.x-t.x,p.y-t.y,-t.a),z=t.scale||1;return{x:q.x/z,y:q.y/z}};
+const global=(p,t)=>add(rot(p.x*(t.scale||1),p.y*(t.scale||1),t.a),t);
 const near=(p,a,b)=>{const v={x:b.x-a.x,y:b.y-a.y},d=v.x*v.x+v.y*v.y||1,q=Math.max(0,Math.min(1,((p.x-a.x)*v.x+(p.y-a.y)*v.y)/d));return{p:{x:a.x+q*v.x,y:a.y+q*v.y},d:Math.hypot(p.x-(a.x+q*v.x),p.y-(a.y+q*v.y))}};
 const $svg=(tag,attrs={},parent=svg)=>{const el=document.createElementNS(svgNS,tag);for(const[k,v]of Object.entries(attrs))el.setAttribute(k,v);parent.appendChild(el);return el};
 function fit(){const r=stage.getBoundingClientRect();if(!r.width||!r.height)return;W=r.width;H=r.height;let dpr=Math.min(devicePixelRatio||1,3);cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);updateViewport();drawTools()}
@@ -274,7 +274,7 @@ function load(){try{
  if(legacy)applyBoardData(legacy);
  localStorage.setItem('geometry-workshop-black-ink-v1','1');penMigrationComplete=true;
  }catch(err){console.warn('讀取本機畫布失敗',err)}}
-function useMode(next){if(next==='guide'){showGuide(true);return}if(next!=='compass')compassDrawing=false;panGesture=null;pinchGesture=null;activeTouches.clear();stage.classList.remove('draggingCanvas');mode=next;if(tools[next]){stowedTools=null;tools[next].visible=true;}stage.classList.toggle('pencilMode',mode==='pen');stage.classList.toggle('eraseMode',mode==='eraser');stage.classList.toggle('selectMode',mode==='select');document.querySelectorAll('.toolbtn').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.mode===mode)));updateQuick();drawTools();persist();}
+function useMode(next){if(next==='guide'){showGuide(true);return}if(next!=='compass')compassDrawing=false;panGesture=null;pinchGesture=null;toolPinch=null;toolTouchPointers.clear();activeTouches.clear();stage.classList.remove('draggingCanvas');mode=next;if(tools[next]){stowedTools=null;tools[next].visible=true;}stage.classList.toggle('pencilMode',mode==='pen');stage.classList.toggle('eraseMode',mode==='eraser');stage.classList.toggle('selectMode',mode==='select');document.querySelectorAll('.toolbtn').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.mode===mode)));updateQuick();drawTools();persist();}
 const toggleTool=k=>{stowedTools=null;tools[k].visible=!tools[k].visible;if(k==='compass'&&!tools[k].visible)compassDrawing=false;drawTools();persist()};
 function updateAllToolsButton(){const b=$('allToolsToggle'),closed=stowedTools!==null;b.textContent=closed?'還原工具':'收起工具';b.title=closed?'還原上次收起的實體尺規':'收起畫布上的所有實體尺規';b.setAttribute('aria-pressed',String(closed))}
 function toggleAllTools(){
@@ -327,9 +327,9 @@ function updateQuick(){
 }
 let toastTimer;function showToast(t){const hint=$('hint');hint.textContent=t;hint.hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>{hint.hidden=true;hint.textContent=''},4200)}
 // Physical transparent drafting instruments; all local units are pixels, including the graduation marks.
-function ruler(t){const g=$svg('g',{transform:`translate(${t.x} ${t.y}) rotate(${t.a*180/Math.PI})`,class:'instrument toolShadow','data-tool':'ruler','data-action':'move'});$svg('rect',{x:0,y:0,width:t.len,height:t.height,rx:2,class:'rulerShape','data-tool':'ruler','data-action':'move'},g);for(let i=0;i<=36;i++){const x=8+i*10;$svg('line',{x1:x,y1:7,x2:x,y2:7+(i%5===0?19:i%2===0?13:8),class:'ticks'},g);if(i%5===0&&i<36){const txt=$svg('text',{x:x+2,y:37,class:'rulerText'},g);txt.textContent=i/2}}
+function ruler(t){const g=$svg('g',{transform:`translate(${t.x} ${t.y}) rotate(${t.a*180/Math.PI}) scale(${t.scale||1})`,class:'instrument toolShadow','data-tool':'ruler','data-action':'move'});$svg('rect',{x:0,y:0,width:t.len,height:t.height,rx:2,class:'rulerShape','data-tool':'ruler','data-action':'move'},g);for(let i=0;i<=36;i++){const x=8+i*10;$svg('line',{x1:x,y1:7,x2:x,y2:7+(i%5===0?19:i%2===0?13:8),class:'ticks'},g);if(i%5===0&&i<36){const txt=$svg('text',{x:x+2,y:37,class:'rulerText'},g);txt.textContent=i/2}}
 const x=t.len+21,y=t.height/2;$svg('line',{x1:t.len-5,y1:t.height/2,x2:x,y2:y,stroke:'#87aa9b','stroke-dasharray':'3 3'},g);$svg('circle',{cx:x,cy:y,r:14,class:'handleRing handle','data-tool':'ruler','data-action':'rotate'},g);$svg('circle',{cx:x,cy:y,r:4,class:'handleCore',style:'pointer-events:none'},g)}
-function triangle(t){const g=$svg('g',{transform:`translate(${t.x} ${t.y}) rotate(${t.a*180/Math.PI})`,class:'instrument toolShadow','data-tool':'triangle','data-action':'move'});const p=trianglePoints(t);const d=p.map(v=>`${v.x},${v.y}`).join(' ');$svg('polygon',{points:d,class:'paleShape','data-tool':'triangle','data-action':'move'},g);const inner=p.map(v=>({x:v.x*.77+18,y:v.y*.77+12}));$svg('polyline',{points:inner.map(v=>`${v.x},${v.y}`).join(' '),fill:'none',stroke:'#93bba7','stroke-width':'1','pointer-events':'none'},g);p.forEach((v,i)=>{const txt=$svg('text',{x:v.x+(i===0?8:-21),y:v.y+(i===0?-8:(i===1?-9:14)),class:'rulerText'},g);txt.textContent=t.kind===45?['90°','45°','45°'][i]:['90°','60°','30°'][i]});const tp=p[1];const knob={x:tp.x+19,y:tp.y-17};$svg('line',{x1:tp.x,y1:tp.y,x2:knob.x,y2:knob.y,stroke:'#9db9ab','stroke-dasharray':'3 3'},g);$svg('circle',{cx:knob.x,cy:knob.y,r:13,class:'handleRing handle','data-tool':'triangle','data-action':'rotate'},g);$svg('path',{d:`M ${knob.x-4} ${knob.y-2} a5 5 0 1 1 1 7`,stroke:'#699083',fill:'none','stroke-width':1.3,'pointer-events':'none'},g)}
+function triangle(t){const g=$svg('g',{transform:`translate(${t.x} ${t.y}) rotate(${t.a*180/Math.PI}) scale(${t.scale||1})`,class:'instrument toolShadow','data-tool':'triangle','data-action':'move'});const p=trianglePoints(t);const d=p.map(v=>`${v.x},${v.y}`).join(' ');$svg('polygon',{points:d,class:'paleShape','data-tool':'triangle','data-action':'move'},g);const inner=p.map(v=>({x:v.x*.77+18,y:v.y*.77+12}));$svg('polyline',{points:inner.map(v=>`${v.x},${v.y}`).join(' '),fill:'none',stroke:'#93bba7','stroke-width':'1','pointer-events':'none'},g);p.forEach((v,i)=>{const txt=$svg('text',{x:v.x+(i===0?8:-21),y:v.y+(i===0?-8:(i===1?-9:14)),class:'rulerText'},g);txt.textContent=t.kind===45?['90°','45°','45°'][i]:['90°','60°','30°'][i]});const tp=p[1];const knob={x:tp.x+19,y:tp.y-17};$svg('line',{x1:tp.x,y1:tp.y,x2:knob.x,y2:knob.y,stroke:'#9db9ab','stroke-dasharray':'3 3'},g);$svg('circle',{cx:knob.x,cy:knob.y,r:13,class:'handleRing handle','data-tool':'triangle','data-action':'rotate'},g);$svg('path',{d:`M ${knob.x-4} ${knob.y-2} a5 5 0 1 1 1 7`,stroke:'#699083',fill:'none','stroke-width':1.3,'pointer-events':'none'},g)}
 function trianglePoints(t){return t.kind===45?[{x:0,y:0},{x:240,y:240},{x:0,y:240}]:[{x:0,y:0},{x:250,y:145},{x:0,y:145}]}
 function protractor(t){const g=$svg('g',{transform:`translate(${t.x} ${t.y}) rotate(${t.a*180/Math.PI})`,class:'instrument toolShadow','data-tool':'protractor','data-action':'move'});let r=142;let path=`M ${-r} 0 A ${r} ${r} 0 0 1 ${r} 0 Z`;$svg('path',{d:path,class:'paleShape','data-tool':'protractor','data-action':'move'},g);$svg('path',{d:`M -107 0 A 107 107 0 0 1 107 0`,stroke:'var(--tool-color)',fill:'none','stroke-width':1,'pointer-events':'none'},g);
  for(let deg=0;deg<=180;deg+=5){const a=Math.PI+deg*Math.PI/180,x=Math.cos(a),y=Math.sin(a);const rr=deg%30===0?118:deg%10===0?125:132;$svg('line',{x1:x*r,y1:y*r,x2:x*rr,y2:y*rr,class:'ticks'},g);if(deg%30===0){const tx=$svg('text',{x:x*110,y:y*110+3,'text-anchor':'middle',class:'rulerText'},g);tx.textContent=180-deg}}
@@ -519,20 +519,75 @@ function eraseAt(p){
  return changed;
 }
 // Pointer gestures are intentionally separate: moving a physical instrument never creates ink.
-svg.addEventListener('pointerdown',e=>{if(mode==='pen'||mode==='eraser'||pinchGesture)return;const target=e.target.closest('[data-tool]');if(!target)return;const name=target.getAttribute('data-tool'),kind=target.getAttribute('data-action')||'move',action=name==='compass'&&kind==='arc'&&!compassDrawing?'turn':kind,t=tools[name];if(!t?.visible)return;e.preventDefault();e.stopPropagation();const p=position(e);gesture={kind,name,start:p,from:{...t},startAngle:Math.atan2(p.y-t.y,p.x-t.x),startRadiusDistance:dist(p,{x:t.x,y:t.y}),arcPrev:Math.atan2(p.y-t.y,p.x-t.x),arcStart:t.a,arcDelta:0,arcColor:color,arcDash:lineStyle};try{svg.setPointerCapture(e.pointerId)}catch{}
+svg.addEventListener('pointerdown',e=>{if(mode==='pen'||mode==='eraser'||pinchGesture||toolPinch)return;const target=e.target.closest('[data-tool]');if(!target)return;const name=target.getAttribute('data-tool'),kind=target.getAttribute('data-action')||'move',action=name==='compass'&&kind==='arc'&&!compassDrawing?'turn':kind,t=tools[name];if(!t?.visible)return;e.preventDefault();e.stopPropagation();const p=position(e);gesture={kind,name,start:p,from:{...t},startAngle:Math.atan2(p.y-t.y,p.x-t.x),startRadiusDistance:dist(p,{x:t.x,y:t.y}),arcPrev:Math.atan2(p.y-t.y,p.x-t.x),arcStart:t.a,arcDelta:0,arcColor:color,arcDash:lineStyle};try{svg.setPointerCapture(e.pointerId)}catch{}
  if(kind==='arc'){gesture.arcStart=t.a;gesture.arcPrev=t.a;gesture.arcDelta=0;live={type:'arc',cx:t.x,cy:t.y,r:t.r,a1:t.a,a2:t.a,color,width:lineWidth,dash:lineStyle}}
  gesture.action=action;
 });
-svg.addEventListener('pointermove',e=>{if(!gesture||pinchGesture)return;const p=position(e),g=gesture,t=tools[g.name];if(g.action==='move'){t.x=g.from.x+p.x-g.start.x;t.y=g.from.y+p.y-g.start.y}else if(g.action==='rotate'){const a=Math.atan2(p.y-t.y,p.x-t.x);t.a=g.from.a+norm(a-g.startAngle);}else if(g.action==='radius'){t.r=Math.max(35,Math.min(390,g.from.r+dist(p,{x:t.x,y:t.y})-g.startRadiusDistance));}else if(g.action==='arc'||g.action==='turn'){const a=Math.atan2(p.y-t.y,p.x-t.x);const delta=norm(a-g.arcPrev);g.arcDelta+=delta;g.arcPrev=a;t.a=g.arcStart+g.arcDelta;if(g.action==='arc')live={type:'arc',cx:t.x,cy:t.y,r:t.r,a1:g.arcStart,a2:t.a,ccw:g.arcDelta<0,color:g.arcColor,width:lineWidth,dash:g.arcDash}}
+svg.addEventListener('pointermove',e=>{if(!gesture||pinchGesture||toolPinch)return;const p=position(e),g=gesture,t=tools[g.name];if(g.action==='move'){t.x=g.from.x+p.x-g.start.x;t.y=g.from.y+p.y-g.start.y}else if(g.action==='rotate'){const a=Math.atan2(p.y-t.y,p.x-t.x);t.a=g.from.a+norm(a-g.startAngle);}else if(g.action==='radius'){t.r=Math.max(35,Math.min(390,g.from.r+dist(p,{x:t.x,y:t.y})-g.startRadiusDistance));}else if(g.action==='arc'||g.action==='turn'){const a=Math.atan2(p.y-t.y,p.x-t.x);const delta=norm(a-g.arcPrev);g.arcDelta+=delta;g.arcPrev=a;t.a=g.arcStart+g.arcDelta;if(g.action==='arc')live={type:'arc',cx:t.x,cy:t.y,r:t.r,a1:g.arcStart,a2:t.a,ccw:g.arcDelta<0,color:g.arcColor,width:lineWidth,dash:g.arcDash}}
  drawTools();if(g.action==='arc')draw();});
 function endGesture(commit=true){if(!gesture)return;if(commit&&gesture.action==='arc'&&Math.abs(gesture.arcDelta)>.03){shapes.push({...live});snapshot()}if(gesture.name==='compass'&&gesture.action==='move'&&snap){const q=snapPoint({x:tools.compass.x,y:tools.compass.y});tools.compass.x=q.x;tools.compass.y=q.y}gesture=null;live=null;draw();drawTools();persist()}
 svg.addEventListener('pointerup',()=>endGesture(true));svg.addEventListener('pointercancel',()=>endGesture(false));
+// Two-finger pinch changes the physical instrument, not the canvas.
+const toolTouchPointers=new Map();
+let toolPinch=null;
+const toolMid=(a,b)=>({x:(a.x+b.x)/2,y:(a.y+b.y)/2});
+const toolDistance=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
+function applyToolPinch(){
+ if(!toolPinch)return;
+ const g=toolPinch,[a,b]=g.ids.map(id=>toolTouchPointers.get(id)?.point);
+ if(!a||!b)return;
+ const t=tools[g.name],mid=toolMid(a,b),factor=toolDistance(a,b)/g.distance;
+ if(g.name==='compass'){
+  t.r=Math.max(35,Math.min(390,g.from.r*factor));
+  t.x=g.from.x+mid.x-g.mid.x;t.y=g.from.y+mid.y-g.mid.y;
+ }else{
+  t.scale=Math.max(.45,Math.min(2.8,g.from.scale*factor));
+  const angle=Math.atan2(b.y-a.y,b.x-a.x);
+  t.a=g.from.a+norm(angle-g.angle);
+  const anchor=rot(g.anchor.x*t.scale,g.anchor.y*t.scale,t.a);
+  t.x=mid.x-anchor.x;t.y=mid.y-anchor.y;
+ }
+ drawTools();draw();
+}
+stage.addEventListener('pointerdown',e=>{
+ if(e.pointerType!=='touch'||mode==='pen'||mode==='eraser')return;
+ const target=e.target.closest?.('[data-tool]'),name=target?.getAttribute('data-tool');
+ if(!['ruler','triangle','compass'].includes(name)||!tools[name].visible)return;
+ toolTouchPointers.set(e.pointerId,{name,point:position(e)});
+ const pair=[...toolTouchPointers.entries()].filter(([,touch])=>touch.name===name);
+ if(pair.length>=2&&!toolPinch){
+  const [[id1,one],[id2,two]]=pair.slice(0,2),mid=toolMid(one.point,two.point),t=tools[name];
+  toolPinch={name,ids:[id1,id2],from:{...t,scale:t.scale||1},mid,
+   angle:Math.atan2(two.point.y-one.point.y,two.point.x-one.point.x),
+   distance:Math.max(1,toolDistance(one.point,two.point)),anchor:local(mid,t)};
+  gesture=null;live=null;draw();
+  for(const id of toolPinch.ids)try{stage.setPointerCapture(id)}catch{}
+  e.preventDefault();e.stopImmediatePropagation();
+ }
+},true);
+stage.addEventListener('pointermove',e=>{
+ const touch=toolTouchPointers.get(e.pointerId);if(!touch)return;
+ touch.point=position(e);
+ if(toolPinch&&toolPinch.ids.includes(e.pointerId)){
+  e.preventDefault();e.stopImmediatePropagation();applyToolPinch();
+ }
+},true);
+function endToolTouch(e){
+ const active=toolPinch?.ids.includes(e.pointerId);
+ toolTouchPointers.delete(e.pointerId);
+ if(active){
+  toolPinch=null;gesture=null;live=null;drawTools();draw();persist();
+  e.preventDefault();e.stopImmediatePropagation();
+ }
+}
+stage.addEventListener('pointerup',endToolTouch,true);
+stage.addEventListener('pointercancel',endToolTouch,true);
 let drawing=null,panGesture=null,pinchGesture=null;
 const activeTouches=new Map();
 const pinchMid=(a,b)=>({x:(a.x+b.x)/2,y:(a.y+b.y)/2});
 const pinchGap=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
 stage.addEventListener('pointerdown',e=>{
- if(mode!=='select'||e.pointerType!=='touch')return;
+ if(mode!=='select'||e.pointerType!=='touch'||toolTouchPointers.has(e.pointerId)||toolPinch)return;
  activeTouches.set(e.pointerId,screenPosition(e));
  if(activeTouches.size===2){
   const [a,b]=[...activeTouches.values()],center=pinchMid(a,b);
@@ -825,7 +880,7 @@ $('fullscreenBtn').addEventListener('click',async()=>{try{if(document.fullscreen
 document.addEventListener('fullscreenchange',()=>{$('fullscreenBtn').textContent=document.fullscreenElement?'離開原生全螢幕':'原生全螢幕'});
 $('settingsExport').addEventListener('click',()=>{closeSettings();$('save').click()});
 $('settingsHelp').addEventListener('click',()=>infoPage('操作說明',
- '1. 先從下方工具列選擇直尺、三角板、量角器或圓規。\n2. 選取模式：拖動畫布空白處可平移，滑鼠滾輪或平板雙指可縮放，右下角可調整倍率或重設視野。拖動尺規本體則移動尺規，拉動外側圓點可旋轉。\n3. 畫筆可選粗細與實線／虛線／點線；沿尺邊畫筆跡會自動貼齊。橡皮擦的「筆畫擦除」一次刪除整筆，「精準擦除」只擦除掃過的局部線條（包含直線和圓弧）。\n4. 圓規預設可自由旋轉筆尖而不畫線；按「開始畫弧」後拖動筆尖才會留下圓弧，再按「停止畫弧」回到調整模式。\n5. 在畫布設定中啟用吸附，筆跡端點會靠近已畫標記點及交點。\n6.「畫布管理」可建立、複製、重新命名或切換不同課程畫布。\n8.「匯出可編輯檔」儲存全部畫布，之後按「開啟可編輯檔」匯入，或使用「複製目前畫布分享連結」建立課堂連結。\n7. 匯出圖片只包含畫布內容，不包含尺規工具。\n9. 按「錄影」可錄製畫布筆跡與實體尺規移動，按「停止錄影」後會下載影片（不含聲音）。'));
+ '1. 先從下方工具列選擇直尺、三角板、量角器或圓規。\n2. 選取模式：雙指在直尺、三角板或圓規上向外或向內撥，可改變實體工具大小。拖動畫布空白處可平移，滑鼠滾輪或平板雙指可縮放，右下角可調整倍率或重設視野。拖動尺規本體則移動尺規，拉動外側圓點可旋轉。\n3. 畫筆觸碰畫布即可開始連續作畫，不必長按；可選粗細與實線／虛線／點線；沿尺邊畫筆跡會自動貼齊。橡皮擦的「筆畫擦除」一次刪除整筆，「精準擦除」只擦除掃過的局部線條（包含直線和圓弧）。\n4. 圓規預設可自由旋轉筆尖而不畫線；按「開始畫弧」後拖動筆尖才會留下圓弧，再按「停止畫弧」回到調整模式。\n5. 在畫布設定中啟用吸附，筆跡端點會靠近已畫標記點及交點。\n6.「畫布管理」可建立、複製、重新命名或切換不同課程畫布。\n8.「匯出可編輯檔」儲存全部畫布，之後按「開啟可編輯檔」匯入，或使用「複製目前畫布分享連結」建立課堂連結。\n7. 匯出圖片只包含畫布內容，不包含尺規工具。\n9. 按「錄影」可錄製畫布筆跡與實體尺規移動，按「停止錄影」後會下載影片（不含聲音）。'));
 $('settingsChangelog').addEventListener('click',()=>infoPage('更新日誌','2026/10/25\n・精簡尺規工具列；加入線型分隔與「筆畫擦除／精準擦除」兩種橡皮擦。\n・選取模式新增畫布平移、滑鼠滾輪與平板雙指縮放、倍率重設。\n・圓規新增調整／畫弧兩種模式，預設旋轉不留筆跡。\n・新增個人化配色、背景格線深淺與即時預覽。\n・統一網站名稱為「尺規作圖工作坊」。\n・加入側邊畫布設定、教學畫布管理、自動儲存。\n・新增吸附標記點與交點、淡方格、專注模式、全螢幕。\n・保留實體尺規操作、格點、作圖引導與圖片匯出。'));
 $('settingsLicense').addEventListener('click',()=>infoPage('使用授權與著作權聲明','原始尺規作圖網站由葉威志老師製作，本工作坊參考其互動概念，並由徐丙忠老師與 AI 助理共同編輯擴充。\n本網站用於教學與個人練習。程式碼公開存放於專案 GitHub 儲存庫，不代表已授予任何開源授權；如需重製、散布或商業利用，請先與著作權人確認。'));
 $('settingsPrivacy').addEventListener('click',()=>infoPage('隱私權政策',"1. 網站製作與編輯\n原始尺規作圖網站製作者：葉威志老師。\n本「尺規作圖工作坊」參考原站的實體尺規互動構想，由徐丙忠老師與 AI 助理共同規劃、編輯及擴充。\n網站編輯與教學維護：徐丙忠老師。\n\n2. 使用者資料與作品保存\n本網站不要求登入，畫布內容與尺規設定保存在目前瀏覽器的 localStorage；更換瀏覽器或清除網站資料可能遺失作品。\n匯出圖片與可編輯檔由使用者自行下載，網站不會主動上傳作圖內容。分享連結會包含經編碼的畫布資料，取得連結者可載入對應內容。\n作畫錄影於使用者的瀏覽器內處理，停止後將影片下載到本機；本站不會主動上傳影片，也不會錄製麥克風音訊。\n\n3. 網站託管與瀏覽次數\n本網站由 GitHub Pages 託管，該服務可能依其政策處理一般連線及技術紀錄。\n網站透過 hits.sh 的 SVG 計數圖示記錄頁面請求次數；該服務聲明其計數器不使用 Cookie，亦不保存 IP 位址或使用者代理資訊。所顯示的是累計瀏覽次數，並非不重複訪客人數。"));
