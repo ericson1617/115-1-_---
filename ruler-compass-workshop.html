@@ -328,7 +328,7 @@ $('settingsHelp').addEventListener('click',()=>infoPage('操作說明',
 $('settingsChangelog').addEventListener('click',()=>infoPage('更新日誌','2026/10/25\n・統一網站名稱為「尺規做圖工作坊」。\n・加入側邊畫布設定、教學畫布管理、自動儲存。\n・新增吸附標記點與交點、淡方格、專注模式、全螢幕。\n・保留實體尺規操作、格點、作圖引導與圖片匯出。'));
 $('settingsLicense').addEventListener('click',()=>infoPage('使用授權與著作權聲明','本網站用於教學與個人練習。程式碼公開存放於專案 GitHub 儲存庫，不代表已授予任何開源授權；如需重製、散布或商業利用，請先與著作權人確認。'));
 $('settingsThirdParty').addEventListener('click',()=>infoPage('第三方授權資訊','本工作坊使用瀏覽器內建的 HTML、CSS、Canvas、SVG 與 JavaScript 技術，未在此頁載入第三方前端程式庫。網站由 GitHub Pages 提供靜態主機服務。'));
-$('settingsPrivacy').addEventListener('click',()=>infoPage('隱私權政策','本網站不要求登入，畫布內容與尺規設定保存在您目前瀏覽器的 localStorage；切換瀏覽器或清除網站資料可能遺失作品。\n「匯出圖片」只會產生本機下載檔案，本站沒有上傳作圖內容的功能。\n網站託管服務 GitHub Pages 可能依其政策處理一般連線與技術紀錄。'));
+$('settingsPrivacy').addEventListener('click',()=>infoPage('隱私權政策','網站製作與維護：徐丙忠老師。\n本網站由徐丙忠老師與 AI 助理共同規劃、編輯與製作。\n\n本網站不要求登入，畫布內容與尺規設定保存在您目前瀏覽器的 localStorage；切換瀏覽器或清除網站資料可能遺失作品。\n「匯出圖片」只會產生本機下載檔案，本站沒有上傳作圖內容的功能。\n網站託管服務 GitHub Pages 可能依其政策處理一般連線與技術紀錄。'));
 
 window.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'){e.preventDefault();e.shiftKey?redo():undo()}else if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='y'){e.preventDefault();redo()}else if(e.key==='Escape'){if(!$('settingsPanel').hidden)closeSettings();else showGuide(false)}});
 new ResizeObserver(fit).observe(stage);
