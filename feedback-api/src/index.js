@@ -71,6 +71,10 @@ async function listComments(env,url){
  return {comments:list.map(row=>({id:row.id,name:row.name,message:row.message,createdAt:row.created_at,replies:byComment.get(row.id)||[]})),hasMore:results.length>limit};
 }
 export default {
+ // UTC 18:00 = Taipei 02:00: remove expired rate-limit identifiers daily.
+ async scheduled(controller,env){
+  if(env.DB)await env.DB.prepare('DELETE FROM rate_limits WHERE expires_at < ?').bind(Math.floor(Date.now()/1000)).run();
+ },
  async fetch(request,env){
   const origin=request.headers.get('Origin')||'';
   const url=new URL(request.url),path=url.pathname.replace(/\/+$/,'')||'/';
