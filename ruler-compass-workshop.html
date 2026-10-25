@@ -26,7 +26,7 @@
 .settingsPanel{position:fixed;right:15px;top:68px;bottom:15px;width:min(335px,calc(100vw - 30px));z-index:21;overflow-y:auto;overscroll-behavior:contain;border:1px solid #e3e9df;border-radius:17px;box-shadow:0 16px 45px #1f3f3030;background:#fffefa;padding:20px 20px 24px;color:var(--ink)}
 .settingsPanel[hidden],.settingsScrim[hidden],.settingsSection[hidden]{display:none!important}
 .settingsHeader{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;font-size:16px}
-.settingsSection{display:grid;gap:9px}.settingsSection h3{font-size:16px;margin:8px 0 0}
+.settingsSection{display:grid;gap:9px}.settingsSection h3{font-size:16px;margin:8px 0 0}.settingsGroup{display:grid;gap:9px;margin-top:12px;padding-top:12px;border-top:1px solid #e7ece6}.settingsGroup h3{font-size:12px;margin:0 0 3px;color:#507e72;font-weight:700;letter-spacing:.07em}.settingsGroup .settingsLinks{margin-top:5px}
 .settingsAction{border:1px solid #e0e6df;background:#fffefa;color:#354d45;border-radius:11px;padding:12px 10px;min-height:43px;text-align:center}
 .settingsAction:hover,.settingsBack:hover{background:#eef5ed}.settingsAction.emph{background:#e4f1e9;color:#276a5b}
 .settingsSwitch{display:flex;align-items:center;justify-content:space-between;gap:15px;padding:12px 1px;font-size:12px;cursor:pointer}
@@ -87,20 +87,24 @@
   <div id="settingsHome" class="settingsSection">
     <button class="settingsAction" id="focusModeBtn">進入專注模式</button>
     <button class="settingsAction" id="manageBoardsBtn">畫布管理</button>
-    <label class="settingsSwitch"><span>淡方格背景</span><input id="lightGridToggle" type="checkbox"></label>
-    <label class="settingsSwitch"><span>吸附標記點與交點</span><input id="snapToggle" type="checkbox"></label>
     <button class="settingsAction" id="fullscreenBtn">原生全螢幕</button>
-    <button class="settingsAction" id="settingsExport">匯出圖片</button>
-    <button class="settingsAction" id="projectExport">匯出可編輯檔（.json）</button>
-    <button class="settingsAction" id="projectImport">開啟可編輯檔</button>
-    <button class="settingsAction" id="projectShare">複製目前畫布分享連結</button>
-    <input type="file" id="projectFileInput" accept=".json,application/json" hidden>
-    <button class="settingsAction" id="settingsHelp">操作說明</button>
-    <button class="settingsAction" id="settingsChangelog">更新日誌</button>
-    <div class="settingsLinks">
-      <button id="settingsLicense">使用授權與著作權聲明</button>
-      <button id="settingsPrivacy">隱私權政策</button>
-    </div>
+    <section class="settingsGroup" aria-labelledby="filesGroupTitle">
+      <h3 id="filesGroupTitle">檔案管理</h3>
+      <button class="settingsAction" id="settingsExport">匯出圖片</button>
+      <button class="settingsAction" id="projectExport">匯出可編輯檔（.json）</button>
+      <button class="settingsAction" id="projectImport">開啟可編輯檔</button>
+      <button class="settingsAction" id="projectShare">複製目前畫布分享連結</button>
+      <input type="file" id="projectFileInput" accept=".json,application/json" hidden>
+    </section>
+    <section class="settingsGroup" aria-labelledby="otherGroupTitle">
+      <h3 id="otherGroupTitle">其餘資訊</h3>
+      <button class="settingsAction" id="settingsHelp">操作說明</button>
+      <button class="settingsAction" id="settingsChangelog">更新日誌</button>
+      <div class="settingsLinks">
+        <button id="settingsLicense">使用授權與著作權聲明</button>
+        <button id="settingsPrivacy">隱私權政策</button>
+      </div>
+    </section>
     <p class="settingsFine">作品儲存在此瀏覽器的本機儲存空間。清除網站資料將移除本機作品。</p>
   </div>
   <section id="personalizeView" class="settingsSection" hidden>
@@ -175,7 +179,7 @@ function currentBoardData(){return {shapes:JSON.parse(JSON.stringify(shapes)),gr
 function applyBoardData(d){shapes=Array.isArray(d.shapes)?JSON.parse(JSON.stringify(d.shapes)):[];grid=['none','dots','lines'].includes(d.grid)?d.grid:'none';$('gridSelect').value=grid;
  for(const k of Object.keys(tools)){if(d.tools&&d.tools[k])Object.assign(tools[k],d.tools[k]);else tools[k].visible=false}
  color=isHexColor(d.color)?d.color:palette[0];lineWidth=d.lineWidth||2.5;lineStyle=['solid','dashed','dotted'].includes(d.lineStyle)?d.lineStyle:'solid';stowedTools=d.stowedTools&&typeof d.stowedTools==='object'?{...d.stowedTools}:null;
- snap=!!d.snap;lightGrid=!!d.lightGrid;$('snapToggle').checked=snap;$('lightGridToggle').checked=lightGrid;syncAppearanceControls();}
+ snap=!!d.snap;lightGrid=!!d.lightGrid;syncAppearanceControls();}
 function persist(){
  try{
   const d=currentBoardData();localStorage.setItem('geometry-physical-v1',JSON.stringify(d));
@@ -443,10 +447,10 @@ for(const [id,key] of [['customPaperColor','paper'],['customGridColor','grid'],[
 $('customPenColor').addEventListener('input',e=>{if(!isHexColor(e.target.value))return;color=e.target.value;updateQuick();saveAppearance()});
 $('customGridOpacity').addEventListener('input',e=>{
  appearance.opacity=Math.max(.1,Math.min(1,Number(e.target.value)/100));
- lightGrid=false;$('lightGridToggle').checked=false;saveAppearance();
+ lightGrid=false;saveAppearance();
 });
 $('resetAppearance').addEventListener('click',()=>{
- appearance={...appearanceDefaults};color=palette[0];lightGrid=false;$('lightGridToggle').checked=false;updateQuick();saveAppearance();
+ appearance={...appearanceDefaults};color=palette[0];lightGrid=false;updateQuick();saveAppearance();
 });
 
 function closeSettings(){const panel=$('settingsPanel');panel.hidden=true;$('settingsScrim').hidden=true;$('settingsToggle').setAttribute('aria-expanded','false');$('personalizeToggle').setAttribute('aria-expanded','false')}
@@ -493,8 +497,6 @@ $('infoBack').addEventListener('click',()=>openSettings('home'));
 $('boardCreate').addEventListener('click',()=>createBoard(false));
 $('boardDuplicate').addEventListener('click',()=>createBoard(true));
 $('focusModeBtn').addEventListener('click',()=>goFocus(!focusMode));$('focusExit').addEventListener('click',()=>goFocus(false));
-$('lightGridToggle').addEventListener('change',e=>{lightGrid=e.target.checked;if(lightGrid&&grid==='none'){grid='lines';$('gridSelect').value=grid}draw();syncAppearanceControls();persist()});
-$('snapToggle').addEventListener('change',e=>{snap=e.target.checked;draw();persist()});
 $('fullscreenBtn').addEventListener('click',async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else await document.documentElement.requestFullscreen();}catch(err){showToast('瀏覽器無法進入全螢幕，請使用 F11 或瀏覽器選單。')}});
 document.addEventListener('fullscreenchange',()=>{$('fullscreenBtn').textContent=document.fullscreenElement?'離開原生全螢幕':'原生全螢幕'});
 $('settingsExport').addEventListener('click',()=>{closeSettings();$('save').click()});
