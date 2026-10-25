@@ -130,14 +130,14 @@
 <aside class="settingsPanel" id="settingsPanel" role="dialog" aria-modal="true" aria-label="畫布設定" hidden>
   <div class="settingsHeader"><strong id="settingsHeading">畫布設定</strong><button class="soft icon" id="settingsClose" aria-label="關閉設定">✕</button></div>
   <div id="settingsHome" class="settingsSection">
-    <button class="settingsAction" id="focusModeBtn">進入專注模式</button>
     <button class="settingsAction" id="manageBoardsBtn">畫布管理</button>
-    <button class="settingsAction" id="fullscreenBtn">原生全螢幕</button>
+    <button class="settingsAction" id="focusModeBtn">專注模式</button>
+    <button class="settingsAction" id="fullscreenBtn">全螢幕模式</button>
     <section class="settingsGroup" aria-labelledby="filesGroupTitle">
       <h3 id="filesGroupTitle">檔案管理</h3>
-      <button class="settingsAction" id="projectExport">匯出可編輯檔（.json）</button>
       <button class="settingsAction" id="projectImport">開啟可編輯檔</button>
-      <button class="settingsAction" id="projectShare">複製目前畫布分享連結</button>
+      <button class="settingsAction" id="projectExport">匯出可編輯檔</button>
+      <button class="settingsAction" id="projectShare">分享畫布</button>
       <input type="file" id="projectFileInput" accept=".json,application/json" hidden>
     </section>
     <section class="settingsGroup" aria-labelledby="otherGroupTitle">
@@ -916,7 +916,7 @@ function closeSettings(){const panel=$('settingsPanel');panel.hidden=true;$('set
 function setSettingsView(view){$('settingsHome').hidden=view!=='home';$('boardsView').hidden=view!=='boards';$('infoView').hidden=view!=='info';$('personalizeView').hidden=view!=='personalize';$('settingsHeading').textContent=view==='personalize'?'個人化設定':view==='boards'?'畫布管理':view==='info'?'資訊說明':'畫布設定'}
 function openSettings(view='home'){setSettingsView(view);$('settingsPanel').hidden=false;$('settingsScrim').hidden=false;$('settingsToggle').setAttribute('aria-expanded','true');if(view==='boards')renderBoards();if(view==='personalize'){syncAppearanceControls();$('personalizeToggle').setAttribute('aria-expanded','true')}}
 function infoPage(title,body){$('infoTitle').textContent=title;$('infoBody').textContent=body;openSettings('info')}
-function goFocus(on){focusMode=on;document.body.classList.toggle('focusMode',on);$('focusModeBtn').textContent=on?'返回一般模式':'進入專注模式';closeSettings();requestAnimationFrame(fit)}
+function goFocus(on){focusMode=on;document.body.classList.toggle('focusMode',on);$('focusModeBtn').textContent=on?'離開專注模式':'專注模式';closeSettings();requestAnimationFrame(fit)}
 function newBoardId(){return 'board-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,8)}
 function selectBoard(id){if(activeBoardId===id){closeSettings();return}
  persist();const b=boards.find(x=>x.id===id);if(!b)return;activeBoardId=id;applyBoardData(b.data);
@@ -957,7 +957,7 @@ $('boardCreate').addEventListener('click',()=>createBoard(false));
 $('boardDuplicate').addEventListener('click',()=>createBoard(true));
 $('focusModeBtn').addEventListener('click',()=>goFocus(!focusMode));$('focusExit').addEventListener('click',()=>goFocus(false));
 $('fullscreenBtn').addEventListener('click',async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else await document.documentElement.requestFullscreen();}catch(err){showToast('瀏覽器無法進入全螢幕，請使用 F11 或瀏覽器選單。')}});
-document.addEventListener('fullscreenchange',()=>{$('fullscreenBtn').textContent=document.fullscreenElement?'離開原生全螢幕':'原生全螢幕'});
+document.addEventListener('fullscreenchange',()=>{$('fullscreenBtn').textContent=document.fullscreenElement?'離開全螢幕模式':'全螢幕模式'});
 $('settingsHelp').addEventListener('click',()=>infoPage('操作說明',
  '1. 先從下方工具列選擇直尺、三角板、量角器或圓規。\n2. 選取模式：雙指在直尺、三角板或圓規上向外或向內撥，可改變實體工具大小。拖動畫布空白處可平移，滑鼠滾輪或平板雙指可縮放，右下角可調整倍率或重設視野。拖動尺規本體則移動尺規，拉動外側圓點可旋轉。\n3. 畫筆觸碰畫布即可開始連續作畫，不必長按；可選粗細與實線／虛線／點線；沿尺邊畫筆跡會自動貼齊。橡皮擦的「筆畫擦除」一次刪除整筆，「精準擦除」只擦除掃過的局部線條（包含直線和圓弧）。\n4. 圓規預設可自由旋轉筆尖而不畫線；按「開始畫弧」後拖動筆尖才會留下圓弧，再按「停止畫弧」回到調整模式。\n5. 在畫布設定中啟用吸附，筆跡端點會靠近已畫標記點及交點。\n6.「畫布管理」可建立、複製、重新命名或切換不同課程畫布。\n8.「匯出可編輯檔」儲存全部畫布，之後按「開啟可編輯檔」匯入，或使用「複製目前畫布分享連結」建立課堂連結。\n7. 匯出圖片只包含畫布內容，不包含尺規工具。\n9. 按「錄影」可錄製畫布筆跡與實體尺規移動，停止後能預覽、下載，或透過 iPad 系統分享選單選擇「儲存影片」（不含聲音）。'));
 $('settingsChangelog').addEventListener('click',()=>infoPage('更新日誌','2026/10/25\n・個人化設定新增線段端點顯示開關，預設關閉。\n・精簡尺規工具列；加入線型分隔與「筆畫擦除／精準擦除」兩種橡皮擦。\n・選取模式新增畫布平移、滑鼠滾輪與平板雙指縮放、倍率重設。\n・圓規新增調整／畫弧兩種模式，預設旋轉不留筆跡。\n・新增個人化配色、背景格線深淺與即時預覽。\n・統一網站名稱為「尺規作圖工作坊」。\n・加入側邊畫布設定、教學畫布管理、自動儲存。\n・新增吸附標記點與交點、淡方格、專注模式、全螢幕。\n・保留實體尺規操作、格點、作圖引導與圖片匯出。'));
