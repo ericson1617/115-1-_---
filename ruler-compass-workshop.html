@@ -181,8 +181,8 @@
     <label class="colorSetting" for="customGridColor"><span>格點／方格線顏色</span><span class="colorPicker"><input type="color" id="customGridColor" value="#4b82c3"><output id="gridColorValue" for="customGridColor">#4b82c3</output></span></label>
     <label class="colorSetting" for="customToolColor"><span>尺規刻線顏色</span><span class="colorPicker"><input type="color" id="customToolColor" value="#4a7eaf"><output id="toolColorValue" for="customToolColor">#4a7eaf</output></span></label>
     <div class="opacitySetting"><label for="customGridOpacity">背景線深淺 <output id="gridOpacityValue" for="customGridOpacity">75%</output></label><input id="customGridOpacity" type="range" min="10" max="100" step="5" value="75"><div class="opacityEnds"><span>淡</span><span>深</span></div></div>
-    <label class="settingsSwitch" for="showEndpointsToggle"><span>顯示線段端點</span><input type="checkbox" id="showEndpointsToggle"></label>
-    <p class="settingsFine">預設不顯示。開啟後，以小圓點標示直線段兩端，原本的筆跡資料不會改變。</p>
+    <label class="settingsSwitch" for="showEndpointsToggle"><span>畫線時保留起點與終點</span><input type="checkbox" id="showEndpointsToggle"></label>
+    <p class="settingsFine">預設關閉。開啟後，每次完成畫筆線條或圓弧，起終點會成為獨立標記點。切到「選取」後點選標記，即可刪除該點，或把圓規針腳固定在那裡。關閉開關只會停止產生新標記，不會刪除已留下的點。</p>
     <div class="gridPreviewLabel">格點／方格預覽</div><div id="gridPreview" class="gridPreview" aria-label="背景格線顏色和深淺預覽"></div>
     <button class="settingsAction" id="resetAppearance">恢復預設配色</button>
   </section>
@@ -243,7 +243,7 @@ const appearanceDefaults={paper:'#ffffff',grid:'#4b82c3',opacity:0.75,tool:'#4a7
 const themeMigrationKey='geometry-workshop-blue-defaults-v1';
 let appearance={...appearanceDefaults};let penMigrationComplete=true;
 let W=1000,H=600,mode='select',color=palette[0],lineWidth=2.5,lineStyle='solid',eraserMode='stroke',grid='none',snap=false,lightGrid=false,guide='perpbis',gstep=0;
-let shapes=[],history=[],historyIndex=-1,live=null,gesture=null,vertexHover=null,vertexGesture=null,compass=null,compassDrawing=false,stowedTools=null,boards=[],activeBoardId=null,focusMode=false,viewport={x:0,y:0,scale:1},origin=null,tools={
+let shapes=[],history=[],historyIndex=-1,live=null,gesture=null,vertexHover=null,vertexGesture=null,selectedMarkerId=null,compassAnchorId=null,compass=null,compassDrawing=false,stowedTools=null,boards=[],activeBoardId=null,focusMode=false,viewport={x:0,y:0,scale:1},origin=null,tools={
  ruler:{visible:false,x:100,y:230,a:0,len:370,height:57,scale:1},
  triangle:{visible:false,x:500,y:135,a:0,kind:45,scale:1},
  protractor:{visible:false,x:400,y:425,a:0,scale:1},
@@ -314,16 +314,15 @@ function draw(exportClean=false){
  if(appearance.showOrigin)drawOriginMarker();
  for(const shape of shapes)paint(shape);
  if(live)paint(live);
- if(appearance.showEndpoints){
-  ctx.save();ctx.lineWidth=1.6/viewport.scale;
-  ctx.fillStyle=appearance.paper;ctx.strokeStyle='#326faf';
-  for(const segment of shapes){
-   if(segment.type!=='line'||!segment.a||!segment.b)continue;
-   for(const point of [segment.a,segment.b]){
-    ctx.beginPath();ctx.arc(point.x,point.y,3.5/viewport.scale,0,Math.PI*2);ctx.fill();ctx.stroke();
-   }
-  }
-  ctx.restore();
+
+ // Independent marker dots are already stored in shapes. No decorative
+ // endpoint overlay is needed when the preference is enabled or disabled.
+ const selectedMarker=markerById(selectedMarkerId);
+ if(!exportClean&&selectedMarker){
+  ctx.save();ctx.strokeStyle='#2455bb';ctx.fillStyle='rgba(36,85,187,.12)';
+  ctx.lineWidth=1.8/viewport.scale;
+  ctx.beginPath();ctx.arc(selectedMarker.x,selectedMarker.y,10/viewport.scale,0,Math.PI*2);
+  ctx.fill();ctx.stroke();ctx.restore();
  }
 
  // In select mode, offer a temporary editable handle on hover/drag without
@@ -360,16 +359,81 @@ function drawOriginMarker(){
  ctx.restore();
 }
 function paint(s){ctx.save();ctx.strokeStyle=s.color||'#000000';ctx.fillStyle=s.color||'#000000';ctx.lineWidth=s.width||2.5;ctx.lineJoin='round';ctx.lineCap='round';ctx.setLineDash(s.dash==='dashed'?[Math.max(8,ctx.lineWidth*4),Math.max(6,ctx.lineWidth*3)]:s.dash==='dotted'?[Math.max(1,ctx.lineWidth),Math.max(4,ctx.lineWidth*2.5)]:[]);if(s.type==='stroke'&&s.points?.length){ctx.beginPath();s.points.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.stroke();if(s.points.length===1){const p=s.points[0];ctx.beginPath();ctx.arc(p.x,p.y,ctx.lineWidth/2,0,7);ctx.fill()}}else if(s.type==='line'){ctx.beginPath();ctx.moveTo(s.a.x,s.a.y);ctx.lineTo(s.b.x,s.b.y);ctx.stroke()}else if(s.type==='arc'){ctx.beginPath();ctx.arc(s.cx,s.cy,s.r,s.a1,s.a2,s.ccw||false);ctx.stroke()}else if(s.type==='dot'){ctx.beginPath();ctx.arc(s.x,s.y,Math.max(2,s.width),0,7);ctx.fill()}ctx.restore()}
-function snapshot(){history=history.slice(0,historyIndex+1);history.push(JSON.stringify(shapes));if(history.length>75)history.shift();historyIndex=history.length-1;updateButtons();persist()}
-function undo(){if(historyIndex<=0)return;historyIndex--;shapes=JSON.parse(history[historyIndex]);draw();updateButtons();persist()}
-function redo(){if(historyIndex>=history.length-1)return;historyIndex++;shapes=JSON.parse(history[historyIndex]);draw();updateButtons();persist()}
+// An endpoint marker is an actual editable dot, independent from its stroke.
+function newMarkerId(){
+ return 'point-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,10);
+}
+function markerById(id){
+ if(!id)return null;
+ return shapes.find(p=>p?.type==='dot'&&p.id===id)||null;
+}
+function ensureMarkerId(dot){
+ if(!dot.id)dot.id=newMarkerId();
+ return dot.id;
+}
+function cleanupMarkerState(){
+ if(selectedMarkerId&&!markerById(selectedMarkerId))selectedMarkerId=null;
+ if(compassAnchorId&&!markerById(compassAnchorId))compassAnchorId=null;
+}
+function syncCompassAnchor(){
+ if(!compassAnchorId)return;
+ const p=markerById(compassAnchorId);
+ if(!p){compassAnchorId=null;return}
+ tools.compass.x=p.x;tools.compass.y=p.y;
+}
+function addEndpointMarkers(shape){
+ if(!appearance.showEndpoints||!shape)return;
+ let points=[];
+ if(shape.type==='stroke'&&shape.points?.length){
+  points=[shape.points[0],shape.points.at(-1)];
+ }else if(shape.type==='line'&&shape.a&&shape.b){
+  points=[shape.a,shape.b];
+ }else if(shape.type==='arc'&&Number.isFinite(shape.r)&&
+   Math.abs(shape.a2-shape.a1)<2*Math.PI-.001){
+  points=[{x:shape.cx+shape.r*Math.cos(shape.a1),y:shape.cy+shape.r*Math.sin(shape.a1)},
+          {x:shape.cx+shape.r*Math.cos(shape.a2),y:shape.cy+shape.r*Math.sin(shape.a2)}];
+ }
+ for(const p of points){
+  if(!p||!Number.isFinite(p.x)||!Number.isFinite(p.y))continue;
+  // Reuse a nearby explicit marker without changing the drawing's geometry.
+  if(shapes.some(s=>s.type==='dot'&&dist(s,p)<4/viewport.scale))continue;
+  shapes.push({type:'dot',id:newMarkerId(),marker:true,x:p.x,y:p.y,width:4,color:'#2455bb'});
+ }
+}
+function attachCompassToMarker(id){
+ const p=markerById(id);if(!p)return;
+ compassAnchorId=ensureMarkerId(p);
+ stowedTools=null;tools.compass.visible=true;
+ syncCompassAnchor();compassDrawing=false;
+ mode='compass';syncModeUI();updateQuick();drawTools();draw();persist();
+ showToast('圓規針腳已固定在選取的標記點；可以調整開口並畫弧。');
+}
+function detachCompassAnchor(){
+ compassAnchorId=null;updateQuick();drawTools();persist();
+ showToast('已解除針腳固定，圓規可以自由移動。');
+}
+function deleteSelectedMarker(){
+ const id=selectedMarkerId,p=markerById(id);
+ if(!p)return;
+ if(!confirm('確定刪除此標記點？線條本身會保留。'))return;
+ const index=shapes.findIndex(s=>s.type==='dot'&&s.id===id);
+ if(index<0)return;
+ shapes.splice(index,1);
+ selectedMarkerId=null;
+ if(compassAnchorId===id)compassAnchorId=null;
+ snapshot();updateQuick();drawTools();draw();
+}
+
+function snapshot(){cleanupMarkerState();history=history.slice(0,historyIndex+1);history.push(JSON.stringify(shapes));if(history.length>75)history.shift();historyIndex=history.length-1;updateButtons();persist()}
+function undo(){if(historyIndex<=0)return;historyIndex--;shapes=JSON.parse(history[historyIndex]);cleanupMarkerState();drawTools();draw();updateButtons();persist();updateQuick()}
+function redo(){if(historyIndex>=history.length-1)return;historyIndex++;shapes=JSON.parse(history[historyIndex]);cleanupMarkerState();drawTools();draw();updateButtons();persist();updateQuick()}
 function updateButtons(){$('undo').disabled=historyIndex<=0;$('redo').disabled=historyIndex>=history.length-1}
 const boardStoreKey='ruler-compass-workshop-boards-v2';
-function currentBoardData(){return {shapes:JSON.parse(JSON.stringify(shapes)),grid,tools:JSON.parse(JSON.stringify(tools)),color,lineWidth,lineStyle,eraserMode,stowedTools:stowedTools?{...stowedTools}:null,snap,lightGrid,viewport:{...viewport},origin:origin?{...origin}:null}}
+function currentBoardData(){return {shapes:JSON.parse(JSON.stringify(shapes)),grid,tools:JSON.parse(JSON.stringify(tools)),color,lineWidth,lineStyle,eraserMode,stowedTools:stowedTools?{...stowedTools}:null,snap,lightGrid,viewport:{...viewport},origin:origin?{...origin}:null,compassAnchorId}}
 function applyBoardData(d){shapes=Array.isArray(d.shapes)?JSON.parse(JSON.stringify(d.shapes)):[];grid=['none','dots','lines'].includes(d.grid)?d.grid:'none';$('gridSelect').value=grid;
  for(const k of Object.keys(tools)){if(d.tools&&d.tools[k])Object.assign(tools[k],d.tools[k]);else tools[k].visible=false}
  color=isHexColor(d.color)?(d.color.toLowerCase()==='#223b3a'&&!penMigrationComplete?'#000000':d.color):palette[0];lineWidth=d.lineWidth||2.5;lineStyle=['solid','dashed','dotted'].includes(d.lineStyle)?d.lineStyle:'solid';eraserMode=d.eraserMode==='precise'?'precise':'stroke';stowedTools=d.stowedTools&&typeof d.stowedTools==='object'?{...d.stowedTools}:null;
- snap=false;lightGrid=!!d.lightGrid;const v=d.viewport||{};viewport={x:Number.isFinite(v.x)?v.x:0,y:Number.isFinite(v.y)?v.y:0,scale:Number.isFinite(v.scale)?Math.max(.4,Math.min(4,v.scale)):1};origin=d.origin&&Number.isFinite(d.origin.x)&&Number.isFinite(d.origin.y)?{x:d.origin.x,y:d.origin.y}:null;syncAppearanceControls();}
+ snap=false;lightGrid=!!d.lightGrid;const v=d.viewport||{};viewport={x:Number.isFinite(v.x)?v.x:0,y:Number.isFinite(v.y)?v.y:0,scale:Number.isFinite(v.scale)?Math.max(.4,Math.min(4,v.scale)):1};origin=d.origin&&Number.isFinite(d.origin.x)&&Number.isFinite(d.origin.y)?{x:d.origin.x,y:d.origin.y}:null;selectedMarkerId=null;compassAnchorId=typeof d.compassAnchorId==='string'?d.compassAnchorId:null;cleanupMarkerState();syncAppearanceControls();}
 function persist(){
  try{
   const d=currentBoardData();localStorage.setItem('geometry-physical-v1',JSON.stringify(d));
@@ -409,6 +473,7 @@ function syncModeUI(){
  });
 }
 function useMode(next){
+ selectedMarkerId=null;
  if(next==='guide'){showGuide(true);return}
  if(Object.prototype.hasOwnProperty.call(tools,next)){
   // The physical tool buttons are switches: click to show, click again to stow.
@@ -422,7 +487,7 @@ function useMode(next){
  panGesture=null;pinchGesture=null;toolPinch=null;
  vertexGesture=null;vertexHover=null;toolTouchPointers.clear();activeTouches.clear();
  stage.classList.remove('draggingCanvas','vertexHover','vertexEditing');
- syncModeUI();updateQuick();drawTools();persist();
+ syncModeUI();updateQuick();drawTools();draw();persist();
 }
 const toggleTool=k=>useMode(k);
 function updateAllToolsButton(){
@@ -441,7 +506,7 @@ function toggleAllTools(){
  syncModeUI();updateQuick();drawTools();persist();
 }
 function setCompassDrawing(on){
- compassDrawing=!!on;
+ syncCompassAnchor();compassDrawing=!!on;
  updateQuick();
  drawTools();
  showToast(compassDrawing?'圓規畫弧已開啟：拖動筆尖開始畫弧；完成後可切回「調整圓規」。':'圓規調整模式：拖動筆尖可左右旋轉，不會留下線條。');
@@ -458,6 +523,18 @@ function updateQuick(){
   d.style.background=c;d.title='畫筆顏色';d.addEventListener('click',()=>{color=c;updateQuick();persist()});cs.appendChild(d);
  }
  quick.appendChild(cs);
+ if(mode==='select'){
+  const selected=markerById(selectedMarkerId);
+  if(selected){
+   quickDivider();
+   button('● 已選取標記點',()=>{},true).disabled=true;
+   button(compassAnchorId===selectedMarkerId?'針腳已固定在此':'圓規針腳固定在此',()=>{
+    attachCompassToMarker(selectedMarkerId);
+   },compassAnchorId===selectedMarkerId);
+   button('刪除標記點',deleteSelectedMarker);
+   button('取消選取',()=>{selectedMarkerId=null;updateQuick();draw()});
+  }
+ }
  if(mode!=='select')quickDivider();
  if(mode==='pen'){
   for(const [name,width] of [['細',1.5],['中',2.5],['粗',4.5]])
@@ -476,6 +553,7 @@ function updateQuick(){
   button(tools.protractor.visible?'收起量角器':'顯示量角器',()=>{toggleTool('protractor');updateQuick()},tools.protractor.visible);
  }else if(mode==='compass'){
   button(compassDrawing?'● 停止畫弧':'開始畫弧',()=>setCompassDrawing(!compassDrawing),compassDrawing);
+  if(compassAnchorId)button('解除針腳固定',detachCompassAnchor,true);
   button(tools.compass.visible?'收起圓規':'顯示圓規',()=>{toggleTool('compass');updateQuick()},tools.compass.visible);
  }else if(mode==='eraser'){
   button('筆畫擦除',()=>{eraserMode='stroke';updateQuick();persist()},eraserMode==='stroke');
@@ -502,8 +580,8 @@ function compassSvg(t){const g=$svg('g',{class:'instrument toolShadow','data-too
  const adjust={x:(apex.x+foot.x)/2,y:(apex.y+foot.y)/2};$svg('circle',{cx:adjust.x,cy:adjust.y,r:12,class:'handleRing handle','data-tool':'compass','data-action':'radius'},g);$svg('circle',{cx:adjust.x,cy:adjust.y,r:4,fill:'#5282ab','pointer-events':'none'},g);
  $svg('circle',{cx:t.x,cy:t.y,r:13,class:'handleRing handle','data-tool':'compass','data-action':'move'},g);$svg('path',{d:`M ${t.x-5} ${t.y} h10 M ${t.x} ${t.y-5} v10`,stroke:'#698d7b','stroke-width':1.2,'pointer-events':'none'},g);
  $svg('circle',{cx:foot.x,cy:foot.y,r:14,class:'handleRing handle',style:compassDrawing?'stroke:#c7574f':'stroke:#789c90','data-tool':'compass','data-action':'arc'},g);$svg('circle',{cx:foot.x,cy:foot.y,r:4,fill:compassDrawing?color:'#6d988a','pointer-events':'none'},g);
- const hint=$svg('text',{x:foot.x+19,y:foot.y-15,class:'rulerText','pointer-events':'none'},g);hint.textContent=compassDrawing?'畫弧中':'自由旋轉';}
-function drawTools(){svg.replaceChildren();const activeOrder=['ruler','triangle','protractor','compass'];for(const k of activeOrder)if(tools[k].visible)({ruler,triangle,protractor:protractor,compass:compassSvg})[k](tools[k]);svg.style.pointerEvents=(mode==='pen'||mode==='eraser')?'none':'auto';updateAllToolsButton();if(recordSession)scheduleRecordingSvg()}
+ const hint=$svg('text',{x:foot.x+19,y:foot.y-15,class:'rulerText','pointer-events':'none'},g);hint.textContent=compassDrawing?'畫弧中':compassAnchorId?'針腳固定':'自由旋轉';}
+function drawTools(){syncCompassAnchor();svg.replaceChildren();const activeOrder=['ruler','triangle','protractor','compass'];for(const k of activeOrder)if(tools[k].visible)({ruler,triangle,protractor:protractor,compass:compassSvg})[k](tools[k]);svg.style.pointerEvents=(mode==='pen'||mode==='eraser')?'none':'auto';updateAllToolsButton();if(recordSession)scheduleRecordingSvg()}
 function getEdges(){let out=[];const r=tools.ruler;if(r.visible){const p=[{x:0,y:0},{x:r.len,y:0},{x:0,y:r.height},{x:r.len,y:r.height}].map(v=>global(v,r));out.push([p[0],p[1]],[p[2],p[3]])}const t=tools.triangle;if(t.visible){let p=trianglePoints(t).map(v=>global(v,t));for(let i=0;i<3;i++)out.push([p[i],p[(i+1)%3]])}return out}
 function findEdge(p){let best=null;for(const [a,b]of getEdges()){const n=near(p,a,b);if(n.d<21&&(!best||n.d<best.d))best={...n,a,b}}return best}
 function corrected(p,edge){if(!edge)return snapPoint(p);const q=near(p,edge.a,edge.b).p;if(!snap)return q;const candidate=snapPoint(q);return near(candidate,edge.a,edge.b).d<2.5?near(candidate,edge.a,edge.b).p:q}
@@ -775,9 +853,9 @@ svg.addEventListener('pointerdown',e=>{if(mode==='pen'||mode==='eraser'||pinchGe
  if(kind==='arc'){gesture.arcStart=t.a;gesture.arcPrev=t.a;gesture.arcDelta=0;live={type:'arc',cx:t.x,cy:t.y,r:t.r,a1:t.a,a2:t.a,color,width:lineWidth,dash:lineStyle}}
  gesture.action=action;
 });
-svg.addEventListener('pointermove',e=>{if(!gesture||pinchGesture||toolPinch)return;const p=position(e),g=gesture,t=tools[g.name];if(g.action==='move'){t.x=g.from.x+p.x-g.start.x;t.y=g.from.y+p.y-g.start.y}else if(g.action==='rotate'){const a=Math.atan2(p.y-t.y,p.x-t.x);t.a=g.from.a+norm(a-g.startAngle);}else if(g.action==='radius'){t.r=Math.max(35,Math.min(390,g.from.r+dist(p,{x:t.x,y:t.y})-g.startRadiusDistance));}else if(g.action==='arc'||g.action==='turn'){const a=Math.atan2(p.y-t.y,p.x-t.x);const delta=norm(a-g.arcPrev);g.arcDelta+=delta;g.arcPrev=a;t.a=g.arcStart+g.arcDelta;if(g.action==='arc')live={type:'arc',cx:t.x,cy:t.y,r:t.r,a1:g.arcStart,a2:t.a,ccw:g.arcDelta<0,color:g.arcColor,width:lineWidth,dash:g.arcDash}}
+svg.addEventListener('pointermove',e=>{if(!gesture||pinchGesture||toolPinch)return;const p=position(e),g=gesture,t=tools[g.name];if(g.action==='move'){if(!(g.name==='compass'&&compassAnchorId)){t.x=g.from.x+p.x-g.start.x;t.y=g.from.y+p.y-g.start.y}}else if(g.action==='rotate'){const a=Math.atan2(p.y-t.y,p.x-t.x);t.a=g.from.a+norm(a-g.startAngle);}else if(g.action==='radius'){t.r=Math.max(35,Math.min(390,g.from.r+dist(p,{x:t.x,y:t.y})-g.startRadiusDistance));}else if(g.action==='arc'||g.action==='turn'){const a=Math.atan2(p.y-t.y,p.x-t.x);const delta=norm(a-g.arcPrev);g.arcDelta+=delta;g.arcPrev=a;t.a=g.arcStart+g.arcDelta;if(g.action==='arc')live={type:'arc',cx:t.x,cy:t.y,r:t.r,a1:g.arcStart,a2:t.a,ccw:g.arcDelta<0,color:g.arcColor,width:lineWidth,dash:g.arcDash}}
  drawTools();if(g.action==='arc')draw();});
-function endGesture(commit=true){if(!gesture)return;if(commit&&gesture.action==='arc'&&Math.abs(gesture.arcDelta)>.03){shapes.push({...live});snapshot()}gesture=null;live=null;draw();drawTools();persist()}
+function endGesture(commit=true){if(!gesture)return;if(commit&&gesture.action==='arc'&&Math.abs(gesture.arcDelta)>.03){const arc={...live};shapes.push(arc);addEndpointMarkers(arc);snapshot()}gesture=null;live=null;draw();drawTools();persist()}
 svg.addEventListener('pointerup',()=>endGesture(true));svg.addEventListener('pointercancel',()=>endGesture(false));
 // Two-finger pinch changes the physical instrument, not the canvas.
 const toolTouchPointers=new Map();
@@ -791,7 +869,7 @@ function applyToolPinch(){
  const t=tools[g.name],mid=toolMid(a,b),factor=toolDistance(a,b)/g.distance;
  if(g.name==='compass'){
   t.r=Math.max(35,Math.min(390,g.from.r*factor));
-  t.x=g.from.x+mid.x-g.mid.x;t.y=g.from.y+mid.y-g.mid.y;
+  if(!compassAnchorId){t.x=g.from.x+mid.x-g.mid.x;t.y=g.from.y+mid.y-g.mid.y;}
  }else{
   t.scale=Math.max(.45,Math.min(2.8,g.from.scale*factor));
   const angle=Math.atan2(b.y-a.y,b.x-a.x);
@@ -913,7 +991,7 @@ stage.addEventListener('pointerup',e=>{
    const last=live.points.at(-1),p=position(e);
    if(dist(last,p)>.5/viewport.scale)live.points.push(p);
   }
-  shapes.push(live);snapshot();
+  const completed=live;shapes.push(completed);addEndpointMarkers(completed);snapshot();
  }
  drawing=null;live=null;draw()
 });
@@ -1161,7 +1239,7 @@ function selectBoard(id){if(activeBoardId===id){closeSettings();return}
 function createBoard(duplicate=false){
  persist();const old=boards.find(b=>b.id===activeBoardId);
  const data=duplicate?JSON.parse(JSON.stringify(currentBoardData())):currentBoardData();
- if(!duplicate){data.shapes=[];data.origin=null;data.stowedTools=null;for(const key of Object.keys(data.tools))data.tools[key].visible=false}
+ if(!duplicate){data.shapes=[];data.origin=null;data.compassAnchorId=null;data.stowedTools=null;for(const key of Object.keys(data.tools))data.tools[key].visible=false}
  const id=newBoardId(),name=duplicate?(old?.name||'教學畫布')+'（副本）':'教學畫布 '+(boards.length+1);
  boards.push({id,name,data});selectBoard(id);openSettings('boards')
 }
