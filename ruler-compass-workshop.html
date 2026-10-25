@@ -165,7 +165,7 @@
       <h3 id="otherGroupTitle">其餘資訊</h3>
       <button class="settingsAction" id="settingsHelp">操作說明</button>
       <button class="settingsAction" id="settingsChangelog">更新日誌</button>
-      <button class="settingsAction" id="settingsFeedback">回饋評論</button>
+      <button class="settingsAction" id="settingsFeedback">回饋評論（建置中）</button>
       <div class="settingsLinks">
         <button id="settingsPrivacy">隱私權政策</button>
       </div>
@@ -195,9 +195,9 @@
     <button class="settingsAction" id="boardDuplicate">複製目前畫布</button>
     <button class="settingsAction" id="boardDownload">匯出全部畫布可編輯檔</button>
   </section>
-  <section id="feedbackView" class="settingsSection" hidden aria-label="回饋評論">
+  <section id="feedbackView" class="settingsSection" hidden aria-label="回饋評論（建置中）">
     <button class="settingsBack" id="feedbackBack" type="button">← 返回畫布設定</button>
-    <h3>回饋評論</h3>
+    <h3>回饋評論（建置中）</h3>
     <p class="feedbackIntro">歡迎留下使用心得、功能建議與改善意見。留言會公開顯示姓名、內容與發布日期，站長可以回覆。</p>
     <p class="feedbackStatus" id="feedbackStatus" role="status" aria-live="polite"></p>
     <form id="feedbackForm" class="feedbackForm">
@@ -1081,7 +1081,7 @@ $('resetAppearance').addEventListener('click',()=>{
 });
 
 function closeSettings(){const panel=$('settingsPanel');panel.classList.remove('feedbackOpen');panel.hidden=true;$('settingsScrim').hidden=true;$('settingsToggle').setAttribute('aria-expanded','false');$('personalizeToggle').setAttribute('aria-expanded','false')}
-function setSettingsView(view){$('settingsHome').hidden=view!=='home';$('boardsView').hidden=view!=='boards';$('infoView').hidden=view!=='info';$('personalizeView').hidden=view!=='personalize';$('feedbackView').hidden=view!=='feedback';$('settingsPanel').classList.toggle('feedbackOpen',view==='feedback');$('settingsHeading').textContent=view==='feedback'?'回饋評論':view==='personalize'?'個人化設定':view==='boards'?'畫布管理':view==='info'?'資訊說明':'畫布設定'}
+function setSettingsView(view){$('settingsHome').hidden=view!=='home';$('boardsView').hidden=view!=='boards';$('infoView').hidden=view!=='info';$('personalizeView').hidden=view!=='personalize';$('feedbackView').hidden=view!=='feedback';$('settingsPanel').classList.toggle('feedbackOpen',view==='feedback');$('settingsHeading').textContent=view==='feedback'?'回饋評論（建置中）':view==='personalize'?'個人化設定':view==='boards'?'畫布管理':view==='info'?'資訊說明':'畫布設定'}
 function openSettings(view='home'){setSettingsView(view);$('settingsPanel').hidden=false;$('settingsScrim').hidden=false;$('settingsToggle').setAttribute('aria-expanded','true');if(view==='boards')renderBoards();if(view==='feedback')loadFeedback(true);if(view==='personalize'){syncAppearanceControls();$('personalizeToggle').setAttribute('aria-expanded','true')}}
 function infoPage(title,body){$('infoTitle').textContent=title;$('infoBody').textContent=body;openSettings('info')}
 function goFocus(on){focusMode=on;document.body.classList.toggle('focusMode',on);$('focusModeBtn').textContent=on?'離開專注模式':'專注模式';closeSettings();requestAnimationFrame(fit)}
