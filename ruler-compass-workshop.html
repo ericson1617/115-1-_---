@@ -363,8 +363,39 @@ function load(){try{
  if(legacy)applyBoardData(legacy);
  localStorage.setItem('geometry-workshop-black-ink-v1','1');penMigrationComplete=true;
  }catch(err){console.warn('讀取本機畫布失敗',err)}}
-function useMode(next){if(next==='guide'){showGuide(true);return}if(next!=='compass')compassDrawing=false;panGesture=null;pinchGesture=null;toolPinch=null;vertexGesture=null;vertexHover=null;toolTouchPointers.clear();activeTouches.clear();stage.classList.remove('draggingCanvas','vertexHover','vertexEditing');mode=next;if(tools[next]){stowedTools=null;tools[next].visible=true;}stage.classList.toggle('pencilMode',mode==='pen');stage.classList.toggle('eraseMode',mode==='eraser');stage.classList.toggle('selectMode',mode==='select');document.querySelectorAll('.toolbtn').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.mode===mode)));updateQuick();drawTools();persist();}
-const toggleTool=k=>{stowedTools=null;tools[k].visible=!tools[k].visible;if(k==='compass'&&!tools[k].visible)compassDrawing=false;drawTools();persist()};
+const instrumentLabels={ruler:'直尺',triangle:'三角板',protractor:'量角器',compass:'圓規'};
+function syncModeUI(){
+ stage.classList.toggle('pencilMode',mode==='pen');
+ stage.classList.toggle('eraseMode',mode==='eraser');
+ stage.classList.toggle('selectMode',mode==='select');
+ document.querySelectorAll('.toolbtn').forEach(b=>{
+  const key=b.dataset.mode,isInstrument=Object.prototype.hasOwnProperty.call(tools,key);
+  const pressed=isInstrument?!!tools[key].visible:key===mode;
+  b.setAttribute('aria-pressed',String(pressed));
+  if(isInstrument){
+   const action=(pressed?'收起':'展開')+instrumentLabels[key];
+   b.title=action;
+   b.setAttribute('aria-label',action);
+  }
+ });
+}
+function useMode(next){
+ if(next==='guide'){showGuide(true);return}
+ if(Object.prototype.hasOwnProperty.call(tools,next)){
+  // The physical tool buttons are switches: click to show, click again to stow.
+  const shouldShow=!tools[next].visible;
+  stowedTools=null;
+  tools[next].visible=shouldShow;
+  if(shouldShow)mode=next;
+  else if(mode===next)mode='select';
+ }else mode=next;
+ if(mode!=='compass'||!tools.compass.visible)compassDrawing=false;
+ panGesture=null;pinchGesture=null;toolPinch=null;
+ vertexGesture=null;vertexHover=null;toolTouchPointers.clear();activeTouches.clear();
+ stage.classList.remove('draggingCanvas','vertexHover','vertexEditing');
+ syncModeUI();updateQuick();drawTools();persist();
+}
+const toggleTool=k=>useMode(k);
 function updateAllToolsButton(){
  const b=$('allToolsToggle'),closed=stowedTools!==null,anyVisible=Object.values(tools).some(t=>t.visible);
  // Only offer this action when there is a displayed tool or a stowed set to restore.
@@ -377,7 +408,8 @@ function toggleAllTools(){
  if(stowedTools!==null){for(const k of Object.keys(tools))tools[k].visible=!!stowedTools[k];stowedTools=null}
  else{if(!Object.values(tools).some(t=>t.visible)){showToast('畫布上目前沒有展開的尺規工具。');return}
  stowedTools=Object.fromEntries(Object.entries(tools).map(([k,t])=>[k,t.visible]));for(const t of Object.values(tools))t.visible=false;compassDrawing=false}
- updateQuick();drawTools();persist();
+ if(Object.prototype.hasOwnProperty.call(tools,mode)&&!tools[mode].visible)mode='select';
+ syncModeUI();updateQuick();drawTools();persist();
 }
 function setCompassDrawing(on){
  compassDrawing=!!on;
