@@ -16,7 +16,7 @@
 .workshopPortraitRing{position:absolute;left:16.3%;top:12.3%;width:68.2%;height:74%;padding:2px;border-radius:50%;background:conic-gradient(from -24deg,#bee7f2 0%,#fff1c7 25%,#a8d6cc 52%,#c7c9ee 74%,#bee7f2 100%);box-shadow:0 2px 8px #345c8132,0 0 0 1px #fff;z-index:1}
 .workshopPortraitRing img{display:block;width:100%;height:100%;border-radius:50%;border:2px solid #fff;background:white;object-fit:cover}.titles{display:grid;gap:0;white-space:nowrap;min-width:0}.kicker{font-size:9px;letter-spacing:.22em;color:#94a69d}.titles strong{font-weight:650;font-size:18px;letter-spacing:.06em}.headBtns,.dock,.quick,.colors,.segment{display:flex;align-items:center;gap:7px}.headBtns{flex-wrap:wrap;justify-content:flex-end;margin-left:auto;min-width:0}.soft{border:1px solid var(--border);background:#fffefa;border-radius:11px;padding:8px 11px;color:var(--ink2);min-height:35px;font-size:12px}.soft:hover{background:#f1f7f2;color:var(--teal)}.soft:disabled{opacity:.35;cursor:default}.soft.icon{min-width:35px;padding:7px 8px;font-size:17px}.soft.primary{color:white;background:var(--teal);border-color:var(--teal)}
 .stageWrap{position:relative;min-height:0;flex:1;background:var(--paper);border:1px solid #e0e7df;border-radius:17px;overflow:hidden;box-shadow:0 7px 18px #3554480a}
-#ink,#tools{position:absolute;inset:0;width:100%;height:100%;touch-action:none;user-select:none}#tools{overflow:visible}#ink{pointer-events:none}.stageWrap.pencilMode{cursor:crosshair}.stageWrap.eraseMode{cursor:cell}.stageWrap.selectMode{cursor:default}.stageRight{position:absolute;right:13px;top:12px;z-index:4;display:flex;align-items:center;gap:6px}.drop{font-size:12px;padding:7px 10px;background:#ffffffed;border:1px solid var(--border);border-radius:9px;color:#61746a;min-height:34px}.help{position:absolute;left:15px;bottom:13px;font-size:11px;color:#507e71;z-index:5;pointer-events:none;max-width:75%;background:#fffefaec;padding:6px 10px;border:1px solid #e3ece4;border-radius:9px;box-shadow:0 4px 12px #3554480c}.help[hidden]{display:none}.zoom{position:absolute;right:14px;bottom:12px;background:#fffefdf3;padding:3px;gap:2px;display:none;align-items:center;border:1px solid #dce7dd;border-radius:10px;color:#56776b;font-size:11px;z-index:6;box-shadow:0 3px 12px #1e483310}.stageWrap.selectMode .zoom{display:flex}
+#ink,#tools{position:absolute;inset:0;width:100%;height:100%;touch-action:none;user-select:none}#tools{overflow:visible}#ink{pointer-events:none}.stageWrap.pencilMode{cursor:crosshair}.stageWrap.eraseMode{cursor:cell}.stageWrap.selectMode{cursor:grab}.stageWrap.selectMode.draggingCanvas{cursor:grabbing}.stageRight{position:absolute;right:13px;top:12px;z-index:4;display:flex;align-items:center;gap:6px}.drop{font-size:12px;padding:7px 10px;background:#ffffffed;border:1px solid var(--border);border-radius:9px;color:#61746a;min-height:34px}.help{position:absolute;left:15px;bottom:13px;font-size:11px;color:#507e71;z-index:5;pointer-events:none;max-width:75%;background:#fffefaec;padding:6px 10px;border:1px solid #e3ece4;border-radius:9px;box-shadow:0 4px 12px #3554480c}.help[hidden]{display:none}.zoom{position:absolute;right:14px;bottom:12px;background:#fffefdf3;padding:3px;gap:2px;display:none;align-items:center;border:1px solid #dce7dd;border-radius:10px;color:#56776b;font-size:11px;z-index:6;box-shadow:0 3px 12px #1e483310}.stageWrap.selectMode .zoom{display:flex}
 .zoom button{appearance:none;border:0;background:transparent;color:inherit;font:inherit;min-width:28px;height:28px;border-radius:7px;cursor:pointer}
 .zoom button:hover{background:#e8f1e8}.zoom #zoomReset{min-width:50px;font-variant-numeric:tabular-nums;font-weight:600}
 .footer{display:grid;justify-items:center;gap:8px}.quick{flex-wrap:wrap;justify-content:center;min-height:25px;max-width:100%;font-size:12px;color:#6e8178}.quick:empty{display:none}.quick .chip{padding:6px 10px;border-radius:9px;border:1px solid #dde8df;color:#58786f;background:#fffefa;min-height:30px;font-size:11px}.quick .chip.on{background:#e5f1e9;color:#2e665a;border-color:#cde4d5}.quick .divider{width:1px;height:19px;background:#dbe4dc;margin:0 3px}.dot{display:inline-block;height:17px;width:17px;border:2px solid #fbfdf9;border-radius:50%;box-shadow:0 0 0 1px #cbd6ce;cursor:pointer}.dot.on{box-shadow:0 0 0 2px var(--teal),0 0 0 4px #f4f7f3}
@@ -270,7 +270,7 @@ function load(){try{
  const legacy=JSON.parse(localStorage.getItem('geometry-physical-v1')||'null');
  if(legacy)applyBoardData(legacy);
  }catch(err){console.warn('讀取本機畫布失敗',err)}}
-function useMode(next){if(next==='guide'){showGuide(true);return}if(next!=='compass')compassDrawing=false;panGesture=null;pinchGesture=null;activeTouches.clear();mode=next;if(tools[next]){stowedTools=null;tools[next].visible=true;}stage.classList.toggle('pencilMode',mode==='pen');stage.classList.toggle('eraseMode',mode==='eraser');stage.classList.toggle('selectMode',mode==='select');document.querySelectorAll('.toolbtn').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.mode===mode)));updateQuick();drawTools();persist();}
+function useMode(next){if(next==='guide'){showGuide(true);return}if(next!=='compass')compassDrawing=false;panGesture=null;pinchGesture=null;activeTouches.clear();stage.classList.remove('draggingCanvas');mode=next;if(tools[next]){stowedTools=null;tools[next].visible=true;}stage.classList.toggle('pencilMode',mode==='pen');stage.classList.toggle('eraseMode',mode==='eraser');stage.classList.toggle('selectMode',mode==='select');document.querySelectorAll('.toolbtn').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.mode===mode)));updateQuick();drawTools();persist();}
 const toggleTool=k=>{stowedTools=null;tools[k].visible=!tools[k].visible;if(k==='compass'&&!tools[k].visible)compassDrawing=false;drawTools();persist()};
 function updateAllToolsButton(){const b=$('allToolsToggle'),closed=stowedTools!==null;b.textContent=closed?'還原工具':'收起工具';b.title=closed?'還原上次收起的實體尺規':'收起畫布上的所有實體尺規';b.setAttribute('aria-pressed',String(closed))}
 function toggleAllTools(){
@@ -391,7 +391,7 @@ stage.addEventListener('pointerdown',e=>{
  if(activeTouches.size===2){
   const [a,b]=[...activeTouches.values()],center=pinchMid(a,b);
   pinchGesture={gap:Math.max(1,pinchGap(a,b)),scale:viewport.scale,world:screenToWorld(center)};
-  panGesture=null;gesture=null;drawing=null;live=null;draw();
+  panGesture=null;stage.classList.remove('draggingCanvas');gesture=null;drawing=null;live=null;draw();
  }
 },true);
 stage.addEventListener('pointermove',e=>{
@@ -407,7 +407,7 @@ stage.addEventListener('pointermove',e=>{
 },true);
 function endTouch(e){
  if(activeTouches.has(e.pointerId))activeTouches.delete(e.pointerId);
- if(pinchGesture&&activeTouches.size<2){pinchGesture=null;panGesture=null;persist()}
+ if(pinchGesture&&activeTouches.size<2){pinchGesture=null;panGesture=null;stage.classList.remove('draggingCanvas');persist()}
 }
 stage.addEventListener('pointerup',endTouch,true);
 stage.addEventListener('pointercancel',endTouch,true);
@@ -415,7 +415,7 @@ stage.addEventListener('pointerdown',e=>{
  if(e.target!==stage&&e.target!==cv&&e.target!==svg)return;
  if(mode==='select'){
   if(pinchGesture)return;
-  e.preventDefault();panGesture={pointerId:e.pointerId,start:screenPosition(e),x:viewport.x,y:viewport.y};
+  e.preventDefault();panGesture={pointerId:e.pointerId,start:screenPosition(e),x:viewport.x,y:viewport.y};stage.classList.add('draggingCanvas');
   try{stage.setPointerCapture(e.pointerId)}catch{}
  }else if(mode==='pen'){
   e.preventDefault();const p=position(e),edge=findEdge(p);
@@ -447,13 +447,13 @@ stage.addEventListener('pointermove',e=>{
  draw()
 });
 stage.addEventListener('pointerup',e=>{
- if(panGesture&&panGesture.pointerId===e.pointerId){panGesture=null;persist();return}
+ if(panGesture&&panGesture.pointerId===e.pointerId){panGesture=null;stage.classList.remove('draggingCanvas');persist();return}
  if(!drawing||drawing.pointerId!==e.pointerId)return;
  if(!drawing.erase&&live){shapes.push(live);snapshot()}
  drawing=null;live=null;draw()
 });
 stage.addEventListener('pointercancel',e=>{
- if(panGesture?.pointerId===e.pointerId){panGesture=null;persist()}
+ if(panGesture?.pointerId===e.pointerId){panGesture=null;stage.classList.remove('draggingCanvas');persist()}
  if(drawing?.pointerId===e.pointerId){drawing=null;live=null;draw()}
 });
 let wheelSaveTimer=null;
