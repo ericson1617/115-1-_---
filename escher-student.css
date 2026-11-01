@@ -1,0 +1,47 @@
+/* Student version: keep the familiar editor, remove lecture and decorative UI. */
+:root{color:#1e4258}
+body[data-student=true]{background:linear-gradient(155deg,#eff8fc,#f8fbfc 75%);min-height:100vh}
+.studentWrap{max-width:1480px;margin:auto;padding:16px 22px 36px}
+.studentHeader{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:13px 23px;margin-bottom:15px;border-radius:20px;background:linear-gradient(115deg,#e5f5fc,#fff 80%);border:1px solid #d0e5ef;box-shadow:0 5px 22px #205d7c12}
+.studentEyebrow{font-size:12px;font-weight:850;letter-spacing:.06em;color:#4981a0}
+.studentHeader h1{font-size:clamp(22px,2.5vw,31px);color:#164e71;margin:3px 0;line-height:1.4}
+.studentAvatar{height:56px;width:56px;border-radius:50%;border:3px solid white;box-shadow:0 3px 11px #387b9822;flex-shrink:0}
+.studentGrid{display:grid;grid-template-columns:minmax(385px,1fr) minmax(340px,.93fr);gap:16px;align-items:start}
+.studentRight{min-width:0;display:flex;flex-direction:column;gap:15px}
+.studentPanel{min-width:0;border:1px solid #d4e5ec;background:#fff;border-radius:20px;box-shadow:0 7px 25px #205d7a0d;padding:19px}
+.studentPanel h2{margin:0 0 15px;display:flex;align-items:center;gap:9px;font-size:19px;color:#164d70;font-weight:850}
+.stepNo{display:inline-flex;align-items:center;justify-content:center;width:27px;height:27px;border-radius:50%;background:#1e729b;color:#fff;font-size:14px;font-weight:850;flex:0 0 auto}
+.studentPanel .field{margin:9px 0 12px}
+.studentPanel .field label{font-size:13px;margin-bottom:5px}
+.studentPanel select,.studentPanel input[type=text]{min-height:42px;font-size:15px}
+.studentPanel button{font-size:14px;min-height:39px}
+.studentEditor{background:#f6fbfe;margin:10px 0}
+.studentEditor .handle{r:10}
+.studentEditor svg{touch-action:none}
+.studentActions{display:flex;flex-wrap:wrap;gap:7px;margin-top:11px}
+.studentActions button{flex:1 1 94px;padding:9px 10px}
+.studentPointRow{padding-top:2px}
+#pointToDelete{max-width:100%}
+#pointSelectionStatus{margin:4px 0}
+#controlCount{margin:5px 0}
+#status{font-weight:700;min-height:20px}
+.sizeRow{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.sizeRow>.field{flex:0 1 180px;margin:0 0 10px}
+.sizeBadge{color:#547c90;background:#eaf5fa;padding:7px 11px;border-radius:999px;font-size:12px;font-weight:750}
+.a4Outer{background:#e9f1f5;padding:16px;border-radius:13px;border:1px solid #d3e2ea;display:flex;justify-content:center;align-items:center}
+.a4Preview{width:100%;max-width:360px;aspect-ratio:210/297;background:#fff;box-shadow:0 6px 17px #22435b20;overflow:hidden}
+.a4Preview svg{display:block;width:100%;height:100%;max-height:none;touch-action:auto}
+.exportActions{display:flex;gap:9px;margin-top:14px}
+.exportActions button{flex:1;padding:12px 10px}
+.studentNames{display:grid;grid-template-columns:.8fr .8fr 1.4fr;gap:9px}
+.studentNames input{width:100%}
+.uploadLink{display:block;text-align:center;text-decoration:none;border-radius:11px;padding:13px 12px;background:#21749c;color:#fff;font-size:16px;font-weight:850;margin-top:4px}
+.uploadLink:hover,.uploadLink:focus-visible{background:#155c83;color:#fff}
+body[data-student=true] .toolPicker button{min-width:110px}
+body[data-student=true] .edgePicker button{min-width:0}
+body[data-student=true] #penTip{font-size:12px;line-height:1.65}
+@media(min-width:1001px){.editorPanel{position:relative}}
+@media(max-width:1000px){.studentGrid{grid-template-columns:minmax(0,1fr)}.studentWrap{max-width:780px}.a4Preview{max-width:410px}}
+@media(max-width:540px){.studentWrap{padding:10px 10px 25px}.studentHeader{padding:11px 14px}.studentHeader h1{font-size:20px}.studentAvatar{height:43px;width:43px}.studentPanel{padding:13px;border-radius:16px}.studentPanel h2{font-size:18px}.studentNames{grid-template-columns:repeat(2,minmax(0,1fr))}.studentNames .field:last-child{grid-column:span 2}.sizeRow>.field{flex:1}.a4Outer{padding:9px}.exportActions{flex-wrap:wrap}.exportActions button{min-width:160px}}
+@page{size:A4 portrait;margin:0}
+@media print{html,body{background:#fff!important;width:210mm;height:297mm;margin:0!important;padding:0!important}body *{visibility:hidden!important}.studentWrap{display:none!important}#printOnly,#printOnly *{visibility:visible!important}#printOnly{display:block!important;position:absolute;left:0;top:0;width:210mm;height:297mm;margin:0!important;padding:0!important}#printOnly svg{display:block!important;width:210mm!important;height:297mm!important;max-width:none!important;max-height:none!important}}
