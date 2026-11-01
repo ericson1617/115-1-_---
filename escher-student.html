@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#f4faff">
+<title>藝數探索｜平移鑲嵌 A4 創作室</title>
+<link rel="canonical" href="https://ericson1617.github.io/115-1-_---/escher-student.html">
+<link rel="stylesheet" href="escher-workshop.css">
+<link rel="stylesheet" href="escher-student.css?v=20261101">
+</head>
+<body data-page="translation" data-student="true">
+<main class="studentWrap">
+<header class="studentHeader">
+  <div><div class="studentEyebrow">藝數探索 · 平移鑲嵌</div><h1>我的鑲嵌畫｜A4 創作室</h1></div>
+  <img src="author-avatar.svg" alt="" class="studentAvatar">
+</header>
+<div class="studentGrid">
+<section class="studentPanel editorPanel" aria-label="元件編輯">
+ <h2><span class="stepNo">1</span> 設計元件</h2>
+ <div class="field"><label for="shape">起始圖形</label>
+  <select id="shape"><option value="square">正方形</option><option value="rectangle">長方形</option><option value="parallelogram">平行四邊形</option><option value="rhombus">菱形</option></select>
+ </div>
+ <div class="field"><label>選擇要修改的邊</label>
+  <div class="edgePicker"><button type="button" data-edge-select="0">↑ 上邊</button><button type="button" data-edge-select="2" class="selected">↓ 下邊</button><button type="button" data-edge-select="3">← 左邊</button><button type="button" data-edge-select="1">→ 右邊</button></div>
+ </div>
+ <div class="field"><label>畫線工具</label>
+  <div class="toolPicker"><button type="button" data-draw-tool="points" class="selected">拖曳控制點</button><button type="button" data-draw-tool="pen">自由畫線</button></div>
+ </div>
+ <div class="field" id="lineStyleField"><label>線條樣式</label>
+  <div class="toolPicker"><button type="button" data-line-style="curve" class="selected">曲線</button><button type="button" data-line-style="line">直線</button></div>
+ </div>
+ <div class="canvasArea studentEditor" id="editorScene"><svg viewBox="0 0 520 425" aria-label="元件編輯畫布"></svg></div>
+ <p class="fine" id="drawHint"></p>
+ <p class="fine" id="controlCount"></p>
+ <div class="field studentPointRow"><label for="pointToDelete">刪除控制點</label>
+ <select id="pointToDelete"><option value="">選擇控制點</option></select>
+ <p class="fine" id="pointSelectionStatus">至少保留一個控制點。</p></div>
+ <div id="penTip" class="tip" style="display:none">直接在淡色區域畫線，兩端會自動接合。</div>
+ <div class="studentActions"><button id="addPoint">＋ 加點</button><button id="deletePoint" disabled>－ 刪點</button><button id="undo" disabled>↶ 復原</button><button id="redo" disabled>↷ 重做</button><button id="reset" class="warn">重設</button></div>
+ <div class="status" id="status" aria-live="polite"></div>
+</section>
+<div class="studentRight">
+<section class="studentPanel printPanelStudent" aria-label="A4 空白輪廓預覽">
+<h2><span class="stepNo">2</span> A4 空白輪廓圖</h2>
+<div class="sizeRow"><div class="field"><label for="tileCm">元件長邊</label>
+<select id="tileCm"><option value="6">6 cm</option><option value="7.5">7.5 cm</option><option value="9" selected>9 cm</option><option value="10">10 cm</option><option value="12">12 cm</option></select></div>
+<span class="sizeBadge">A4 · 直式 · 黑色線條</span></div>
+<div class="a4Outer"><div id="previewScene" class="a4Preview" aria-label="A4 密鋪黑線稿預覽"><svg viewBox="0 0 210 297"></svg></div></div>
+<div class="exportActions"><button id="downloadPNG" class="primary">↓ 下載 A4 輪廓圖 PNG</button><button id="print">直接列印</button></div>
+</section>
+<section class="studentPanel submitPanel" aria-label="繳交作品">
+<h2><span class="stepNo">3</span> 繳交作品</h2>
+<div class="studentNames">
+<div class="field"><label for="className">班級</label><input id="className" type="text" inputmode="numeric" autocomplete="off" placeholder="701" maxlength="12"></div>
+<div class="field"><label for="seat">座號</label><input id="seat" type="text" inputmode="numeric" autocomplete="off" placeholder="12" maxlength="8"></div>
+<div class="field"><label for="student">姓名</label><input id="student" type="text" autocomplete="off" placeholder="請填寫" maxlength="24"></div>
+</div>
+<a class="uploadLink" id="submitLink" href="https://tpedums-my.sharepoint.com/:f:/g/personal/ericson1617_ms_tp_edu_tw/IgAZlS06B8giRbhU18HhhVppASupRhd0_2a0W7JOU2BpSAk" target="_blank" rel="noopener noreferrer">↑ 前往上傳作品</a>
+</section>
+</div>
+</div>
+</main>
+<!-- Shared math editor needs a few hidden settings; not shown to students. -->
+<div hidden aria-hidden="true">
+<select id="mode"><option value="translate">平移</option></select>
+<select id="preset"><option value="blank">空白</option><option value="arrow">箭頭</option></select>
+<select id="selectedEdge"><option value="0">上邊</option><option value="1">右邊</option><option value="2" selected>下邊</option><option value="3">左邊</option></select>
+<input id="color" type="color" value="#ffffff">
+<input id="outline" type="checkbox" checked><input id="multicolor" type="checkbox">
+<select id="paper"><option value="A4">A4</option></select>
+<select id="printKind"><option value="trace">描繪模板</option></select>
+<button id="downloadTilePNG" type="button">單圖</button>
+<div id="stepText"></div><div id="modeLabel"></div><div id="concept"></div>
+<div id="printOnly"></div>
+</div>
+<script src="escher-student.js?v=20261101"></script>
+</body></html>
