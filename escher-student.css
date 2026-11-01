@@ -28,8 +28,8 @@ body[data-student=true]{background:linear-gradient(155deg,#eff8fc,#f8fbfc 75%);m
 .sizeRow{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .sizeRow>.field{flex:0 1 180px;margin:0 0 10px}
 .sizeBadge{color:#547c90;background:#eaf5fa;padding:7px 11px;border-radius:999px;font-size:12px;font-weight:750}
-.a4Outer{background:#e9f1f5;padding:16px;border-radius:13px;border:1px solid #d3e2ea;display:flex;justify-content:center;align-items:center}
-.a4Preview{width:100%;max-width:580px;aspect-ratio:297/210;background:#fff;box-shadow:0 6px 17px #22435b20;overflow:hidden}
+.a4Outer{background:transparent;padding:0;border:0;border-radius:0;display:flex;justify-content:center;align-items:center}
+.a4Preview{width:100%;max-width:none;aspect-ratio:297/210;background:#fff;box-shadow:none;overflow:hidden}
 .a4Preview svg{display:block;width:100%;height:100%;max-height:none;touch-action:auto}
 .exportActions{display:flex;gap:9px;margin-top:14px}
 .exportActions button{flex:1;padding:12px 10px}
@@ -41,7 +41,7 @@ body[data-student=true] .toolPicker button{min-width:110px}
 body[data-student=true] .edgePicker button{min-width:0}
 body[data-student=true] #penTip{font-size:12px;line-height:1.65}
 @media(min-width:1001px){.editorPanel{position:relative}}
-@media(max-width:1000px){.studentGrid{grid-template-columns:minmax(0,1fr)}.studentWrap{max-width:780px}.a4Preview{max-width:580px}}
-@media(max-width:540px){.studentWrap{padding:10px 10px 25px}.studentHeader{padding:11px 14px}.studentHeader h1{font-size:20px}.studentAvatar{height:43px;width:43px}.studentPanel{padding:13px;border-radius:16px}.studentPanel h2{font-size:18px}.studentNames{grid-template-columns:repeat(2,minmax(0,1fr))}.studentNames .field:last-child{grid-column:span 2}.sizeRow>.field{flex:1}.a4Outer{padding:9px}.exportActions{flex-wrap:wrap}.exportActions button{min-width:160px}}
+@media(max-width:1000px){.studentGrid{grid-template-columns:minmax(0,1fr)}.studentWrap{max-width:780px} .a4Preview{max-width:none}}
+@media(max-width:540px){.studentWrap{padding:10px 10px 25px}.studentHeader{padding:11px 14px}.studentHeader h1{font-size:20px}.studentAvatar{height:43px;width:43px}.studentPanel{padding:13px;border-radius:16px}.studentPanel h2{font-size:18px}.studentNames{grid-template-columns:repeat(2,minmax(0,1fr))}.studentNames .field:last-child{grid-column:span 2}.sizeRow>.field{flex:1}.a4Outer{padding:0}.exportActions{flex-wrap:wrap}.exportActions button{min-width:160px}}
 @page{size:A4 landscape;margin:0}
 @media print{html,body{background:#fff!important;width:297mm;height:210mm;margin:0!important;padding:0!important}body *{visibility:hidden!important}.studentWrap{display:none!important}#printOnly,#printOnly *{visibility:visible!important}#printOnly{display:block!important;position:absolute;left:0;top:0;width:297mm;height:210mm;margin:0!important;padding:0!important}#printOnly svg{display:block!important;width:297mm!important;height:210mm!important;max-width:none!important;max-height:none!important}}
