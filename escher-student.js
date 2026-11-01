@@ -390,24 +390,38 @@ function tilesSVG(W,H,unit,stage=3,print=false){
 // Draw each shared boundary once (top and right edges of each translated cell)
 // instead of outlining both adjacent tiles: this prevents darker doubled seams.
 // Fixed physical black ink: stroke-width is ALWAYS 0.45 mm, regardless of tile size.
+// Fixed A4 layouts. Each size + basic shape has an explicit number of tiles.
+// Crucially, no part of the layout uses the EDITED silhouette's bounding box.
+const studentTileCounts={
+ square:{'6':[4,3],'7.5':[3,2],'9':[3,2],'10':[2,2],'12':[2,1]},
+ rectangle:{'6':[4,3],'7.5':[3,2],'9':[3,2],'10':[2,2],'12':[2,2]},
+ parallelogram:{'6':[3,3],'7.5':[3,2],'9':[2,2],'10':[2,2],'12':[2,1]},
+ rhombus:{'6':[3,3],'7.5':[2,2],'9':[2,2],'10':[2,1],'12':[2,1]}
+};
+function studentLayout(){
+ const [u,v]=templates[s.shape],size=String(s.tileCm);
+ const [cols,rows]=(studentTileCounts[s.shape]||studentTileCounts.square)[size]||[3,2];
+ const corner=[ [0,0],mul(u,cols),mul(v,rows),add(mul(u,cols),mul(v,rows)) ];
+ const x=corner.map(p=>p[0]),y=corner.map(p=>p[1]);
+ const xMin=Math.min(...x),xMax=Math.max(...x),yMin=Math.min(...y),yMax=Math.max(...y);
+ const nominal=s.tileCm*10/Math.max(norm(u),norm(v));
+ // Small adjustment is needed only if a tilted grid exceeds A4 paper.
+ // This limit depends on the original base shape, NEVER on dragged controls.
+ const unit=Math.min(nominal,280/(xMax-xMin),193/(yMax-yMin));
+ return {cols,rows,unit,u,v,origin:[148.5-unit*(xMin+xMax)/2,105-unit*(yMin+yMax)/2]};
+}
 function studentSheetSVG(){
- const W=297,H=210,margin=7;
- const poly=tile(),[u,v]=templates[s.shape];
- const xx=poly.map(p=>p[0]),yy=poly.map(p=>p[1]);
- const minX=Math.min(...xx),maxX=Math.max(...xx),minY=Math.min(...yy),maxY=Math.max(...yy);
- const unit=s.tileCm*10/Math.max(maxX-minX,maxY-minY);
- const center=[(minX+maxX)/2,(minY+maxY)/2];
- const origin=[W/2-unit*center[0],H/2-unit*center[1]];
- const upper=edge(0),right=edge(1);
+ const W=297,H=210,margin=5;
+ const {cols,rows,unit,u,v,origin}=studentLayout();
  let paths='';
- // Wide index range ensures the full landscape paper remains covered,
- // including shear/oblique lattice offsets for parallelograms and rhombi.
- for(let j=-11;j<=11;j++)for(let i=-12;i<=12;i++){
-  const x=origin[0]+unit*(u[0]*i+v[0]*j),y=origin[1]+unit*(u[1]*i+v[1]*j);
-  if(x+maxX*unit<margin-.6||x+minX*unit>W-margin+.6||
-     y+maxY*unit<margin-.6||y+minY*unit>H-margin+.6)continue;
-  for(const e of [upper,right]){
-   const points=e.map(p=>[x+p[0]*unit,y+p[1]*unit]);
+ const allEdges=[edge(0),edge(1),edge(2),edge(3)];
+ for(let j=0;j<rows;j++)for(let i=0;i<cols;i++){
+  const x=origin[0]+unit*(u[0]*i+v[0]*j);
+  const y=origin[1]+unit*(u[1]*i+v[1]*j);
+  // One copy per cell. Draw shared edges only once, adding outer perimeter
+  // edges at the final row and initial column.
+  for(const which of [0,1,...(j===rows-1?[2]:[]),...(i===0?[3]:[])]){
+   const points=allEdges[which].map(p=>[x+p[0]*unit,y+p[1]*unit]);
    paths+='<path d="'+linePath(points)+'"/>';
   }
  }
@@ -457,7 +471,7 @@ async function studentPNG(){
 }
 function drawPreview(){
  const box=$('previewScene');if(!box)return;
- if(studentMode){box.innerHTML=studentSheetSVG();return;}
+ if(studentMode){box.innerHTML=studentSheetSVG();const badge=$('fixedTileCount');if(badge){const l=studentLayout();badge.textContent='A4 · 橫式 · 固定 '+(l.cols*l.rows)+' 個元件';}return;}
  const W=840,H=560,unit=s.shape==='triangle'?180:s.shape==='hexagon'?122:150;
  const direction=page==='translation'?staggerDirectionAvailable():null;
  // If the last straight opposite pair is edited, immediately return to aligned layout.
@@ -508,8 +522,11 @@ function projectOnSelected(p,e){
 function editorPoint(e){
  const [A,B]=bases()[e];return [A,B];
 }
+function studentEditorView(){
+ return studentMode?{W:660,H:570,unit:200,O:[180,154]}:{W:520,H:425,unit:226,O:[128,93]};
+}
 function drawTranslationEditor(){
- const W=520,H=425,unit=226,O=[128,93],vs=verts(),e=s.selectedEdge,src=sourceForSide(e),pr=s.trans[src];
+ const {W,H,unit,O}=studentEditorView(),vs=verts(),e=s.selectedEdge,src=sourceForSide(e),pr=s.trans[src];
  const toPx=p=>add(O,mul(p,unit));
  const [a,b,d,c]=vs,mid=(p,q)=>mul(add(p,q),.5);
  const a01=mid(a,b),a12=mid(b,d),a23=mid(d,c),a30=mid(c,a);
@@ -540,7 +557,7 @@ function drawTranslationEditor(){
  }
  for(const p of vs){const q=toPx(p);svg+='<circle cx="'+fmt(q[0])+'" cy="'+fmt(q[1])+'" r="3.5" fill="white" stroke="#2f708e" stroke-width="1.6"/>'}
  svg+='<path id="penStroke" d="" fill="none" stroke="#f16f33" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/>';
- $('editorScene').innerHTML='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 425" aria-label="選定邊的平移輪廓編輯區"><g>'+svg+'</g></svg>';
+ $('editorScene').innerHTML='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 '+W+' '+H+'" aria-label="選定邊的平移輪廓編輯區"><g>'+svg+'</g></svg>';
  $('controlCount').textContent='正在編輯「'+edgeLabel(e)+'」；'+(s.drawTool==='pen'?'直接畫線，另一側會同步配對。':'拖曳 '+count+' 個橘色控制點，另一側同步配對。');
  $('selectedEdge').value=String(e);
  document.querySelectorAll('[data-edge-select]').forEach(b=>b.classList.toggle('selected',Number(b.dataset.edgeSelect)===e));
@@ -582,8 +599,8 @@ function render(){
 function svgPt(svg,evt){const pt=svg.createSVGPoint();pt.x=evt.clientX;pt.y=evt.clientY;return pt.matrixTransform(svg.getScreenCTM().inverse())}
 function localFromPointer(evt){
  const svg=$('editorScene').querySelector('svg'),p=svgPt(svg,evt);
- const unit=s.shape==='hexagon'?138:226,O=s.shape==='hexagon'?[260,214]:[128,93];
- return[(p.x-O[0])/unit,(p.y-O[1])/unit];
+ const cfg=studentMode?studentEditorView():{unit:s.shape==='hexagon'?138:226,O:s.shape==='hexagon'?[260,214]:[128,93]};
+ return[(p.x-cfg.O[0])/cfg.unit,(p.y-cfg.O[1])/cfg.unit];
 }
 function sampleFreehand(pos){
  if(!s.sketching)return;
@@ -593,7 +610,8 @@ function sampleFreehand(pos){
  if(line){
   const e=s.sketching.edge;
   const shaped=[pointOnSelected(0,0,e),...pts,pointOnSelected(1,0,e)];
-  line.setAttribute('d',linePath(shaped.map(p=>add([128,93],mul(p,226)))));
+  const cfg=studentEditorView();
+  line.setAttribute('d',linePath(shaped.map(p=>add(cfg.O,mul(p,cfg.unit)))));
  }
 }
 function anchoredSketch(points,e){
@@ -956,6 +974,6 @@ async function png(svg,suffix){
  const link=URL.createObjectURL(b),a=document.createElement('a');a.href=link;a.download=filename(suffix);a.click();setTimeout(()=>URL.revokeObjectURL(link),1000);
  setStatus('已準備下載：'+a.download);
 }
-window.EscherWorkshopDebug={state:s,valid,tile,edge,tilesSVG,triangleInstances,printSVG,snapshot,restore,presetValues,sourceForSide,pointOnSelected,projectOnSelected,endFreehand,movementSVG,undoEdit,redoEdit,recordUndoState,gallery,galleryPreview,studentSheetSVG,studentReady};
+window.EscherWorkshopDebug={state:s,valid,tile,edge,tilesSVG,triangleInstances,printSVG,snapshot,restore,presetValues,sourceForSide,pointOnSelected,projectOnSelected,endFreehand,movementSVG,undoEdit,redoEdit,recordUndoState,gallery,galleryPreview,studentSheetSVG,studentReady,studentLayout,studentTileCounts,studentEditorView};
 attachEvents();render();
 })();
