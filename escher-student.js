@@ -392,43 +392,45 @@ function tilesSVG(W,H,unit,stage=3,print=false){
 // Fixed physical black ink: stroke-width is ALWAYS 0.45 mm, regardless of tile size.
 // Fixed A4 layouts. Each size + basic shape has an explicit number of tiles.
 // Crucially, no part of the layout uses the EDITED silhouette's bounding box.
-const studentTileCounts={
- square:{'6':[4,3],'7.5':[3,2],'9':[3,2],'10':[2,2],'12':[2,1]},
- rectangle:{'6':[4,3],'7.5':[3,2],'9':[3,2],'10':[2,2],'12':[2,2]},
- parallelogram:{'6':[3,3],'7.5':[3,2],'9':[2,2],'10':[2,2],'12':[2,1]},
- rhombus:{'6':[3,3],'7.5':[2,2],'9':[2,2],'10':[2,1],'12':[2,1]}
-};
+// Full-bleed A4 landscape tiled sheet.
+// The lattice depends on shape and selected cm ONLY (never edited silhouette).
+// Index ranges are derived once from the sheet's four corners, then padded:
+// tiles may cross all page edges and are cropped naturally by the A4 viewport.
 function studentLayout(){
- const [u,v]=templates[s.shape],size=String(s.tileCm);
- const [cols,rows]=(studentTileCounts[s.shape]||studentTileCounts.square)[size]||[3,2];
- const corner=[ [0,0],mul(u,cols),mul(v,rows),add(mul(u,cols),mul(v,rows)) ];
- const x=corner.map(p=>p[0]),y=corner.map(p=>p[1]);
- const xMin=Math.min(...x),xMax=Math.max(...x),yMin=Math.min(...y),yMax=Math.max(...y);
- const nominal=s.tileCm*10/Math.max(norm(u),norm(v));
- // Small adjustment is needed only if a tilted grid exceeds A4 paper.
- // This limit depends on the original base shape, NEVER on dragged controls.
- const unit=Math.min(nominal,280/(xMax-xMin),193/(yMax-yMin));
- return {cols,rows,unit,u,v,origin:[148.5-unit*(xMin+xMax)/2,105-unit*(yMin+yMax)/2]};
+ const W=297,H=210,[u,v]=templates[s.shape];
+ const unit=s.tileCm*10/Math.max(norm(u),norm(v));
+ // A tile near the center of the paper, with off-page copies on every side.
+ const origin=[W/2-unit*(u[0]+v[0])*.5,H/2-unit*(u[1]+v[1])*.5];
+ const determinant=cross(u,v);
+ if(Math.abs(determinant)<1e-9)throw Error('起始圖形無法建立平移網格');
+ const corners=[[0,0],[W,0],[W,H],[0,H]].map(([x,y])=>{
+  const q=[(x-origin[0])/unit,(y-origin[1])/unit];
+  return [cross(q,v)/determinant,cross(u,q)/determinant];
+ });
+ const xs=corners.map(q=>q[0]),ys=corners.map(q=>q[1]);
+ const i0=Math.floor(Math.min(...xs))-2,i1=Math.ceil(Math.max(...xs))+2;
+ const j0=Math.floor(Math.min(...ys))-2,j1=Math.ceil(Math.max(...ys))+2;
+ return {unit,u,v,origin,i0,i1,j0,j1,cols:i1-i0,rows:j1-j0};
 }
 function studentSheetSVG(){
- const W=297,H=210,margin=5;
- const {cols,rows,unit,u,v,origin}=studentLayout();
+ const W=297,H=210,{unit,u,v,origin,i0,i1,j0,j1}=studentLayout();
  let paths='';
- const allEdges=[edge(0),edge(1),edge(2),edge(3)];
- for(let j=0;j<rows;j++)for(let i=0;i<cols;i++){
+ const top=edge(0),right=edge(1);
+ // Each internal seam is drawn only once: top & right edges, for a
+ // fixed set of cells, padded beyond the A4 sheet on all sides.
+ for(let j=j0;j<j1;j++)for(let i=i0;i<i1;i++){
   const x=origin[0]+unit*(u[0]*i+v[0]*j);
   const y=origin[1]+unit*(u[1]*i+v[1]*j);
-  // One copy per cell. Draw shared edges only once, adding outer perimeter
-  // edges at the final row and initial column.
-  for(const which of [0,1,...(j===rows-1?[2]:[]),...(i===0?[3]:[])]){
-   const points=allEdges[which].map(p=>[x+p[0]*unit,y+p[1]*unit]);
+  for(const e of [top,right]){
+   const points=e.map(p=>[x+p[0]*unit,y+p[1]*unit]);
    paths+='<path d="'+linePath(points)+'"/>';
   }
  }
- return '<svg xmlns="http://www.w3.org/2000/svg" width="297mm" height="210mm" viewBox="0 0 297 210" aria-label="A4 橫式黑色輪廓鑲嵌圖">'+
- '<defs><clipPath id="studentClipA4Landscape"><rect x="'+margin+'" y="'+margin+'" width="'+(W-2*margin)+'" height="'+(H-2*margin)+'"/></clipPath></defs>'+
+ return '<svg xmlns="http://www.w3.org/2000/svg" width="297mm" height="210mm" viewBox="0 0 297 210" aria-label="A4 橫式全幅平移密鋪輪廓圖">'+
  '<rect width="'+W+'" height="'+H+'" fill="#fff"/>'+
- '<g clip-path="url(#studentClipA4Landscape)" fill="none" stroke="#111111" stroke-width=".45" stroke-linejoin="round" stroke-linecap="round">'+paths+'</g></svg>';
+ // SVG viewport crops surplus copies; no safe-area inset and no
+ // artificial rectangle around only the completed shapes.
+ '<g fill="none" stroke="#111111" stroke-width=".45" stroke-linejoin="round" stroke-linecap="round">'+paths+'</g></svg>';
 }
 function studentReady(){
  for(const [id,label] of [['className','班級'],['seat','座號'],['student','姓名']]){
@@ -471,7 +473,7 @@ async function studentPNG(){
 }
 function drawPreview(){
  const box=$('previewScene');if(!box)return;
- if(studentMode){box.innerHTML=studentSheetSVG();const badge=$('fixedTileCount');if(badge){const l=studentLayout();badge.textContent='A4 · 橫式 · 固定 '+(l.cols*l.rows)+' 個元件';}return;}
+ if(studentMode){box.innerHTML=studentSheetSVG();const badge=$('fixedTileCount');if(badge){const l=studentLayout();badge.textContent='A4 · 橫式 · 邊緣可裁切';}return;}
  const W=840,H=560,unit=s.shape==='triangle'?180:s.shape==='hexagon'?122:150;
  const direction=page==='translation'?staggerDirectionAvailable():null;
  // If the last straight opposite pair is edited, immediately return to aligned layout.
@@ -974,6 +976,6 @@ async function png(svg,suffix){
  const link=URL.createObjectURL(b),a=document.createElement('a');a.href=link;a.download=filename(suffix);a.click();setTimeout(()=>URL.revokeObjectURL(link),1000);
  setStatus('已準備下載：'+a.download);
 }
-window.EscherWorkshopDebug={state:s,valid,tile,edge,tilesSVG,triangleInstances,printSVG,snapshot,restore,presetValues,sourceForSide,pointOnSelected,projectOnSelected,endFreehand,movementSVG,undoEdit,redoEdit,recordUndoState,gallery,galleryPreview,studentSheetSVG,studentReady,studentLayout,studentTileCounts,studentEditorView};
+window.EscherWorkshopDebug={state:s,valid,tile,edge,tilesSVG,triangleInstances,printSVG,snapshot,restore,presetValues,sourceForSide,pointOnSelected,projectOnSelected,endFreehand,movementSVG,undoEdit,redoEdit,recordUndoState,gallery,galleryPreview,studentSheetSVG,studentReady,studentLayout,studentEditorView};
 attachEvents();render();
 })();
