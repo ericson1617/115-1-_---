@@ -411,8 +411,9 @@ function studentSheetSVG(){
 }
 function studentReady(){
  for(const [id,label] of [['className','班級'],['seat','座號'],['student','姓名']]){
-  const field=$(id);
-  if(!field.value.trim()){setStatus('請先填寫「'+label+'」。');field.focus?.();return false;}
+  const field=$(id),value=field.value.trim();
+  if(!value){setStatus('請先填寫「'+label+'」。');field.focus?.();return false;}
+  s[id]=value; // Also supports tablet autofill/paste that may not emit input.
  }
  return true;
 }
