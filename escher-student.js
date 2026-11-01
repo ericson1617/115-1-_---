@@ -440,6 +440,54 @@ function studentReady(){
  }
  return true;
 }
+// Native, one-page A4 landscape vector PDF. No network/CDN required.
+// Uses exactly the same black boundary geometry as studentSheetSVG().
+function studentPDFContent(){
+ const svg=studentSheetSVG(),pt=72/25.4,pageW=297*pt,pageH=210*pt;
+ const f=v=>Number(v).toFixed(3);
+ const commands=['q','0 0 '+f(pageW)+' '+f(pageH)+' re W n',
+  '0 0 0 RG',f(.45*pt)+' w','1 J','1 j'];
+ const matches=[...svg.matchAll(/<path d="([^"]+)"\/>/g)];
+ for(const match of matches){
+  const xy=(match[1].match(/-?\d+(?:\.\d+)?/g)||[]).map(Number);
+  if(xy.length<4||xy.length%2!==0)continue;
+  commands.push(f(xy[0]*pt)+' '+f((210-xy[1])*pt)+' m');
+  for(let k=2;k<xy.length;k+=2)commands.push(f(xy[k]*pt)+' '+f((210-xy[k+1])*pt)+' l');
+  commands.push('S');
+ }
+ commands.push('Q');
+ const stream=commands.join('\n')+'\n';
+ // ASCII-only PDF so JS string lengths equal byte lengths; no libraries needed.
+ let pdf='%PDF-1.4\n',offsets=[0];
+ const object=(number,body)=>{
+  offsets[number]=pdf.length;
+  pdf+=number+' 0 obj\n'+body+'\nendobj\n';
+ };
+ object(1,'<< /Type /Catalog /Pages 2 0 R >>');
+ object(2,'<< /Type /Pages /Kids [3 0 R] /Count 1 >>');
+ object(3,'<< /Type /Page /Parent 2 0 R /MediaBox [0 0 '+
+  f(pageW)+' '+f(pageH)+'] /Resources << >> /Contents 4 0 R >>');
+ object(4,'<< /Length '+stream.length+' >>\nstream\n'+stream+'endstream');
+ const xref=pdf.length;
+ pdf+='xref\n0 5\n0000000000 65535 f \n';
+ for(let i=1;i<=4;i++)pdf+=String(offsets[i]).padStart(10,'0')+' 00000 n \n';
+ pdf+='trailer\n<< /Size 5 /Root 1 0 R >>\nstartxref\n'+xref+'\n%%EOF\n';
+ return pdf;
+}
+function studentPDF(){
+ if(!studentReady())return;
+ const button=$('downloadPDF');button.disabled=true;
+ try{
+  const file=new Blob([studentPDFContent()],{type:'application/pdf'});
+  const url=URL.createObjectURL(file),a=document.createElement('a');
+  a.href=url;a.download=filename('A4_黑色鑲嵌輪廓.pdf');
+  document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),10000);
+  setStatus('已下載：'+a.download+'。請到繳交區上傳這份 PDF。');
+ }catch(err){
+  setStatus('PDF 下載失敗，請重試。'+(err?.message?'（'+err.message+'）':''));
+ }finally{button.disabled=false;}
+}
 async function studentPNG(){
  if(!studentReady())return;
  const button=$('downloadPNG');button.disabled=true;
@@ -916,7 +964,8 @@ function attachEvents(){
  $('downloadPNG').addEventListener('click',async()=>{if(studentMode)return studentPNG();try{await png(tilesSVG(1200,850,210,3),'完整鑲嵌.png')}catch(e){setStatus('PNG 轉換失敗，請再試一次。')}});
  $('downloadTilePNG').addEventListener('click',async()=>{try{await png(singleSVG(850,700,true),'我的元件.png')}catch(e){setStatus('PNG 轉換失敗，請先下載 SVG。')}});
  if($('downloadPrint'))$('downloadPrint').addEventListener('click',()=>download('image/svg+xml',printSVG(),s.printKind==='tile'?'描繪元件模板.svg':'密鋪參考圖.svg'));
- $('print').addEventListener('click',()=>{
+ if(studentMode)$('downloadPDF').addEventListener('click',studentPDF);
+ else $('print').addEventListener('click',()=>{
   const node=$('printOnly');node.innerHTML=printSVG();window.print();
  });
  $('paper').addEventListener('change',e=>s.paper=e.target.value);
@@ -976,6 +1025,6 @@ async function png(svg,suffix){
  const link=URL.createObjectURL(b),a=document.createElement('a');a.href=link;a.download=filename(suffix);a.click();setTimeout(()=>URL.revokeObjectURL(link),1000);
  setStatus('已準備下載：'+a.download);
 }
-window.EscherWorkshopDebug={state:s,valid,tile,edge,tilesSVG,triangleInstances,printSVG,snapshot,restore,presetValues,sourceForSide,pointOnSelected,projectOnSelected,endFreehand,movementSVG,undoEdit,redoEdit,recordUndoState,gallery,galleryPreview,studentSheetSVG,studentReady,studentLayout,studentEditorView};
+window.EscherWorkshopDebug={state:s,valid,tile,edge,tilesSVG,triangleInstances,printSVG,snapshot,restore,presetValues,sourceForSide,pointOnSelected,projectOnSelected,endFreehand,movementSVG,undoEdit,redoEdit,recordUndoState,gallery,galleryPreview,studentSheetSVG,studentReady,studentLayout,studentEditorView,studentPDFContent};
 attachEvents();render();
 })();
