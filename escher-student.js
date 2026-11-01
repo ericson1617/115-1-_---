@@ -386,28 +386,35 @@ function tilesSVG(W,H,unit,stage=3,print=false){
 
 // A4 portrait worksheet: pure white paper and black contour paths only.
 // 210 x 297 viewBox units are millimetres, so the requested tile size prints accurately.
+// A4 LANDSCAPE worksheet. All geometry is in millimetres.
+// Draw each shared boundary once (top and right edges of each translated cell)
+// instead of outlining both adjacent tiles: this prevents darker doubled seams.
+// Fixed physical black ink: stroke-width is ALWAYS 0.45 mm, regardless of tile size.
 function studentSheetSVG(){
- const W=210,H=297,margin=7;
- const poly=tile(), [u,v]=templates[s.shape];
+ const W=297,H=210,margin=7;
+ const poly=tile(),[u,v]=templates[s.shape];
  const xx=poly.map(p=>p[0]),yy=poly.map(p=>p[1]);
  const minX=Math.min(...xx),maxX=Math.max(...xx),minY=Math.min(...yy),maxY=Math.max(...yy);
  const unit=s.tileCm*10/Math.max(maxX-minX,maxY-minY);
  const center=[(minX+maxX)/2,(minY+maxY)/2];
- const o=[W/2-unit*center[0],H/2-unit*center[1]];
- let shapes='',count=0;
- for(let j=-7;j<=7;j++)for(let i=-7;i<=7;i++){
-  const x=o[0]+unit*(u[0]*i+v[0]*j),y=o[1]+unit*(u[1]*i+v[1]*j);
-  // Do not serialize off-page copies; this keeps tablet exports quick.
-  if(x+minX*unit>W-margin+.6||x+maxX*unit<margin-.6||
-     y+minY*unit>H-margin+.6||y+maxY*unit<margin-.6)continue;
-  const coords=poly.map(p=>[x+p[0]*unit,y+p[1]*unit]);
-  shapes+='<path d="'+path(coords)+'"/>';count++;
+ const origin=[W/2-unit*center[0],H/2-unit*center[1]];
+ const upper=edge(0),right=edge(1);
+ let paths='';
+ // Wide index range ensures the full landscape paper remains covered,
+ // including shear/oblique lattice offsets for parallelograms and rhombi.
+ for(let j=-11;j<=11;j++)for(let i=-12;i<=12;i++){
+  const x=origin[0]+unit*(u[0]*i+v[0]*j),y=origin[1]+unit*(u[1]*i+v[1]*j);
+  if(x+maxX*unit<margin-.6||x+minX*unit>W-margin+.6||
+     y+maxY*unit<margin-.6||y+minY*unit>H-margin+.6)continue;
+  for(const e of [upper,right]){
+   const points=e.map(p=>[x+p[0]*unit,y+p[1]*unit]);
+   paths+='<path d="'+linePath(points)+'"/>';
+  }
  }
- const clip='studentClipA4';
- return '<svg xmlns="http://www.w3.org/2000/svg" width="210mm" height="297mm" viewBox="0 0 210 297" aria-label="A4 黑色輪廓鑲嵌圖">'+
- '<defs><clipPath id="'+clip+'"><rect x="'+margin+'" y="'+margin+'" width="'+(W-2*margin)+'" height="'+(H-2*margin)+'"/></clipPath></defs>'+
- '<rect width="210" height="297" fill="#fff"/>'+
- '<g clip-path="url(#'+clip+')" fill="none" stroke="#111111" stroke-width=".47" stroke-linejoin="round" stroke-linecap="round">'+shapes+'</g></svg>';
+ return '<svg xmlns="http://www.w3.org/2000/svg" width="297mm" height="210mm" viewBox="0 0 297 210" aria-label="A4 橫式黑色輪廓鑲嵌圖">'+
+ '<defs><clipPath id="studentClipA4Landscape"><rect x="'+margin+'" y="'+margin+'" width="'+(W-2*margin)+'" height="'+(H-2*margin)+'"/></clipPath></defs>'+
+ '<rect width="'+W+'" height="'+H+'" fill="#fff"/>'+
+ '<g clip-path="url(#studentClipA4Landscape)" fill="none" stroke="#111111" stroke-width=".45" stroke-linejoin="round" stroke-linecap="round">'+paths+'</g></svg>';
 }
 function studentReady(){
  for(const [id,label] of [['className','班級'],['seat','座號'],['student','姓名']]){
@@ -429,7 +436,7 @@ async function studentPNG(){
   const img=new Image();
   await new Promise((resolve,reject)=>{img.onload=resolve;img.onerror=()=>reject(new Error('無法建立圖片'));img.src=url});
   const canvas=document.createElement('canvas');
-  canvas.width=2480;canvas.height=3508; // A4 at 300 dpi.
+  canvas.width=3508;canvas.height=2480; // A4 landscape at 300 dpi.
   const ctx=canvas.getContext('2d');
   if(!ctx)throw Error('裝置不支援圖片輸出');
   ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);
