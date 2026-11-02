@@ -7,14 +7,16 @@ const studentMode=document.body.dataset.student==='true';
 const initialMode=page==='translation'?'translate':page==='rotation'?'rotate':'mixX';
 const names={translate:'平移鑲嵌',rotate:'180° 旋轉鑲嵌',mixX:'左右平移＋上下旋轉',mixY:'上下平移＋左右旋轉',rotate90:'90° 頂點旋轉｜正方形',rotate120:'120° 頂點旋轉｜正六邊形'};
 const templates={square:[[1,0],[0,1]],rectangle:[[1.2,0],[0,.83]],parallelogram:[[1,0],[.32,.92]],rhombus:[[1,0],[.5,.8660254]],triangle:[[1,0],[.51,.86]],hexagon:[[1,0],[.5,.8660254]]};
-const paperDims={A4:[210,297],A3:[297,420],B5:[182,257],drawing:[393,545]};
+const paperDims={A4:[210,297],A3:[297,420],B5:[182,257],drawing:[393,545],'8K':[270,390]};
+// Landscape 8K drawing paper is 39 × 27 cm; coordinates below are millimetres.
+const STUDENT_PAPER={W:390,H:270};
 const palette=['#93cbdc','#f4c6a6','#b9d8bb','#e9c6dd','#a4c6e4','#ecd89b'];
 const defaultProfile=(kind)=>({p:kind==='t'?[.22,.5,.78]:[.19,.36],v:kind==='t'?[0,0,0]:[0,0]});
 const s={
  mode:initialMode,shape:'square',trans:[defaultProfile('t'),defaultProfile('t')],
  rot:Array.from({length:4},()=>defaultProfile('r')),hex:Array.from({length:3},()=>({p:[.18,.36,.57,.78],v:[0,0,0,0]})),quarter:{p:[.13,.32,.5,.68,.87],v:[0,0,0,0,0]},preset:'blank',
  color:'#7dbfcf',outline:true,multicolor:true,stage:3,tileLayout:'aligned',
- className:'',seat:'',student:'',tileCm:studentMode?6.5:(page==='translation'?9:6),paper:'A4',printKind:'tile',
+ className:'',seat:'',student:'',tileCm:studentMode?8.5:(page==='translation'?9:6),paper:studentMode?'8K':'A4',printKind:'tile',
  history:[],future:[],drag:null,stepProgress:1,selectedEdge:2,drawTool:'points',sketching:null,selectedPoint:null
 };
 const add=(a,b)=>[a[0]+b[0],a[1]+b[1]],sub=(a,b)=>[a[0]-b[0],a[1]-b[1]];
@@ -384,20 +386,19 @@ function tilesSVG(W,H,unit,stage=3,print=false){
  return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 '+W+' '+H+'" width="'+W+'" height="'+H+'"><rect width="100%" height="100%" fill="'+(print?'white':'#fbfeff')+'"/>'+paths+'</svg>';
 }
 
-// A4 portrait worksheet: pure white paper and black contour paths only.
-// 210 x 297 viewBox units are millimetres, so the requested tile size prints accurately.
-// A4 LANDSCAPE worksheet. All geometry is in millimetres.
+// 8K landscape worksheet: pure white paper and black contour paths only.
+// All geometry uses millimetres, so the selected tile size prints accurately.
 // Draw each shared boundary once (top and right edges of each translated cell)
 // instead of outlining both adjacent tiles: this prevents darker doubled seams.
 // Fixed physical black ink: stroke-width is ALWAYS 0.45 mm, regardless of tile size.
-// Fixed A4 layouts. Each size + basic shape has an explicit number of tiles.
+// Each selected size and basic shape produces its own exact tile grid.
 // Crucially, no part of the layout uses the EDITED silhouette's bounding box.
-// Full-bleed A4 landscape tiled sheet.
+// Full-bleed 8K landscape tiled sheet.
 // The lattice depends on shape and selected cm ONLY (never edited silhouette).
 // Index ranges are derived once from the sheet's four corners, then padded:
-// tiles may cross all page edges and are cropped naturally by the A4 viewport.
+// tiles may cross all page edges and are cropped naturally by the 8K viewport.
 function studentLayout(){
- const W=297,H=210,[u,v]=templates[s.shape];
+ const {W,H}=STUDENT_PAPER,[u,v]=templates[s.shape];
  const unit=s.tileCm*10/Math.max(norm(u),norm(v));
  // A tile near the center of the paper, with off-page copies on every side.
  const origin=[W/2-unit*(u[0]+v[0])*.5,H/2-unit*(u[1]+v[1])*.5];
@@ -413,11 +414,11 @@ function studentLayout(){
  return {unit,u,v,origin,i0,i1,j0,j1,cols:i1-i0,rows:j1-j0};
 }
 function studentSheetSVG(){
- const W=297,H=210,{unit,u,v,origin,i0,i1,j0,j1}=studentLayout();
+ const {W,H}=STUDENT_PAPER,{unit,u,v,origin,i0,i1,j0,j1}=studentLayout();
  let paths='';
  const top=edge(0),right=edge(1);
  // Each internal seam is drawn only once: top & right edges, for a
- // fixed set of cells, padded beyond the A4 sheet on all sides.
+ // fixed set of cells, padded beyond the 8K sheet on all sides.
  for(let j=j0;j<j1;j++)for(let i=i0;i<i1;i++){
   const x=origin[0]+unit*(u[0]*i+v[0]*j);
   const y=origin[1]+unit*(u[1]*i+v[1]*j);
@@ -426,7 +427,7 @@ function studentSheetSVG(){
    paths+='<path d="'+linePath(points)+'"/>';
   }
  }
- return '<svg xmlns="http://www.w3.org/2000/svg" width="297mm" height="210mm" viewBox="0 0 297 210" aria-label="A4 橫式全幅平移密鋪輪廓圖">'+
+ return '<svg xmlns="http://www.w3.org/2000/svg" width="'+W+'mm" height="'+H+'mm" viewBox="0 0 '+W+' '+H+'" aria-label="8K 橫式全幅平移密鋪輪廓圖">'+
  '<rect width="'+W+'" height="'+H+'" fill="#fff"/>'+
  // SVG viewport crops surplus copies; no safe-area inset and no
  // artificial rectangle around only the completed shapes.
@@ -440,10 +441,10 @@ function studentReady(){
  }
  return true;
 }
-// Native, one-page A4 landscape vector PDF. No network/CDN required.
+// Native, one-page 8K (390 × 270 mm) landscape vector PDF. No network/CDN required.
 // Uses exactly the same black boundary geometry as studentSheetSVG().
 function studentPDFContent(){
- const svg=studentSheetSVG(),pt=72/25.4,pageW=297*pt,pageH=210*pt;
+ const svg=studentSheetSVG(),{W,H}=STUDENT_PAPER,pt=72/25.4,pageW=W*pt,pageH=H*pt;
  const f=v=>Number(v).toFixed(3);
  const commands=['q','0 0 '+f(pageW)+' '+f(pageH)+' re W n',
   '0 0 0 RG',f(.45*pt)+' w','1 J','1 j'];
@@ -451,8 +452,8 @@ function studentPDFContent(){
  for(const match of matches){
   const xy=(match[1].match(/-?\d+(?:\.\d+)?/g)||[]).map(Number);
   if(xy.length<4||xy.length%2!==0)continue;
-  commands.push(f(xy[0]*pt)+' '+f((210-xy[1])*pt)+' m');
-  for(let k=2;k<xy.length;k+=2)commands.push(f(xy[k]*pt)+' '+f((210-xy[k+1])*pt)+' l');
+  commands.push(f(xy[0]*pt)+' '+f((H-xy[1])*pt)+' m');
+  for(let k=2;k<xy.length;k+=2)commands.push(f(xy[k]*pt)+' '+f((H-xy[k+1])*pt)+' l');
   commands.push('S');
  }
  commands.push('Q');
@@ -480,48 +481,17 @@ function studentPDF(){
  try{
   const file=new Blob([studentPDFContent()],{type:'application/pdf'});
   const url=URL.createObjectURL(file),a=document.createElement('a');
-  a.href=url;a.download=filename('A4_黑色鑲嵌輪廓.pdf');
+  a.href=url;a.download=filename('8K_平移鑲嵌輪廓.pdf');
   document.body.appendChild(a);a.click();a.remove();
   setTimeout(()=>URL.revokeObjectURL(url),10000);
-  setStatus('已下載：'+a.download+'。請到繳交區上傳這份 PDF。');
+  setStatus('已下載：'+a.download+'。列印請選 390 × 270 mm、100% 實際大小；完成後請至繳交區上傳。');
  }catch(err){
   setStatus('PDF 下載失敗，請重試。'+(err?.message?'（'+err.message+'）':''));
  }finally{button.disabled=false;}
 }
-async function studentPNG(){
- if(!studentReady())return;
- const button=$('downloadPNG');button.disabled=true;
- setStatus('正在製作 A4 空白輪廓圖…');
- let url;
- try{
-  const content=studentSheetSVG();
-  const blob=new Blob([content],{type:'image/svg+xml;charset=utf-8'});
-  url=URL.createObjectURL(blob);
-  const img=new Image();
-  await new Promise((resolve,reject)=>{img.onload=resolve;img.onerror=()=>reject(new Error('無法建立圖片'));img.src=url});
-  const canvas=document.createElement('canvas');
-  canvas.width=3508;canvas.height=2480; // A4 landscape at 300 dpi.
-  const ctx=canvas.getContext('2d');
-  if(!ctx)throw Error('裝置不支援圖片輸出');
-  ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);
-  ctx.drawImage(img,0,0,canvas.width,canvas.height);
-  const out=await new Promise((resolve,reject)=>canvas.toBlob(b=>b?resolve(b):reject(new Error('PNG 輸出失敗')),'image/png'));
-  const fileUrl=URL.createObjectURL(out);
-  const a=document.createElement('a');
-  a.href=fileUrl;a.download=filename('A4_黑色鑲嵌輪廓.png');
-  document.body.appendChild(a);a.click();a.remove();
-  setTimeout(()=>URL.revokeObjectURL(fileUrl),10000);
-  setStatus('已下載：'+a.download+'。請到繳交區上傳這張 PNG。');
- }catch(e){
-  setStatus('圖片製作失敗，請重試或使用「直接列印」。'+(e?.message?'（'+e.message+'）':''));
- }finally{
-  if(url)URL.revokeObjectURL(url);
-  button.disabled=false;
- }
-}
 function drawPreview(){
  const box=$('previewScene');if(!box)return;
- if(studentMode){box.innerHTML=studentSheetSVG();const badge=$('fixedTileCount');if(badge){const l=studentLayout();badge.textContent='A4 · 橫式 · 邊緣可裁切';}return;}
+ if(studentMode){box.innerHTML=studentSheetSVG();const badge=$('fixedTileCount');if(badge)badge.textContent='8K · 橫式 39 × 27 cm · 邊緣可裁切';return;}
  const W=840,H=560,unit=s.shape==='triangle'?180:s.shape==='hexagon'?122:150;
  const direction=page==='translation'?staggerDirectionAvailable():null;
  // If the last straight opposite pair is edited, immediately return to aligned layout.
@@ -961,7 +931,7 @@ function attachEvents(){
   }recordUndoState(baseline);render();
  });
  if($('downloadSVG'))$('downloadSVG').addEventListener('click',()=>download('image/svg+xml',studentSVG(),'元件設計.svg'));
- $('downloadPNG').addEventListener('click',async()=>{if(studentMode)return studentPNG();try{await png(tilesSVG(1200,850,210,3),'完整鑲嵌.png')}catch(e){setStatus('PNG 轉換失敗，請再試一次。')}});
+ if(!studentMode&&$('downloadPNG'))$('downloadPNG').addEventListener('click',async()=>{try{await png(tilesSVG(1200,850,210,3),'完整鑲嵌.png')}catch(e){setStatus('PNG 轉換失敗，請再試一次。')}});
  $('downloadTilePNG').addEventListener('click',async()=>{try{await png(singleSVG(850,700,true),'我的元件.png')}catch(e){setStatus('PNG 轉換失敗，請先下載 SVG。')}});
  if($('downloadPrint'))$('downloadPrint').addEventListener('click',()=>download('image/svg+xml',printSVG(),s.printKind==='tile'?'描繪元件模板.svg':'密鋪參考圖.svg'));
  if(studentMode)$('downloadPDF').addEventListener('click',studentPDF);
